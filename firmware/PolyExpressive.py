@@ -1,15 +1,18 @@
 #
 # send MIDI to UART
-from machine import UART
+from machine import UART, Pin
+import machine
+from machine import Timer
 uart = UART(1, 31250)                         # init with given baudrate
 uart.init(31250, bits=8, parity=None, stop=1) # init with given parameters
 
 # Define which pins are connected to what
 # for resistive touch
-YP = 2  # must be an analog pin, use "An" notation!
-XM = 3  # must be an analog pin, use "An" notation!
-YM = 8   # can be a digital pin
-XP = 9 # can be a digital pin
+YP = 'P20'  # must be an analog pin, ADC blue to red
+XM = 'P19'  # must be an analog pin, ADC Green to black
+YM = 'P22'   # can be a digital pin DAC Green to yellow
+XP = 'P21' # can be a digital pin DAC white to orange
+ATTN_11DB = 3
 
 
 MIDI_COMMANDS = {
@@ -20,7 +23,7 @@ MIDI_COMMANDS = {
         "pc":0xC0,  # Program Change
         "channel_pressure":0xD0,  # Mono Pressure
         "pitch_bend":0xE0   # Pich Bend
-)
+        }
 
 # on_bytes =  bytes((0x90, 0x3C, 0x7A))
 # off_bytes =  bytes((0x80, 0x3C, 0x7A))
@@ -58,217 +61,98 @@ def send_midi_message(channel, command, data1, data2=0):
 
 #XXX
 def get_point():
-    samples = []
-    valid = 1
-"""
-TSPoint TouchScreen::getPoint(void) {
-  int x, y, z;
-  int samples[NUMSAMPLES];
-  uint8_t i, valid;
+    samples = [0, 0]
+    valid = True
+    default_high = 0.5
+    NUM_SAMPLES = 2
+    _rxplate = 0
 
-  valid = 1;
+    y_p = Pin(YP, mode=Pin.OUT)
+    y_m = Pin(YM, mode=Pin.OUT)
+    y_p.value(0)
+    y_m.value(0)
 
-  pinMode(_yp, INPUT);
-  pinMode(_ym, INPUT);
-  pinMode(_xp, OUTPUT);
-  pinMode(_xm, OUTPUT);
+    adc1 = machine.ADC()
+    y_p = adc1.channel(pin=YP, attn=ATTN_11DB)
 
-#if defined (USE_FAST_PINIO)
-  *xp_port |= xp_pin;
-  *xm_port &= ~xm_pin;
-#else
-  digitalWrite(_xp, HIGH);
-  digitalWrite(_xm, LOW);
-#endif
+    x_p = Pin(XP, mode=Pin.OUT)
+    x_m = Pin(XM, mode=Pin.OUT)
 
-#ifdef __arm__
-  delayMicroseconds(20); // Fast ARM chips need to allow voltages to settle
-#endif
+    x_p.value(1)
+    x_m.value(0)
 
-   for (i=0; i<NUMSAMPLES; i++) {
-     samples[i] = analogRead(_yp);
-   }
+    # Fast ARM chips need to allow voltages to settle
+    Timer.sleep_us(20)
 
-#if NUMSAMPLES > 2
-   insert_sort(samples, NUMSAMPLES);
-#endif
-#if NUMSAMPLES == 2
-   // Allow small amount of measurement noise, because capacitive
-   // coupling to a TFT display's signals can induce some noise.
-   if (samples[0] - samples[1] < -4 || samples[0] - samples[1] > 4) {
-     valid = 0;
-   } else {
-     samples[1] = (samples[0] + samples[1]) >> 1; // average 2 samples
-   }
-#endif
+    for i in range(NUM_SAMPLES):
+        samples[i] = y_p()
 
-   x = (1023-samples[NUMSAMPLES/2]);
+    # Allow small amount of measurement noise, because capacitive
+    # coupling to a TFT display's signals can induce some noise.
+    if ((samples[0] - samples[1] < -4) or (samples[0] - samples[1] > 4)):
+        valid = False
+    else:
+        samples[1] = (samples[0] + samples[1]) / 2 # average 2 samples
+    print("x is", samples[1])
+    x = (1023-samples[1])
 
-   pinMode(_xp, INPUT);
-   pinMode(_xm, INPUT);
-   pinMode(_yp, OUTPUT);
-   pinMode(_ym, OUTPUT);
+    # same thing but for y
 
-#if defined (USE_FAST_PINIO)
-   *ym_port &= ~ym_pin;
-   *yp_port |= yp_pin;
-#else
-   digitalWrite(_ym, LOW);
-   digitalWrite(_yp, HIGH);
-#endif
+    adc1 = machine.ADC()
+    x_m = adc1.channel(pin=XM, attn=ATTN_11DB)
 
-  
-#ifdef __arm__
-   delayMicroseconds(20); // Fast ARM chips need to allow voltages to settle
-#endif
+    y_m = Pin(YM, mode=Pin.OUT)
+    y_p = Pin(YP, mode=Pin.OUT)
 
-   for (i=0; i<NUMSAMPLES; i++) {
-     samples[i] = analogRead(_xm);
-   }
+    y_m.value(0)
+    y_p.value(1)
 
-#if NUMSAMPLES > 2
-   insert_sort(samples, NUMSAMPLES);
-#endif
-#if NUMSAMPLES == 2
-   // Allow small amount of measurement noise, because capacitive
-   // coupling to a TFT display's signals can induce some noise.
-   if (samples[0] - samples[1] < -4 || samples[0] - samples[1] > 4) {
-     valid = 0;
-   } else {
-     samples[1] = (samples[0] + samples[1]) >> 1; // average 2 samples
-   }
-#endif
+    # Fast ARM chips need to allow voltages to settle
+    Timer.sleep_us(20)
 
-   y = (1023-samples[NUMSAMPLES/2]);
+    for i in range(NUM_SAMPLES):
+        samples[i] = x_m()
 
-   // Set X+ to ground
-   // Set Y- to VCC
-   // Hi-Z X- and Y+
-   pinMode(_xp, OUTPUT);
-   pinMode(_yp, INPUT);
+    # Allow small amount of measurement noise, because capacitive
+    # coupling to a TFT display's signals can induce some noise.
+    if ((samples[0] - samples[1] < -4) or (samples[0] - samples[1] > 4)):
+        valid = False
+    else:
+        samples[1] = (samples[0] + samples[1]) / 2 # average 2 samples
+    print("y is", samples[1])
+    y = (1023-samples[1])
 
-#if defined (USE_FAST_PINIO)
-   *xp_port &= ~xp_pin;
-   *ym_port |= ym_pin;
-#else
-   digitalWrite(_xp, LOW);
-   digitalWrite(_ym, HIGH); 
-#endif
-  
-   int z1 = analogRead(_xm); 
-   int z2 = analogRead(_yp);
+    # Set X+ to ground
+    # Set Y- to VCC
+    # Hi-Z X- and Y+
+    x_p = Pin(XP, mode=Pin.OUT)
+    y_m = Pin(YM, mode=Pin.OUT)
+    adc1 = machine.ADC()
+    y_p = adc1.channel(pin=YP, attn=ATTN_11DB)
+    adc2 = machine.ADC()
+    x_m = adc2.channel(pin=XM, attn=ATTN_11DB)
 
-   if (_rxplate != 0) {
-     // now read the x 
-     float rtouch;
-     rtouch = z2;
-     rtouch /= z1;
-     rtouch -= 1;
-     rtouch *= x;
-     rtouch *= _rxplate;
-     rtouch /= 1024;
-     
-     z = rtouch;
-   } else {
-     z = (1023-(z2-z1));
-   }
+    x_p.value(0)
+    y_m.value(1)
 
-   if (! valid) {
-     z = 0;
-   }
+    z1 = x_m()
+    z2 = y_p()
 
-   return TSPoint(x, y, z);
-}
+    z = 0
+    if (_rxplate != 0):
+        rtouch = z2
+        rtouch /= z1
+        rtouch -= 1
+        rtouch *= x
+        rtouch *= _rxplate
+        rtouch /= 1024
+        z = rtouch
+    else:
+        z = (1023-(z2-z1))
+    if not valid:
+        z = 0
 
-TouchScreen::TouchScreen(uint8_t xp, uint8_t yp, uint8_t xm, uint8_t ym,
-			 uint16_t rxplate=0) {
-  _yp = yp;
-  _xm = xm;
-  _ym = ym;
-  _xp = xp;
-  _rxplate = rxplate;
-
-#if defined (USE_FAST_PINIO)
-  xp_port =  portOutputRegister(digitalPinToPort(_xp));
-  yp_port =  portOutputRegister(digitalPinToPort(_yp));
-  xm_port =  portOutputRegister(digitalPinToPort(_xm));
-  ym_port =  portOutputRegister(digitalPinToPort(_ym));
-  
-  xp_pin = digitalPinToBitMask(_xp);
-  yp_pin = digitalPinToBitMask(_yp);
-  xm_pin = digitalPinToBitMask(_xm);
-  ym_pin = digitalPinToBitMask(_ym);
-#endif
-
-  pressureThreshhold = 10;
-}
-
-int TouchScreen::readTouchX(void) {
-   pinMode(_yp, INPUT);
-   pinMode(_ym, INPUT);
-   digitalWrite(_yp, LOW);
-   digitalWrite(_ym, LOW);
-   
-   pinMode(_xp, OUTPUT);
-   digitalWrite(_xp, HIGH);
-   pinMode(_xm, OUTPUT);
-   digitalWrite(_xm, LOW);
-   
-   return (1023-analogRead(_yp));
-}
-
-
-int TouchScreen::readTouchY(void) {
-   pinMode(_xp, INPUT);
-   pinMode(_xm, INPUT);
-   digitalWrite(_xp, LOW);
-   digitalWrite(_xm, LOW);
-   
-   pinMode(_yp, OUTPUT);
-   digitalWrite(_yp, HIGH);
-   pinMode(_ym, OUTPUT);
-   digitalWrite(_ym, LOW);
-   
-   return (1023-analogRead(_xm));
-}
-
-
-uint16_t TouchScreen::pressure(void) {
-  // Set X+ to ground
-  pinMode(_xp, OUTPUT);
-  digitalWrite(_xp, LOW);
-  
-  // Set Y- to VCC
-  pinMode(_ym, OUTPUT);
-  digitalWrite(_ym, HIGH); 
-  
-  // Hi-Z X- and Y+
-  digitalWrite(_xm, LOW);
-  pinMode(_xm, INPUT);
-  digitalWrite(_yp, LOW);
-  pinMode(_yp, INPUT);
-  
-  int z1 = analogRead(_xm); 
-  int z2 = analogRead(_yp);
-
-  if (_rxplate != 0) {
-    // now read the x 
-    float rtouch;
-    rtouch = z2;
-    rtouch /= z1;
-    rtouch -= 1;
-    rtouch *= readTouchX();
-    rtouch *= _rxplate;
-    rtouch /= 1024;
-    
-    return rtouch;
-  } else {
-    return (1023-(z2-z1));
-  }
-
-}
-"""
-#XXX
+    return (x, y, z)
 
 # toggle 
 #
