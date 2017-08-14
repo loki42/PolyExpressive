@@ -8,12 +8,18 @@ uart.init(31250, bits=8, parity=None, stop=1) # init with given parameters
 
 # Define which pins are connected to what
 # for resistive touch
-YP = 'P20'  # must be an analog pin, ADC blue to red
-XM = 'P19'  # must be an analog pin, ADC Green to black
-YM = 'P22'   # can be a digital pin DAC Green to yellow
-XP = 'P21' # can be a digital pin DAC white to orange
+# wipy
+# YP = 'P20'  # must be an analog pin, ADC blue to red
+# XM = 'P19'  # must be an analog pin, ADC Green to black
+# YM = 'P22'   # can be a digital pin DAC Green to yellow
+# XP = 'P21' # can be a digital pin DAC white to orange
 ATTN_11DB = 3
 
+# wroom
+YP = 33  # must be an analog pin, ADC blue to red
+XM = 32  # must be an analog pin, ADC Green to black
+YM = 25   # can be a digital pin DAC Green to yellow
+XP = 26 # can be a digital pin DAC white to orange
 
 MIDI_COMMANDS = {
         "note_on":0x80,  # Note Off
@@ -51,7 +57,7 @@ def send_midi_message(channel, command, data1, data2=0):
 
 # For better pressure precision, we need to know the resistance
 # between X+ and X- Use any multimeter to read it
-# For the one we're using, its TODO ohms across the X plate
+# For the one we're using, its 600 ohms across the X plate
 
 # location to action
 
@@ -59,21 +65,18 @@ def send_midi_message(channel, command, data1, data2=0):
 
 
 
-#XXX
 def get_point():
     samples = [0, 0]
     valid = True
-    default_high = 0.5
     NUM_SAMPLES = 2
-    _rxplate = 0
+    _rxplate = 592
+    x = 0
 
-    y_p = Pin(YP, mode=Pin.OUT)
-    y_m = Pin(YM, mode=Pin.OUT)
-    y_p.value(0)
-    y_m.value(0)
-
+    y_m = Pin(YM, mode=Pin.IN)
+    y_p = Pin(YP, mode=Pin.IN)
     adc1 = machine.ADC()
     y_p = adc1.channel(pin=YP, attn=ATTN_11DB)
+    y_m = Pin(YM, mode=Pin.IN)
 
     x_p = Pin(XP, mode=Pin.OUT)
     x_m = Pin(XM, mode=Pin.OUT)
@@ -94,18 +97,23 @@ def get_point():
     else:
         samples[1] = (samples[0] + samples[1]) / 2 # average 2 samples
     print("x is", samples[1])
-    x = (1023-samples[1])
+    x = (4095-samples[1])
 
     # same thing but for y
+    # Timer.sleep_us(20)
 
-    adc1 = machine.ADC()
-    x_m = adc1.channel(pin=XM, attn=ATTN_11DB)
+    x_p = Pin(XP, mode=Pin.IN)
+    x_m = Pin(XM, mode=Pin.IN)
+    adc2 = machine.ADC()
+    x_m = adc2.channel(pin=XM, attn=ATTN_11DB)
+    x_p = Pin(XP, mode=Pin.IN)
+
 
     y_m = Pin(YM, mode=Pin.OUT)
     y_p = Pin(YP, mode=Pin.OUT)
 
-    y_m.value(0)
     y_p.value(1)
+    y_m.value(0)
 
     # Fast ARM chips need to allow voltages to settle
     Timer.sleep_us(20)
@@ -120,11 +128,15 @@ def get_point():
     else:
         samples[1] = (samples[0] + samples[1]) / 2 # average 2 samples
     print("y is", samples[1])
-    y = (1023-samples[1])
+    y = (4095-samples[1])
+    # return y
 
     # Set X+ to ground
     # Set Y- to VCC
     # Hi-Z X- and Y+
+    x_m = Pin(XM, mode=Pin.IN)
+    y_p = Pin(YP, mode=Pin.IN)
+
     x_p = Pin(XP, mode=Pin.OUT)
     y_m = Pin(YM, mode=Pin.OUT)
     adc1 = machine.ADC()
@@ -139,19 +151,20 @@ def get_point():
     z2 = y_p()
 
     z = 0
-    if (_rxplate != 0):
+    if (_rxplate != 0 and z1 != 0):
         rtouch = z2
         rtouch /= z1
         rtouch -= 1
         rtouch *= x
         rtouch *= _rxplate
-        rtouch /= 1024
+        rtouch /= 4095
         z = rtouch
     else:
-        z = (1023-(z2-z1))
+        z = (4095-(z2-z1))
     if not valid:
+        print ("not valid")
         z = 0
-
+    print("z is ", z)
     return (x, y, z)
 
 # toggle 
