@@ -2,7 +2,7 @@
 # send MIDI to UART
 from machine import UART, Pin
 import machine
-from machine import Timer
+import utime
 uart = UART(1, 31250)                         # init with given baudrate
 uart.init(31250, bits=8, parity=None, stop=1) # init with given parameters
 
@@ -74,8 +74,7 @@ def get_point():
 
     y_m = Pin(YM, mode=Pin.IN)
     y_p = Pin(YP, mode=Pin.IN)
-    adc1 = machine.ADC()
-    y_p = adc1.channel(pin=YP, attn=ATTN_11DB)
+    y_p = machine.ADC(machine.Pin(YP), atten=machine.ADC.ATTN_11DB)
     y_m = Pin(YM, mode=Pin.IN)
 
     x_p = Pin(XP, mode=Pin.OUT)
@@ -85,10 +84,10 @@ def get_point():
     x_m.value(0)
 
     # Fast ARM chips need to allow voltages to settle
-    Timer.sleep_us(20)
+    utime.sleep_us(20)
 
     for i in range(NUM_SAMPLES):
-        samples[i] = y_p()
+        samples[i] = y_p.read()
 
     # Allow small amount of measurement noise, because capacitive
     # coupling to a TFT display's signals can induce some noise.
@@ -104,8 +103,7 @@ def get_point():
 
     x_p = Pin(XP, mode=Pin.IN)
     x_m = Pin(XM, mode=Pin.IN)
-    adc2 = machine.ADC()
-    x_m = adc2.channel(pin=XM, attn=ATTN_11DB)
+    x_m = machine.ADC(machine.Pin(XM), atten=machine.ADC.ATTN_11DB)
     x_p = Pin(XP, mode=Pin.IN)
 
 
@@ -116,10 +114,10 @@ def get_point():
     y_m.value(0)
 
     # Fast ARM chips need to allow voltages to settle
-    Timer.sleep_us(20)
+    utime.sleep_us(20)
 
     for i in range(NUM_SAMPLES):
-        samples[i] = x_m()
+        samples[i] = x_m.read()
 
     # Allow small amount of measurement noise, because capacitive
     # coupling to a TFT display's signals can induce some noise.
@@ -139,16 +137,14 @@ def get_point():
 
     x_p = Pin(XP, mode=Pin.OUT)
     y_m = Pin(YM, mode=Pin.OUT)
-    adc1 = machine.ADC()
-    y_p = adc1.channel(pin=YP, attn=ATTN_11DB)
-    adc2 = machine.ADC()
-    x_m = adc2.channel(pin=XM, attn=ATTN_11DB)
+    y_p = machine.ADC(machine.Pin(YP), atten=machine.ADC.ATTN_11DB)
+    x_m = machine.ADC(machine.Pin(XM), atten=machine.ADC.ATTN_11DB)
 
     x_p.value(0)
     y_m.value(1)
 
-    z1 = x_m()
-    z2 = y_p()
+    z1 = x_m.read()
+    z2 = y_p.read()
 
     z = 0
     if (_rxplate != 0 and z1 != 0):
