@@ -2,7 +2,7 @@
 # send MIDI to UART
 from machine import UART, Pin
 import machine
-import utime
+from machine import Timer
 uart = UART(1, 31250)                         # init with given baudrate
 uart.init(31250, bits=8, parity=None, stop=1) # init with given parameters
 
@@ -16,10 +16,10 @@ uart.init(31250, bits=8, parity=None, stop=1) # init with given parameters
 ATTN_11DB = 3
 
 # wroom
-YP = 33  # must be an analog pin, ADC blue to red
-XM = 32  # must be an analog pin, ADC Green to black
-YM = 25   # can be a digital pin DAC Green to yellow
-XP = 26 # can be a digital pin DAC white to orange
+YP = 'P18'  # must be an analog pin, ADC blue to red
+XM = 'P17'  # must be an analog pin, ADC Green to black
+YM = 'P20'   # can be a digital pin DAC Green to yellow
+XP = 'P19' # can be a digital pin DAC white to orange
 
 MIDI_COMMANDS = {
         "note_on":0x80,  # Note Off
@@ -74,7 +74,8 @@ def get_point():
 
     y_m = Pin(YM, mode=Pin.IN)
     y_p = Pin(YP, mode=Pin.IN)
-    y_p = machine.ADC(machine.Pin(YP), atten=machine.ADC.ATTN_11DB)
+    adc1 = machine.ADC()
+    y_p = adc1.channel(pin=YP, attn=ATTN_11DB)
     y_m = Pin(YM, mode=Pin.IN)
 
     x_p = Pin(XP, mode=Pin.OUT)
@@ -84,10 +85,10 @@ def get_point():
     x_m.value(0)
 
     # Fast ARM chips need to allow voltages to settle
-    utime.sleep_us(20)
+    Timer.sleep_us(20)
 
     for i in range(NUM_SAMPLES):
-        samples[i] = y_p.read()
+        samples[i] = y_p()
 
     # Allow small amount of measurement noise, because capacitive
     # coupling to a TFT display's signals can induce some noise.
@@ -103,7 +104,8 @@ def get_point():
 
     x_p = Pin(XP, mode=Pin.IN)
     x_m = Pin(XM, mode=Pin.IN)
-    x_m = machine.ADC(machine.Pin(XM), atten=machine.ADC.ATTN_11DB)
+    adc2 = machine.ADC()
+    x_m = adc2.channel(pin=XM, attn=ATTN_11DB)
     x_p = Pin(XP, mode=Pin.IN)
 
 
@@ -114,10 +116,10 @@ def get_point():
     y_m.value(0)
 
     # Fast ARM chips need to allow voltages to settle
-    utime.sleep_us(20)
+    Timer.sleep_us(20)
 
     for i in range(NUM_SAMPLES):
-        samples[i] = x_m.read()
+        samples[i] = x_m()
 
     # Allow small amount of measurement noise, because capacitive
     # coupling to a TFT display's signals can induce some noise.
@@ -137,14 +139,16 @@ def get_point():
 
     x_p = Pin(XP, mode=Pin.OUT)
     y_m = Pin(YM, mode=Pin.OUT)
-    y_p = machine.ADC(machine.Pin(YP), atten=machine.ADC.ATTN_11DB)
-    x_m = machine.ADC(machine.Pin(XM), atten=machine.ADC.ATTN_11DB)
+    adc1 = machine.ADC()
+    y_p = adc1.channel(pin=YP, attn=ATTN_11DB)
+    adc2 = machine.ADC()
+    x_m = adc2.channel(pin=XM, attn=ATTN_11DB)
 
     x_p.value(0)
     y_m.value(1)
 
-    z1 = x_m.read()
-    z2 = y_p.read()
+    z1 = x_m()
+    z2 = y_p()
 
     z = 0
     if (_rxplate != 0 and z1 != 0):
