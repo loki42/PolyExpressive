@@ -11,14 +11,19 @@ width_x = 420
 num_x = int(420/70)
 
 
+#
+
+toggle_states = []
+
+
 MIDI_COMMANDS = {
-        "note_on":0x80,  # Note Off
-        "note_off":0x90,  # Note On
-        "poly_pressure":0xA0,  # Poly Pressure
+        "on":0x80,  # Note Off
+        "off":0x90,  # Note On
+        "pp":0xA0,  # Poly Pressure
         "cc":0xB0,  # Control Change
         "pc":0xC0,  # Program Change
-        "channel_pressure":0xD0,  # Mono Pressure
-        "pitch_bend":0xE0   # Pich Bend
+        "cp":0xD0,  # Mono Pressure
+        "pb":0xE0   # Pich Bend
         }
 
 on_bytes =  bytes((0x90, 0x3C, 0x7A))
@@ -34,38 +39,49 @@ def send_midi_message(channel, command, data1, data2=0):
     command += self.channel - 1
     uart.write(bytes((command, data1, data2)))
 
-
 def square_to_action(x, y, z):
     index = int(x/grid_x) + (int(y/grid_y) * num_x)
 
-# toggle 
-#
 # update firmware
 #
 # update action list / mat
 def update_mat(json_file):
     # parse json file as the action list and mat def
-    # format is [{index:action}, {action_id:[list_of_action]}
-    # action triggers are
-    # on_start_touch shown as s
-    # on_end_touch shown as e
-    # on_change shown as c
-    # actions are
-    # send midi
-    # send midi and toggle state [on_off, on_on, initial]
-    # start sending clock
-    # stop sending clock
-    # tap temp clock
-    # start and end can use pressure (x)
-    # change can use x, y, z
-    # curve options - if no curve then takes no params
-    # cartmull rom / hermite
-    # {"x":{'curve_type':'c', v:[[in, out], ]}, "y": etc}
-    pass
+    j = json.loads(json_file)
+    square_map = j["sm"]
+    action_list = j["al"]
+    toggle_states = []
 
-def execute_action(action):
-    pass
+def evaluate_curve(curve_type, v):
+    return v
 
+
+def execute_action(action, z):
+    for ap in action['ap']:
+        if ap[0] == 't': #toggle
+            if action['id'] not in toggle_states: # this is initial, so invert initial state
+                # invert it
+                pass
+            else:
+                toggle_states[action['id']] = not toggle_states[action['id']]
+            # execute action
+            # TODO
+
+        elif ap[0] == "start":
+            # start clock
+            pass
+        elif ap[0] == "stop":
+            pass
+        elif ap[0] == "tap":
+            pass
+        elif ap[0] == "m":
+            if c in ap[1]:
+                # evalate curve
+                mapped_z = evaluate_curve(ap[1]['c'], z)
+                # send MIDI with z
+            else:
+                # send MIDI no parameters
+                pass
 
 # main loop
 def core_loop():
@@ -95,12 +111,10 @@ def core_loop():
             # otherwise it's an on change
             if "c" in action:
                 execute_continous_action(action["c"], x, y, z)
-# get_point()
-# 
+
+    # Serve web pages / config update
+    # anything else in the core loop?
 
 #
 # bluetooth / wifi chaining
-#
-# Serve web pages / config update
-
 # send MIDI to bluetooth BLE

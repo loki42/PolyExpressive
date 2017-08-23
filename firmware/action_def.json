@@ -1,0 +1,28 @@
+    // # parse json file as the action list and mat def
+    // # format is [{index:action}, {action_id:[list_of_action]}
+    // # action triggers are
+    // # on_start_touch shown as s
+    // # on_end_touch shown as e
+    // # on_change shown as c
+    // # actions are
+    // # send midi
+    // # send midi and toggle state [on_off, on_on, initial]
+    // # start sending clock
+    // # stop sending clock
+    // # toggle clock
+    // # tap temp clock
+    // # start and end can use pressure (x)
+    // # change can use x, y, z
+    // # curve options - if no curve then takes no params
+    // # cartmull rom / hermite
+    // # {"x":{'curve_type':'c', v:[[in, out], ]}, "y": etc}
+// 
+// {"c": "l", ["on", 60, "z"]}
+//
+{
+    "sm":[],
+    "al":{
+        "1":{"s":[["t", , ]], "e":[], "c":[]}
+    }
+}
+
