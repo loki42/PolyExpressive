@@ -1,0 +1,27 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 640455-4
+D Generic connector, single row, 01x04
+K connector
+F ~
+$ENDCMP
+#
+$CMP Jack-DC
+D DC Barrel Jack
+K DC power barrel jack connector
+F ~
+$ENDCMP
+#
+$CMP RAPC722X
+D DC Barrel Jack
+K DC power barrel jack connector
+F ~
+$ENDCMP
+#
+$CMP STMPE1600
+D IO expander 16 GPIO, I2C 400kHz, Interrupt, 1.65 - 3.6V, QFN24
+K IO expander 16 GPIO
+F http://www.st.com/resource/en/datasheet/stmpe1600.pdf
+$ENDCMP
+#
+#End Doc Library
