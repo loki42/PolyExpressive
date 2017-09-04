@@ -218,13 +218,13 @@ Y+
 Text Label 12950 2300 0    60   ~ 0
 X+
 Text Label 13850 2000 0    60   ~ 0
-Y+
-Text Label 13850 2100 0    60   ~ 0
-X+
-Text Label 13850 2200 0    60   ~ 0
-Y-
-Text Label 13850 2300 0    60   ~ 0
 X-
+Text Label 13850 2100 0    60   ~ 0
+Y-
+Text Label 13850 2200 0    60   ~ 0
+X+
+Text Label 13850 2300 0    60   ~ 0
+Y+
 Text Label 10650 2700 0    60   ~ 0
 3V3
 $Comp
