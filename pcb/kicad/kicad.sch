@@ -277,7 +277,7 @@ F 3 "" H 10650 3000 50  0001 C CNN
 	1    10650 3000
 	1    0    0    -1  
 $EndComp
-Text Label 11850 1400 0    60   ~ 0
+Text Label 10650 1400 0    60   ~ 0
 3V3
 $Comp
 L GND #PWR03
@@ -290,9 +290,9 @@ F 3 "" H 11650 2150 50  0001 C CNN
 	1    11650 2150
 	1    0    0    -1  
 $EndComp
-Text Label 11950 2250 0    60   ~ 0
+Text Label 10900 2250 0    60   ~ 0
 SDAT
-Text Label 11950 2350 0    60   ~ 0
+Text Label 10900 2350 0    60   ~ 0
 SCLK
 NoConn ~ 11950 1950
 NoConn ~ 11950 2050
@@ -501,7 +501,7 @@ F 3 "" H 8150 6900 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	3050 1100 1400 1100
+	1400 1100 3050 1100
 Wire Wire Line
 	3050 1200 2850 1200
 Wire Wire Line
@@ -576,7 +576,7 @@ Connection ~ 12450 3000
 Wire Wire Line
 	13300 1400 13300 1550
 Wire Wire Line
-	11850 1400 13300 1400
+	10650 1400 13300 1400
 Wire Wire Line
 	12450 1400 12450 1650
 Connection ~ 11000 2700
@@ -654,17 +654,13 @@ Wire Wire Line
 	8550 7000 8150 7000
 Wire Wire Line
 	8150 7000 8150 6900
-Wire Wire Line
-	5250 7700 5500 7700
-Wire Wire Line
-	5250 7800 5500 7800
-Text Label 5250 7700 0    60   ~ 0
+Text Label 5250 7900 0    60   ~ 0
 SDAT
-Text Label 5250 7800 0    60   ~ 0
+Text Label 5250 8000 0    60   ~ 0
 SCLK
 Wire Wire Line
 	5500 7900 5250 7900
-Text Label 5250 7900 0    60   ~ 0
+Text Label 5250 8100 0    60   ~ 0
 INT
 Wire Wire Line
 	7800 8350 7800 7650
@@ -708,8 +704,6 @@ NoConn ~ 7350 8050
 NoConn ~ 7350 8150
 NoConn ~ 5500 7500
 NoConn ~ 5500 7600
-NoConn ~ 5500 8000
-NoConn ~ 5500 8100
 NoConn ~ 5500 8200
 NoConn ~ 5500 8300
 NoConn ~ 6200 8950
@@ -729,4 +723,55 @@ Connection ~ 3500 1700
 Wire Wire Line
 	12350 2950 12350 3000
 Connection ~ 12350 3000
+Wire Wire Line
+	5500 8100 5250 8100
+Wire Wire Line
+	5500 8000 5250 8000
+NoConn ~ 5500 7700
+NoConn ~ 5500 7800
+Wire Wire Line
+	10900 2250 11950 2250
+Wire Wire Line
+	10900 2350 11950 2350
+$Comp
+L R R7
+U 1 1 59AEBC06
+P 11450 1700
+F 0 "R7" V 11530 1700 50  0000 C CNN
+F 1 "10K" V 11450 1700 50  0000 C CNN
+F 2 "Common-Parts-Library:RC0402FR-0710KL_RESC1005X40" V 11380 1700 50  0001 C CNN
+F 3 "" H 11450 1700 50  0001 C CNN
+F 4 " " H 11450 1700 60  0001 C CNN "Description"
+F 5 "RC0402FR-0710KL" H 11450 1700 60  0001 C CNN "MPN"
+F 6 " Yageo" H 11450 1700 60  0001 C CNN "MFG"
+	1    11450 1700
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R6
+U 1 1 59AEC33A
+P 11200 1700
+F 0 "R6" V 11280 1700 50  0000 C CNN
+F 1 "10K" V 11200 1700 50  0000 C CNN
+F 2 "Common-Parts-Library:RC0402FR-0710KL_RESC1005X40" V 11130 1700 50  0001 C CNN
+F 3 "" H 11200 1700 50  0001 C CNN
+F 4 " " H 11200 1700 60  0001 C CNN "Description"
+F 5 "RC0402FR-0710KL" H 11200 1700 60  0001 C CNN "MPN"
+F 6 " Yageo" H 11200 1700 60  0001 C CNN "MFG"
+	1    11200 1700
+	1    0    0    -1  
+$EndComp
+Connection ~ 11000 1400
+Wire Wire Line
+	11450 1550 11450 1400
+Connection ~ 11450 1400
+Wire Wire Line
+	11200 1400 11200 1550
+Connection ~ 11200 1400
+Wire Wire Line
+	11450 1850 11450 2250
+Connection ~ 11450 2250
+Wire Wire Line
+	11200 1850 11200 2350
+Connection ~ 11200 2350
 $EndSCHEMATC
