@@ -5,10 +5,12 @@ import FourWireTouch
 
 uart = UART(1, 31250)                         # init with given baudrate
 uart.init(31250, bits=8, parity=None, stop=1) # init with given parameters
-grid_x = 70
-grid_y = 99
-width_x = 420
-num_x = int(420/70)
+# pull these to global panel file so they can be shared
+panel_x = 469 # factors 1, 7, 67
+panel_y = 294 # factors 2, 3, 7, 7
+grid_x = 33.5 # 14
+grid_y = 42 # 7
+num_x = int(panel_x/grid_x)
 
 
 #
@@ -86,7 +88,7 @@ def execute_action(action, z):
 # main loop
 def core_loop():
     # send clock first, if we're sending clock
-    x,y,z = FourWireTouch.get_point()
+    x,y,z = I2CTouch.get_point()
     action = square_to_action(x, y, z)
     if z == 0: # invalid point
         # if there is end touch queued

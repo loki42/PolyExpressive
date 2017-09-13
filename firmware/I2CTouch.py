@@ -75,3 +75,15 @@ def get_p():
     z2 = struct.unpack('>H', i2c.readfrom(72, 2))[0]
     return (x, y, z1, z2)
 
+def get_point():
+    # return x, y, z by processing z1 and z2
+    # convert to mm
+    panel_x = 469 # active area of panel
+    panel_y = 294
+    in_x, in_y, in_z1, in_z2 = get_p()
+    x = panel_x * ((4095 - in_x) / 4095)
+    y = panel_y * ((4095 - in_y) / 4095)
+    z = 0
+    if in_z2 > 5:
+        z = 4095 - in_z2
+    return (x, y, z)
