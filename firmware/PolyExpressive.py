@@ -1,7 +1,8 @@
 #
 # send MIDI to UART
 from machine import UART
-import FourWireTouch
+import I2CTouch
+import json
 
 uart = UART(1, 31250)                         # init with given baudrate
 uart.init(31250, bits=8, parity=None, stop=1) # init with given parameters
@@ -12,7 +13,18 @@ grid_x = 33.5 # 14
 grid_y = 42 # 7
 num_x = int(panel_x/grid_x)
 
+# action_list = []
+current_action = None
+end_action = None
 
+action_list = [{
+    "x1":0, "y1":0 "x2": 60, "y2": 60,
+    "s":[{"t":"m", "b1":144, "b2":60, "b3":113}]
+},
+{
+    "x1":60, "y1":0 "x2": 120, "y2": 60,
+"c":[{"x":[{"c":[[0,0], [1,1]], "b1":176, "b2":5}]}]
+}]
 #
 
 toggle_states = []
@@ -37,12 +49,19 @@ off_bytes =  bytes((0x80, 0x3C, 0x7A))
 #     PolyExpressive.uart.write(off_bytes)
 #     time.sleep(0.5)
 
-def send_midi_message(channel, command, data1, data2=0):
-    command += self.channel - 1
+def send_midi_message(command, data1, data2=0):
     uart.write(bytes((command, data1, data2)))
 
-def square_to_action(x, y, z):
-    index = int(x/grid_x) + (int(y/grid_y) * num_x)
+def transform_to_range(x, x1, x2):
+    return ((x-x1) / (x2-x1)) * 127
+
+def point_to_action(x, y, z):
+    # search action list
+    for a_id, action in enumerate(action_list):
+        if (x >= action['x1'] and x < action['x2'] ) and (y >= action['y1'] and y < action['y2']):
+            return (a_id, action)
+    else:
+        return (-1, False) # no actions defined for this region / error
 
 # update firmware
 #
@@ -50,69 +69,96 @@ def square_to_action(x, y, z):
 def update_mat(json_file):
     # parse json file as the action list and mat def
     j = json.loads(json_file)
-    square_map = j["sm"]
     action_list = j["al"]
     toggle_states = []
 
 def evaluate_curve(curve_type, v):
     return v
 
+def map_and_send_midi(action, param):
+    # evalate curve
+    mapped_param = evaluate_curve(action['c'], param)
+    # send MIDI with param
+    send_midi_message(action["b1"], action["b2"], mapped_param)
 
-def execute_action(action, z):
-    for ap in action['ap']:
-        if ap[0] == 't': #toggle
-            if action['id'] not in toggle_states: # this is initial, so invert initial state
-                # invert it
-                pass
-            else:
-                toggle_states[action['id']] = not toggle_states[action['id']]
-            # execute action
-            # TODO
+def inner_execute_action(ap, z):
+    if ap["t"] == "start":
+        # start clock
+        pass
+    elif ap["t"] == "stop":
+        pass
+    elif ap["t"] == "tap":
+        pass
+    elif ap["t"] == "m":
+        if "c" in ap:
+            map_and_send_midi(ap, z)
+        else:
+            # send MIDI no parameters
+            send_midi_message(ap["b1"], ap["b2"], ap["b3"])
 
-        elif ap[0] == "start":
-            # start clock
-            pass
-        elif ap[0] == "stop":
-            pass
-        elif ap[0] == "tap":
-            pass
-        elif ap[0] == "m":
-            if c in ap[1]:
-                # evalate curve
-                mapped_z = evaluate_curve(ap[1]['c'], z)
-                # send MIDI with z
+def execute_continous_action(actions, x1, y1, x2, y2, x, y, z):
+    if 'x' in actions:
+        x
+        for action in actions['x']:
+            map_and_send_midi(action, x)
+    elif 'y' in actions:
+        for action in actions['y']:
+            map_and_send_midi(action, y)
+    elif 'z' in actions:
+        for action in actions['z']:
+            map_and_send_midi(action, z)
+
+def execute_action(actions, action_id, z):
+    for ap in actions:
+        if ap["t"] == 't': #toggle
+            if action_id not in toggle_states: # this is initial, so invert initial state
+                # invert it TODO allow different initial state than off
+                toggle_states[action_id] = True
             else:
-                # send MIDI no parameters
-                pass
+                toggle_states[action_id] = not toggle_states[action_id]
+            if toggle_states[action_id]:
+                inner_execute_action(ap["on"], z)
+            else:
+                inner_execute_action(ap["off"], z)
+        else:
+            inner_execute_action(ap, z)
+
 
 # main loop
 def core_loop():
     # send clock first, if we're sending clock
+    global end_action
+    global current_action
+
     x,y,z = I2CTouch.get_point()
-    action = square_to_action(x, y, z)
-    if z == 0: # invalid point
+    if z < 0.1: # invalid point
         # if there is end touch queued
-        if end_action not None:
-            end_action = None
+        if end_action is not None:
             # run them
-            execute_action(end_action)
+            execute_action(end_action, current_action['id'], 0)
+            end_action = None
+        current_action = None
     else:
-        if current_action['id'] != action['id']: # compare id's
-            # the new action isn't the same as the previous current action so execute any end_action
-            if end_action not None:
-                end_action = None
-                # run them
-                execute_action(end_action, z)
-            # got a valid point, if it's not executing at the moment then it's a start 
-            current_action = action
-            if "e" in action:
-                end_action = action["e"]
-            if "s" in action:
-                execute_action(action["s"], z)
-        else:
-            # otherwise it's an on change
-            if "c" in action:
-                execute_continous_action(action["c"], x, y, z)
+        action_id, action = point_to_action(x, y, z)
+        if action != False:
+            if current_action is None or current_action['id'] != action_id: # compare id's
+                print("action occured")
+                # the new action isn't the same as the previous current action so execute any end_action
+                if end_action is not None:
+                    # run them
+                    execute_action(end_action, current_action['id'], z)
+                    end_action = None
+                # got a valid point, if it's not executing at the moment then it's a start 
+                current_action = action
+                current_action['id'] = action_id
+                if "e" in action:
+                    end_action = action["e"]
+                if "s" in action:
+                    execute_action(action["s"], current_action['id'], z)
+            else:
+                # otherwise it's an on change
+                if "c" in action:
+                    execute_continous_action(action["c"], action['x1'], action['y1'], action['x2'], action['y2'], x, y, z)
 
     # Serve web pages / config update
     # anything else in the core loop?
