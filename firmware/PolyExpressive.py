@@ -1,6 +1,7 @@
 #
 # send MIDI to UART
 from machine import UART
+from machine import Timer
 import I2CTouch
 import json
 
@@ -17,13 +18,10 @@ num_x = int(panel_x/grid_x)
 current_action = None
 end_action = None
 
-action_list = [{
-    "x1":0, "y1":0 "x2": 60, "y2": 60,
-    "s":[{"t":"m", "b1":144, "b2":60, "b3":113}]
-},
-{
-    "x1":60, "y1":0 "x2": 120, "y2": 60,
-"c":[{"x":[{"c":[[0,0], [1,1]], "b1":176, "b2":5}]}]
+action_list = [{"x1":0, "y1":0, "x2": 60, "y2": 60,
+"s":[{"t":"m", "b1":144, "b2":60, "b3":113}]},
+{"x1":60, "y1":0, "x2": 120, "y2": 60,
+"c":{"x":[{"c":[[0,0], [1,1]], "b1":176, "b2":5}]}
 }]
 #
 
@@ -72,14 +70,15 @@ def update_mat(json_file):
     action_list = j["al"]
     toggle_states = []
 
-def evaluate_curve(curve_type, v):
-    return v
+def evaluate_curve(curve, v):
+    return int(v)
 
 def map_and_send_midi(action, param):
     # evalate curve
     mapped_param = evaluate_curve(action['c'], param)
     # send MIDI with param
     send_midi_message(action["b1"], action["b2"], mapped_param)
+    print("sending midi", action["b1"], action["b2"], mapped_param)
 
 def inner_execute_action(ap, z):
     if ap["t"] == "start":
@@ -98,13 +97,15 @@ def inner_execute_action(ap, z):
 
 def execute_continous_action(actions, x1, y1, x2, y2, x, y, z):
     if 'x' in actions:
-        x
+        m_x = transform_to_range(x, x1, x2)
         for action in actions['x']:
-            map_and_send_midi(action, x)
+            map_and_send_midi(action, m_x)
     elif 'y' in actions:
+        m_y = transform_to_range(y, y1, y2)
         for action in actions['y']:
-            map_and_send_midi(action, y)
+            map_and_send_midi(action, m_y)
     elif 'z' in actions:
+        # z is already transformed to the currect range
         for action in actions['z']:
             map_and_send_midi(action, z)
 
@@ -130,8 +131,8 @@ def core_loop():
     global end_action
     global current_action
 
-    x,y,z = I2CTouch.get_point()
-    if z < 0.1: # invalid point
+    x,y,m_z = I2CTouch.get_point()
+    if m_z < 0.1: # invalid point
         # if there is end touch queued
         if end_action is not None:
             # run them
@@ -139,10 +140,11 @@ def core_loop():
             end_action = None
         current_action = None
     else:
+        z = transform_to_range(m_z, 0, 4095)
         action_id, action = point_to_action(x, y, z)
         if action != False:
             if current_action is None or current_action['id'] != action_id: # compare id's
-                print("action occured")
+                print("action occured", action_id)
                 # the new action isn't the same as the previous current action so execute any end_action
                 if end_action is not None:
                     # run them
@@ -159,6 +161,11 @@ def core_loop():
                 # otherwise it's an on change
                 if "c" in action:
                     execute_continous_action(action["c"], action['x1'], action['y1'], action['x2'], action['y2'], x, y, z)
+
+def run():
+    while True:
+        core_loop()
+        Timer.sleep_us(100)
 
     # Serve web pages / config update
     # anything else in the core loop?
