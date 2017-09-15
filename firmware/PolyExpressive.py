@@ -19,13 +19,17 @@ current_action = None
 end_action = None
 
 action_list = [{"x1":0, "y1":0, "x2": 60, "y2": 60,
-"s":[{"t":"m", "b1":144, "b2":60, "b3":113}]},
+"s":[{"t":"m", "b1":144, "b2":60, "b3":113}], "e":[{"t":"m", "b1":144, "b2":60, "b3":0}]},
 {"x1":60, "y1":0, "x2": 120, "y2": 60,
-"c":{"x":[{"c":[[0,0], [1,1]], "b1":176, "b2":5}]}
-}]
+"c":{"x":[{"c":[[0,0], [127,127]], "b1":176, "b2":5}]}
+},
+{"x1":120, "y1":0, "x2": 180, "y2": 60,
+"s":[{"t":"t", "on":{"t":"m", "b1":144, "b2":61, "b3":113}, "off":{"t":"m", "b1":144, "b2":61, "b3":0}}]
+}
+]
 #
 
-toggle_states = []
+toggle_states = {}
 
 
 MIDI_COMMANDS = {
@@ -68,10 +72,23 @@ def update_mat(json_file):
     # parse json file as the action list and mat def
     j = json.loads(json_file)
     action_list = j["al"]
-    toggle_states = []
+    toggle_states = {}
+
+def lerp(start, end, t):
+    return start+(end- start)*t
 
 def evaluate_curve(curve, v):
-    return int(v)
+    near = -1
+    for i, p in enumerate(curve):
+        if p[0] > v:
+            near = i
+            break
+    if near < 0:
+        # v larger than any x in curve, so set to end of curve
+        return int(curve[-1][1])
+    #curve[near-1], curve[near], v
+    t = (v-curve[near-1][0]) / (curve[near][0] - curve[near-1][0])
+    return int(lerp(curve[near-1][1], curve[near][1], t))
 
 def map_and_send_midi(action, param):
     # evalate curve
@@ -132,15 +149,16 @@ def core_loop():
     global current_action
 
     x,y,m_z = I2CTouch.get_point()
-    if m_z < 0.1: # invalid point
+    z = transform_to_range(m_z, 0, 4095)
+    if z < 1.8: # invalid point
         # if there is end touch queued
         if end_action is not None:
             # run them
             execute_action(end_action, current_action['id'], 0)
+            # print("executing end action, invalid point", current_action['id'])
             end_action = None
         current_action = None
     else:
-        z = transform_to_range(m_z, 0, 4095)
         action_id, action = point_to_action(x, y, z)
         if action != False:
             if current_action is None or current_action['id'] != action_id: # compare id's
@@ -148,6 +166,7 @@ def core_loop():
                 # the new action isn't the same as the previous current action so execute any end_action
                 if end_action is not None:
                     # run them
+                    # print("executing end action, got new action", current_action['id'])
                     execute_action(end_action, current_action['id'], z)
                     end_action = None
                 # got a valid point, if it's not executing at the moment then it's a start 
@@ -161,6 +180,15 @@ def core_loop():
                 # otherwise it's an on change
                 if "c" in action:
                     execute_continous_action(action["c"], action['x1'], action['y1'], action['x2'], action['y2'], x, y, z)
+                # print("finger down pressure is", z)
+        else:
+            # end action
+            if end_action is not None:
+                # run them
+                execute_action(end_action, current_action['id'], 0)
+                # print("executing end action, new action is false", current_action['id'])
+                end_action = None
+            current_action = None
 
 def run():
     while True:
