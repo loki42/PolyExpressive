@@ -1,9 +1,15 @@
 #
 # send MIDI to UART
+from microWebSrv import MicroWebSrv
+import gc
+gc.collect()
+
 from machine import UART
 from machine import Timer
 import I2CTouch
 import json
+### web stuff
+
 
 uart = UART(1, 31250)                         # init with given baudrate
 uart.init(31250, bits=8, parity=None, stop=1) # init with given parameters
@@ -201,3 +207,52 @@ def run():
 #
 # bluetooth / wifi chaining
 # send MIDI to bluetooth BLE
+
+
+# ----------------------------------------------------------------------------
+
+def _httpHandlerTestGet(httpClient, httpResponse) :
+        content = """\
+                True
+        """ % httpClient.GetIPAddr()
+        httpResponse.WriteResponseOk( headers            = None,
+                                                                  contentType    = "text/html",
+                                                                  contentCharset = "UTF-8",
+                                                                  content                = content )
+
+def _httpHandlerTestPost(httpClient, httpResponse) :
+        formData  = httpClient.ReadRequestPostedFormData()
+        firstname = formData["firstname"]
+        lastname  = formData["lastname"]
+        content   = """\
+        <!DOCTYPE html>
+        <html lang=fr>
+                <head>
+                        <meta charset="UTF-8" />
+            <title>TEST POST</title>
+        </head>
+        <body>
+            <h1>TEST POST</h1>
+            Firstname = %s<br />
+            Lastname = %s<br />
+        </body>
+    </html>
+        """ % ( MicroWebSrv.HTMLEscape(firstname),
+                    MicroWebSrv.HTMLEscape(lastname) )
+        httpResponse.WriteResponseOk( headers            = None,
+                                                                  contentType    = "text/html",
+                                                                  contentCharset = "UTF-8",
+                                                                  content                = content )
+
+
+# ----------------------------------------------------------------------------
+
+routeHandlers = [
+        ( "/test",      "GET",  _httpHandlerTestGet ),
+        ( "/test",      "POST", _httpHandlerTestPost )
+]
+
+srv = MicroWebSrv(routeHandlers=routeHandlers)
+srv.Start(threaded=True)
+
+# ----------------------------------------------------------------------------
