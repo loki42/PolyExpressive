@@ -214,7 +214,7 @@ def run():
 def _httpHandlerTestGet(httpClient, httpResponse) :
         content = """\
                 True
-        """ % httpClient.GetIPAddr()
+        """
         httpResponse.WriteResponseOk( headers            = None,
                                                                   contentType    = "text/html",
                                                                   contentCharset = "UTF-8",
@@ -227,18 +227,13 @@ def _httpHandlerTestPost(httpClient, httpResponse) :
         content   = """\
         <!DOCTYPE html>
         <html lang=fr>
-                <head>
-                        <meta charset="UTF-8" />
-            <title>TEST POST</title>
-        </head>
         <body>
-            <h1>TEST POST</h1>
             Firstname = %s<br />
             Lastname = %s<br />
         </body>
     </html>
-        """ % ( MicroWebSrv.HTMLEscape(firstname),
-                    MicroWebSrv.HTMLEscape(lastname) )
+        """ % ( firstname,
+                    lastname )
         httpResponse.WriteResponseOk( headers            = None,
                                                                   contentType    = "text/html",
                                                                   contentCharset = "UTF-8",
