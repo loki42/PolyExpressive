@@ -24,16 +24,12 @@ num_x = int(panel_x/grid_x)
 current_action = None
 end_action = None
 clock_playing = False
+chrono = Timer.Chrono()
 
-action_list = [{"x1":0, "y1":0, "x2": 60, "y2": 60,
-"s":[{"t":"m", "b1":144, "b2":60, "b3":113}], "e":[{"t":"m", "b1":144, "b2":60, "b3":0}]},
-{"x1":60, "y1":0, "x2": 120, "y2": 60,
-"c":{"x":[{"c":[[0,0], [127,127]], "b1":176, "b2":5}]}
-},
-{"x1":120, "y1":0, "x2": 180, "y2": 60,
-"s":[{"t":"t", "on":{"t":"m", "b1":144, "b2":61, "b3":113}, "off":{"t":"m", "b1":144, "b2":61, "b3":0}}]
-}
-]
+def calculate_interval_us(bpm):
+    return 60 * 1000 * 1000 * 1 / bpm / 24;
+
+clock_interval_us = calculate_interval_us(100) # 100 BPM 
 
 action_list = []
 with open('/flash/action_list.json', 'r') as f:
@@ -41,15 +37,11 @@ with open('/flash/action_list.json', 'r') as f:
 
 toggle_states = {}
 
-
 MIDI_COMMANDS = {
-        "on":0x80,  # Note Off
-        "off":0x90,  # Note On
-        "pp":0xA0,  # Poly Pressure
-        "cc":0xB0,  # Control Change
-        "pc":0xC0,  # Program Change
-        "cp":0xD0,  # Mono Pressure
-        "pb":0xE0   # Pich Bend
+        "clock": 0xF8,
+        "start": 0xFA,
+        "continue":0xFB,
+        "stop": 0xFC
         }
 
 on_bytes =  bytes((0x90, 0x3C, 0x7A))
@@ -63,6 +55,9 @@ off_bytes =  bytes((0x80, 0x3C, 0x7A))
 
 def send_midi_message(command, data1, data2=0):
     uart.write(bytes((command, data1, data2)))
+
+def send_clock_message(command):
+    uart.write(bytes((command)))
 
 def transform_to_range(x, x1, x2):
     return ((x-x1) / (x2-x1)) * 127
@@ -110,11 +105,16 @@ def map_and_send_midi(action, param):
     print("sending midi", action["b1"], action["b2"], mapped_param)
 
 def inner_execute_action(ap, z):
+    global clock_playing
     if ap["t"] == "start":
-        # start clock
-        pass
+        send_clock_message(MIDI_COMMANDS["start"])
+        chrono.reset()
+        chrono.start()
+        clock_playing = True
     elif ap["t"] == "stop":
-        pass
+        send_clock_message(MIDI_COMMANDS["stop"])
+        chrono.stop()
+        clock_playing = False
     elif ap["t"] == "tap":
         pass
     elif ap["t"] == "m":
@@ -154,11 +154,17 @@ def execute_action(actions, action_id, z):
             inner_execute_action(ap, z)
 
 
+def tick_midi_clock():
+    if clock_playing == True:
+        if chrono.read_us() > clock_interval_us:
+            chrono.reset()
+            send_clock_message(MIDI_COMMANDS["clock"])
 # main loop
 def core_loop():
     # send clock first, if we're sending clock
     global end_action
     global current_action
+    tick_midi_clock()
 
     x,y,m_z = I2CTouch.get_point()
     z = transform_to_range(m_z, 0, 4095)
@@ -201,6 +207,7 @@ def core_loop():
                 # print("executing end action, new action is false", current_action['id'])
                 end_action = None
             current_action = None
+
 
 def run():
     while True:
