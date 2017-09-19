@@ -44,20 +44,11 @@ MIDI_COMMANDS = {
         "stop": 0xFC
         }
 
-on_bytes =  bytes((0x90, 0x3C, 0x7A))
-off_bytes =  bytes((0x80, 0x3C, 0x7A))
-
-# for i in range(20):
-#     PolyExpressive.uart.write(on_bytes)
-#     time.sleep(0.5)
-#     PolyExpressive.uart.write(off_bytes)
-#     time.sleep(0.5)
-
 def send_midi_message(command, data1, data2=0):
     uart.write(bytes((command, data1, data2)))
 
 def send_clock_message(command):
-    uart.write(bytes((command)))
+    uart.write(bytes((command,)))
 
 def transform_to_range(x, x1, x2):
     return ((x-x1) / (x2-x1)) * 127
@@ -108,6 +99,11 @@ def inner_execute_action(ap, z):
     global clock_playing
     if ap["t"] == "start":
         send_clock_message(MIDI_COMMANDS["start"])
+        chrono.reset()
+        chrono.start()
+        clock_playing = True
+    if ap["t"] == "continue":
+        send_clock_message(MIDI_COMMANDS["continue"])
         chrono.reset()
         chrono.start()
         clock_playing = True
