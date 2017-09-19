@@ -23,6 +23,7 @@ num_x = int(panel_x/grid_x)
 # action_list = []
 current_action = None
 end_action = None
+clock_playing = False
 
 action_list = [{"x1":0, "y1":0, "x2": 60, "y2": 60,
 "s":[{"t":"m", "b1":144, "b2":60, "b3":113}], "e":[{"t":"m", "b1":144, "b2":60, "b3":0}]},
@@ -33,7 +34,10 @@ action_list = [{"x1":0, "y1":0, "x2": 60, "y2": 60,
 "s":[{"t":"t", "on":{"t":"m", "b1":144, "b2":61, "b3":113}, "off":{"t":"m", "b1":144, "b2":61, "b3":0}}]
 }
 ]
-#
+
+action_list = []
+with open('/flash/action_list.json', 'r') as f:
+    action_list = json.load(f)
 
 toggle_states = {}
 
@@ -74,11 +78,13 @@ def point_to_action(x, y, z):
 # update firmware
 #
 # update action list / mat
-def update_mat(json_file):
+def update_mat(new_action_list):
     # parse json file as the action list and mat def
-    j = json.loads(json_file)
-    action_list = j["al"]
+    global action_list
+    action_list = new_action_list
     toggle_states = {}
+    with open('/flash/action_list.json', 'w') as f:
+        f.write(json.dumps(action_list))
 
 def lerp(start, end, t):
     return start+(end- start)*t
@@ -208,46 +214,30 @@ def run():
 # bluetooth / wifi chaining
 # send MIDI to bluetooth BLE
 
+def http_get_action_list(httpClient, httpResponse) :
+    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(action_list))
 
-# ----------------------------------------------------------------------------
-
-def _httpHandlerTestGet(httpClient, httpResponse) :
-        content = """\
-                True
-        """
-        httpResponse.WriteResponseOk( headers            = None,
-                                                                  contentType    = "text/html",
-                                                                  contentCharset = "UTF-8",
-                                                                  content                = content )
-
-def _httpHandlerTestPost(httpClient, httpResponse) :
-        formData  = httpClient.ReadRequestPostedFormData()
-        firstname = formData["firstname"]
-        lastname  = formData["lastname"]
-        content   = """\
-        <!DOCTYPE html>
-        <html lang=fr>
-        <body>
-            Firstname = %s<br />
-            Lastname = %s<br />
-        </body>
-    </html>
-        """ % ( firstname,
-                    lastname )
-        httpResponse.WriteResponseOk( headers            = None,
-                                                                  contentType    = "text/html",
-                                                                  contentCharset = "UTF-8",
-                                                                  content                = content )
+def http_update_action_list(httpClient, httpResponse) :
+    # print("update action list")
+    jdata  = httpClient.ReadRequestContent()
+    content = False
+    try:
+        t_action_list = json.loads(jdata)
+        # if it loads and has an action in it, it's valid
+        t_action_list[0]['x1']
+        update_mat(t_action_list)
+        content = True
+    except:
+        content = False
+    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(content))
 
 
-# ----------------------------------------------------------------------------
-
-routeHandlers = [
-        ( "/test",      "GET",  _httpHandlerTestGet ),
-        ( "/test",      "POST", _httpHandlerTestPost )
+route_handlers = [
+        ( "/get_action_list",      "GET",  http_get_action_list ),
+        ( "/update_action_list",      "POST", http_update_action_list )
 ]
 
-srv = MicroWebSrv(routeHandlers=routeHandlers)
+srv = MicroWebSrv(routeHandlers=route_handlers)
 srv.Start(threaded=True)
 
 # ----------------------------------------------------------------------------
