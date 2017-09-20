@@ -8,6 +8,7 @@ from machine import UART
 from machine import Timer
 import I2CTouch
 import json
+import utime
 ### web stuff
 
 
@@ -25,6 +26,13 @@ current_action = None
 end_action = None
 clock_playing = False
 chrono = Timer.Chrono()
+
+# Used for debouncing
+minimum_tap_interval = 60 * 1000 * 1000 * 1 / 300 # 300 is MAXIMUM_BPM;
+maximum_tap_interval = 60 * 1000 * 1000 * 1 / 10 # 10 is minimum BPM
+first_tap_time = 0
+last_tap_time = 0
+num_taps = 0
 
 def calculate_interval_us(bpm):
     return 60 * 1000 * 1000 * 1 / bpm / 24;
@@ -95,6 +103,39 @@ def map_and_send_midi(action, param):
     send_midi_message(action["b1"], action["b2"], mapped_param)
     print("sending midi", action["b1"], action["b2"], mapped_param)
 
+def update_bpm(bpm):
+    global clock_interval_us
+    clock_interval_us = calculate_interval_us(bpm)
+
+def tap_tempo():
+    MINIMUM_TAPS = 3
+    EXIT_MARGIN = 150
+    global first_tap_time
+    global last_tap_time
+    global num_taps
+    # print("tapped for tempo")
+
+    now = utime.ticks_us()
+    if (now - last_tap_time < minimum_tap_interval):
+        return # Debounce
+
+    if (num_taps == 0):
+        first_tap_time = now
+
+    num_taps+=1
+    last_tap_time = now
+
+    if (num_taps > 0 and num_taps < MINIMUM_TAPS and (now - last_tap_time) > maximum_tap_interval):
+        # Single taps, not enough to calculate a BPM -> ignore!
+        num_taps = 0
+    elif (num_taps >= MINIMUM_TAPS):
+        avg_tap_interval = (last_tap_time - first_tap_time) / (num_taps - 1)
+        # if ((now - last_tap_time) > (avg_tap_interval * EXIT_MARGIN / 100)):
+        bpm = 60 * 1000 * 1000 * 1 / avg_tap_interval
+        update_bpm(bpm)
+        print("bpm is", bpm)
+        num_taps = 0
+
 def inner_execute_action(ap, z):
     global clock_playing
     if ap["t"] == "start":
@@ -112,7 +153,7 @@ def inner_execute_action(ap, z):
         chrono.stop()
         clock_playing = False
     elif ap["t"] == "tap":
-        pass
+        tap_tempo()
     elif ap["t"] == "m":
         if "c" in ap:
             map_and_send_midi(ap, z)
