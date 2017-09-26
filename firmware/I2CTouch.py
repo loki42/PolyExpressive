@@ -1,89 +1,138 @@
-from machine import I2C
 import struct
+import machine
+i2c = machine.I2C(scl=machine.Pin(33), sda=machine.Pin(32))
 
-i2c = I2C(0, I2C.MASTER)
-# i2c.readfrom_mem(72, 0b0001, 2)
-# cfr0_addr = 0xD
-# cr0 = 0b10101000
-# cr0_2 = 0b00000000
+def writeRegister8(r, v):
+    i2c.writeto_mem(65, r, bytes([v]))
 
+STMPE_ADDR=0x41
 
+STMPE_SYS_CTRL1=0x03
+STMPE_SYS_CTRL1_RESET=0x02
+STMPE_SYS_CTRL2=0x04
+STMPE_TSC_CTRL=0x40
+STMPE_TSC_CTRL_EN=0x01
+STMPE_TSC_CTRL_XYZ=0x00
+STMPE_TSC_CTRL_XY=0x02
+STMPE_INT_CTRL=0x09
+STMPE_INT_CTRL_POL_HIGH=0x04
+STMPE_INT_CTRL_POL_LOW=0x00
+STMPE_INT_CTRL_EDGE=0x02
+STMPE_INT_CTRL_LEVEL=0x00
+STMPE_INT_CTRL_ENABLE=0x01
+STMPE_INT_CTRL_DISABLE=0x00
 
-# general startup? 
-cb0 = 0b11100010
-cb0_h = b'\xe2'
-# set to 12 bit, xyz reset registers
-cb1 = 0b10000110
-cb1_h = b'\x86'
+STMPE_INT_EN=0x0A
+STMPE_INT_EN_TOUCHDET=0x01
+STMPE_INT_EN_FIFOTH=0x02
+STMPE_INT_EN_FIFOOF=0x04
+STMPE_INT_EN_FIFOFULL=0x08
+STMPE_INT_EN_FIFOEMPTY=0x10
+STMPE_INT_EN_ADC=0x40
+STMPE_INT_EN_GPIO=0x80
 
+STMPE_INT_STA=0x0B
+STMPE_INT_STA_TOUCHDET=0x01
 
+STMPE_ADC_CTRL1=0x20
+STMPE_ADC_CTRL1_12BIT=0x08
+STMPE_ADC_CTRL1_10BIT=0x00
 
-# i2c.writeto_mem(address, res_reg, b'\x00')
-i2c.writeto(72, bytes([0x84])) # no reset
+STMPE_ADC_CTRL2=0x21
+STMPE_ADC_CTRL2_1_625MHZ=0x00
+STMPE_ADC_CTRL2_3_25MHZ=0x01
+STMPE_ADC_CTRL2_6_5MHZ=0x02
 
-i2c.writeto(72, cb1_h)
-# ts = bytes([0xE2, cr0, cr0_2])
-# i2c.writeto(72, ts)
+STMPE_TSC_CFG=0x41
+STMPE_TSC_CFG_1SAMPLE=0x00
+STMPE_TSC_CFG_2SAMPLE=0x40
+STMPE_TSC_CFG_4SAMPLE=0x80
+STMPE_TSC_CFG_8SAMPLE=0xC0
+STMPE_TSC_CFG_DELAY_10US=0x00
+STMPE_TSC_CFG_DELAY_50US=0x08
+STMPE_TSC_CFG_DELAY_100US=0x10
+STMPE_TSC_CFG_DELAY_500US=0x18
+STMPE_TSC_CFG_DELAY_1MS=0x20
+STMPE_TSC_CFG_DELAY_5MS=0x28
+STMPE_TSC_CFG_DELAY_10MS=0x30
+STMPE_TSC_CFG_DELAY_50MS=0x38
+STMPE_TSC_CFG_SETTLE_10US=0x00
+STMPE_TSC_CFG_SETTLE_100US=0x01
+STMPE_TSC_CFG_SETTLE_500US=0x02
+STMPE_TSC_CFG_SETTLE_1MS=0x03
+STMPE_TSC_CFG_SETTLE_5MS=0x04
+STMPE_TSC_CFG_SETTLE_10MS=0x05
+STMPE_TSC_CFG_SETTLE_50MS=0x06
+STMPE_TSC_CFG_SETTLE_100MS=0x07
 
-# i2c.writeto(72, cb1_h)
+STMPE_FIFO_TH=0x4A
 
-# cr0_psm = 0b01100010 # send to start conversion byt setting PSM mode
-# psm_1 = 0b10101000
-# psm_2 = 0b00000000
-# ts = bytes([cr0_psm, psm_1, psm_2])
-# i2c.writeto(72, ts)
+STMPE_FIFO_SIZE=0x4C
 
-# settling time
-cr0_psm = 0b01100010 # send to start conversion byt setting PSM mode
-psm_1 = 0b10101011 # 1 ms settling time
-psm_2 = 0b00000000
-ts = bytes([cr0_psm, psm_1, psm_2])
-i2c.writeto(72, ts)
+STMPE_FIFO_STA=0x4B
+STMPE_FIFO_STA_RESET=0x01
+STMPE_FIFO_STA_OFLOW=0x80
+STMPE_FIFO_STA_FULL=0x40
+STMPE_FIFO_STA_EMPTY=0x20
+STMPE_FIFO_STA_THTRIG=0x10
 
-# set to 12 bit, xyz no reset
-cb1_noreset = 0b10000100
-i2c.writeto(72, bytes([cb1_noreset]))
+STMPE_TSC_I_DRIVE=0x58
+STMPE_TSC_I_DRIVE_20MA=0x00
+STMPE_TSC_I_DRIVE_50MA=0x01
+
+STMPE_TSC_DATA_X=0x4D
+STMPE_TSC_DATA_Y=0x4F
+STMPE_TSC_FRACTION_Z=0x56
+
+STMPE_GPIO_SET_PIN=0x10
+STMPE_GPIO_CLR_PIN=0x11
+STMPE_GPIO_DIR=0x13
+STMPE_GPIO_ALT_FUNCT=0x17
+
+def init_st():
+
+    writeRegister8(STMPE_SYS_CTRL1, STMPE_SYS_CTRL1_RESET)
+    # for (uint8_t i=0 i<65 i++) {
+    #   readRegister8(i)
+    # }
+
+    writeRegister8(STMPE_SYS_CTRL2, 0x0) # turn on clocks!
+    writeRegister8(STMPE_TSC_CTRL, STMPE_TSC_CTRL_XYZ | STMPE_TSC_CTRL_EN) # XYZ and enable!
+    # writeRegister8(STMPE_INT_EN, STMPE_INT_EN_TOUCHDET)
+    writeRegister8(STMPE_INT_EN, 0)
+    writeRegister8(STMPE_ADC_CTRL1, STMPE_ADC_CTRL1_12BIT | (0x6 << 4)) # 96 clocks per conversion
+    writeRegister8(STMPE_ADC_CTRL2, STMPE_ADC_CTRL2_6_5MHZ)
+    writeRegister8(STMPE_TSC_CFG, STMPE_TSC_CFG_4SAMPLE | STMPE_TSC_CFG_DELAY_1MS | STMPE_TSC_CFG_SETTLE_5MS)
+    writeRegister8(STMPE_TSC_FRACTION_Z, 0x1)
+    writeRegister8(STMPE_FIFO_TH, 1)
+    writeRegister8(STMPE_FIFO_STA, STMPE_FIFO_STA_RESET)
+    writeRegister8(STMPE_FIFO_STA, 0)    # unreset
+    writeRegister8(STMPE_TSC_I_DRIVE, STMPE_TSC_I_DRIVE_20MA)
+    writeRegister8(STMPE_INT_STA, 0xFF) # reset all ints
+    writeRegister8(STMPE_INT_CTRL, STMPE_INT_CTRL_POL_HIGH | STMPE_INT_CTRL_ENABLE)
 
 
 def get_p():
-    # x
-    rb = 0b00000011
-    rb_x =b'\x03'
-    i2c.writeto(72, rb_x)
 
-    x = struct.unpack('>H', i2c.readfrom(72, 2))[0]
+    # if buffer not empty
+    x = struct.unpack('>H', i2c.readfrom_mem(65, 0x4D, 2))[0]
+    y = struct.unpack('>H', i2c.readfrom_mem(65, 0x4F, 2))[0]
+    z = struct.unpack('>B', i2c.readfrom_mem(65, 0x51, 1))[0]
 
-    # y
-    rb = 0b00001011
-    rb_y =b'\x0b'
-    i2c.writeto(72, rb_y)
-
-    y = struct.unpack('>H', i2c.readfrom(72, 2))[0]
-
-    # z1
-    rb = 0b00010011
-    rb_y =b'\x13'
-    i2c.writeto(72, rb_y)
-
-    z1 = struct.unpack('>H', i2c.readfrom(72, 2))[0]
-
-    # z2
-    rb = 0b00011011
-    rb_y =b'\x1b'
-    i2c.writeto(72, rb_y)
-
-    z2 = struct.unpack('>H', i2c.readfrom(72, 2))[0]
-    return (x, y, z1, z2)
+    # reset interrupt
+    if (int.from_bytes(i2c.readfrom_mem(65, STMPE_FIFO_STA, 1), 'big') & STMPE_FIFO_STA_EMPTY):
+        writeRegister8(STMPE_INT_STA, 0xFF)#  reset all ints
+    return (x, y, z)
 
 def get_point():
     # return x, y, z by processing z1 and z2
     # convert to mm
     panel_x = 469 # active area of panel
     panel_y = 294
-    in_x, in_y, in_z1, in_z2 = get_p()
+    in_x, in_y, in_z = get_p()
     x = panel_x * ((4095 - in_x) / 4095)
     y = panel_y * ((4095 - in_y) / 4095)
     z = 0
-    if in_z2 > 5:
-        z = 4095 - in_z2
+    if in_z > 5:
+        z = 4095 - in_z
     return (x, y, z)
