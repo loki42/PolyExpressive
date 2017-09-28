@@ -1,6 +1,6 @@
 import struct
 import machine
-i2c = machine.I2C(scl=machine.Pin(33), sda=machine.Pin(32))
+i2c = machine.I2C(scl=machine.Pin(33), sda=machine.Pin(32), freq=100000)
 
 def writeRegister8(r, v):
     i2c.writeto_mem(65, r, bytes([v]))
@@ -92,18 +92,17 @@ STMPE_GPIO_ALT_FUNCT=0x17
 def init_st():
 
     writeRegister8(STMPE_SYS_CTRL1, STMPE_SYS_CTRL1_RESET)
-    # for (uint8_t i=0 i<65 i++) {
-    #   readRegister8(i)
-    # }
+    for i in range(65):
+        i2c.readfrom_mem(65, i, 1)
 
     writeRegister8(STMPE_SYS_CTRL2, 0x0) # turn on clocks!
     writeRegister8(STMPE_TSC_CTRL, STMPE_TSC_CTRL_XYZ | STMPE_TSC_CTRL_EN) # XYZ and enable!
     # writeRegister8(STMPE_INT_EN, STMPE_INT_EN_TOUCHDET)
     writeRegister8(STMPE_INT_EN, 0)
     writeRegister8(STMPE_ADC_CTRL1, STMPE_ADC_CTRL1_12BIT | (0x6 << 4)) # 96 clocks per conversion
-    writeRegister8(STMPE_ADC_CTRL2, STMPE_ADC_CTRL2_6_5MHZ)
+    writeRegister8(STMPE_ADC_CTRL2, STMPE_ADC_CTRL2_3_25MHZ)
     writeRegister8(STMPE_TSC_CFG, STMPE_TSC_CFG_4SAMPLE | STMPE_TSC_CFG_DELAY_1MS | STMPE_TSC_CFG_SETTLE_5MS)
-    writeRegister8(STMPE_TSC_FRACTION_Z, 0x1)
+    writeRegister8(STMPE_TSC_FRACTION_Z, 0x7)
     writeRegister8(STMPE_FIFO_TH, 1)
     writeRegister8(STMPE_FIFO_STA, STMPE_FIFO_STA_RESET)
     writeRegister8(STMPE_FIFO_STA, 0)    # unreset
@@ -114,15 +113,20 @@ def init_st():
 
 def get_p():
 
-    # if buffer not empty
-    x = struct.unpack('>H', i2c.readfrom_mem(65, 0x4D, 2))[0]
-    y = struct.unpack('>H', i2c.readfrom_mem(65, 0x4F, 2))[0]
-    z = struct.unpack('>B', i2c.readfrom_mem(65, 0x51, 1))[0]
-
-    # reset interrupt
     if (int.from_bytes(i2c.readfrom_mem(65, STMPE_FIFO_STA, 1), 'big') & STMPE_FIFO_STA_EMPTY):
+        return (0, 0, 0)
+    else:
+        x = 0
+        y = 0
+        x = 0
+        while not (int.from_bytes(i2c.readfrom_mem(65, STMPE_FIFO_STA, 1), 'big') & STMPE_FIFO_STA_EMPTY):
+            # if buffer not empty
+            x = struct.unpack('>H', i2c.readfrom_mem(65, 0x4D, 2))[0]
+            y = struct.unpack('>H', i2c.readfrom_mem(65, 0x4F, 2))[0]
+            z = struct.unpack('>B', i2c.readfrom_mem(65, 0x51, 1))[0]
+        # reset interrupt
         writeRegister8(STMPE_INT_STA, 0xFF)#  reset all ints
-    return (x, y, z)
+        return (x, y, z)
 
 def get_point():
     # return x, y, z by processing z1 and z2
