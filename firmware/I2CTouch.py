@@ -89,6 +89,9 @@ STMPE_GPIO_CLR_PIN=0x11
 STMPE_GPIO_DIR=0x13
 STMPE_GPIO_ALT_FUNCT=0x17
 
+num_empty = 0
+trigger_num_empty = 20 # length of delay before up is triggered
+
 def init_st():
 
     writeRegister8(STMPE_SYS_CTRL1, STMPE_SYS_CTRL1_RESET)
@@ -113,8 +116,14 @@ def init_st():
 
 def get_p():
     status = False
+    global num_empty
     if (int.from_bytes(i2c.readfrom_mem(65, STMPE_FIFO_STA, 1), 'big') & STMPE_FIFO_STA_EMPTY):
-        return (status, 0, 0, 0)
+        num_empty+= 1
+        if num_empty > trigger_num_empty:
+            num_empty = 0
+            return (True, 0, 0, 0)
+        else:
+            return (status, 0, 0, 0)
     else:
         x = 0
         y = 0
@@ -125,6 +134,7 @@ def get_p():
             y = struct.unpack('>H', i2c.readfrom_mem(65, 0x4F, 2))[0]
             z = struct.unpack('>B', i2c.readfrom_mem(65, 0x51, 1))[0]
             status = True
+            num_empty = 0
         # reset interrupt
         writeRegister8(STMPE_INT_STA, 0xFF)#  reset all ints
         return (status, x, y, z)
