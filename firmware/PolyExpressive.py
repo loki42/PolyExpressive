@@ -7,12 +7,12 @@ gc.collect()
 from machine import UART
 from machine import Timer
 import I2CTouch
-import json
+import ujson as json
 import utime
 ### web stuff
 
 
-uart = UART(1, 31250)                         # init with given baudrate
+uart = UART(1, 31250, tx=4)                         # init with given baudrate
 uart.init(31250, bits=8, parity=None, stop=1) # init with given parameters
 # pull these to global panel file so they can be shared
 panel_x = 469 # factors 1, 7, 67
@@ -25,7 +25,8 @@ num_x = int(panel_x/grid_x)
 current_action = None
 end_action = None
 clock_playing = False
-chrono = Timer.Chrono()
+# TODO
+# chrono = Timer.Chrono()
 
 # Used for debouncing
 minimum_tap_interval = 60 * 1000 * 1000 * 1 / 300 # 300 is MAXIMUM_BPM;
@@ -40,7 +41,7 @@ def calculate_interval_us(bpm):
 clock_interval_us = calculate_interval_us(100) # 100 BPM 
 
 action_list = []
-with open('/flash/action_list.json', 'r') as f:
+with open('action_list.json', 'r') as f:
     action_list = json.load(f)
 
 toggle_states = {}
@@ -77,7 +78,7 @@ def update_mat(new_action_list):
     global action_list
     action_list = new_action_list
     toggle_states = {}
-    with open('/flash/action_list.json', 'w') as f:
+    with open('action_list.json', 'w') as f:
         f.write(json.dumps(action_list))
 
 def lerp(start, end, t):
@@ -140,17 +141,18 @@ def inner_execute_action(ap, z):
     global clock_playing
     if ap["t"] == "start":
         send_clock_message(MIDI_COMMANDS["start"])
-        chrono.reset()
-        chrono.start()
+        # TODO
+        # chrono.reset()
+        # chrono.start()
         clock_playing = True
     if ap["t"] == "continue":
         send_clock_message(MIDI_COMMANDS["continue"])
-        chrono.reset()
-        chrono.start()
+        # chrono.reset()
+        # chrono.start()
         clock_playing = True
     elif ap["t"] == "stop":
         send_clock_message(MIDI_COMMANDS["stop"])
-        chrono.stop()
+        # chrono.stop()
         clock_playing = False
     elif ap["t"] == "tap":
         tap_tempo()
@@ -193,9 +195,11 @@ def execute_action(actions, action_id, z):
 
 def tick_midi_clock():
     if clock_playing == True:
-        if chrono.read_us() > clock_interval_us:
-            chrono.reset()
-            send_clock_message(MIDI_COMMANDS["clock"])
+        pass
+        # TODO
+        # if chrono.read_us() > clock_interval_us:
+        #     chrono.reset()
+        #     send_clock_message(MIDI_COMMANDS["clock"])
 # main loop
 def core_loop():
     # send clock first, if we're sending clock
@@ -203,53 +207,54 @@ def core_loop():
     global current_action
     tick_midi_clock()
 
-    x,y,m_z = I2CTouch.get_point()
-    z = transform_to_range(m_z, 0, 4095)
-    if z < 1.8: # invalid point
-        # if there is end touch queued
-        if end_action is not None:
-            # run them
-            execute_action(end_action, current_action['id'], 0)
-            # print("executing end action, invalid point", current_action['id'])
-            end_action = None
-        current_action = None
-    else:
-        action_id, action = point_to_action(x, y, z)
-        if action != False:
-            if current_action is None or current_action['id'] != action_id: # compare id's
-                print("action occured", action_id)
-                # the new action isn't the same as the previous current action so execute any end_action
-                if end_action is not None:
-                    # run them
-                    # print("executing end action, got new action", current_action['id'])
-                    execute_action(end_action, current_action['id'], z)
-                    end_action = None
-                # got a valid point, if it's not executing at the moment then it's a start 
-                current_action = action
-                current_action['id'] = action_id
-                if "e" in action:
-                    end_action = action["e"]
-                if "s" in action:
-                    execute_action(action["s"], current_action['id'], z)
-            else:
-                # otherwise it's an on change
-                if "c" in action:
-                    execute_continous_action(action["c"], action['x1'], action['y1'], action['x2'], action['y2'], x, y, z)
-                # print("finger down pressure is", z)
-        else:
-            # end action
+    point_available, x,y,m_z = I2CTouch.get_point()
+    if point_available:
+        z = transform_to_range(m_z, 0, 256)
+        if z < 1.8: # invalid point
+            # if there is end touch queued
             if end_action is not None:
                 # run them
                 execute_action(end_action, current_action['id'], 0)
-                # print("executing end action, new action is false", current_action['id'])
+                # print("executing end action, invalid point", current_action['id'])
                 end_action = None
             current_action = None
+        else:
+            action_id, action = point_to_action(x, y, z)
+            if action != False:
+                if current_action is None or current_action['id'] != action_id: # compare id's
+                    print("action occured", action_id)
+                    # the new action isn't the same as the previous current action so execute any end_action
+                    if end_action is not None:
+                        # run them
+                        # print("executing end action, got new action", current_action['id'])
+                        execute_action(end_action, current_action['id'], z)
+                        end_action = None
+                    # got a valid point, if it's not executing at the moment then it's a start 
+                    current_action = action
+                    current_action['id'] = action_id
+                    if "e" in action:
+                        end_action = action["e"]
+                    if "s" in action:
+                        execute_action(action["s"], current_action['id'], z)
+                else:
+                    # otherwise it's an on change
+                    if "c" in action:
+                        execute_continous_action(action["c"], action['x1'], action['y1'], action['x2'], action['y2'], x, y, z)
+                    # print("finger down pressure is", z)
+            else:
+                # end action
+                if end_action is not None:
+                    # run them
+                    execute_action(end_action, current_action['id'], 0)
+                    # print("executing end action, new action is false", current_action['id'])
+                    end_action = None
+                current_action = None
 
 
 def run():
     while True:
         core_loop()
-        Timer.sleep_us(100)
+        utime.sleep_us(100)
 
     # Serve web pages / config update
     # anything else in the core loop?

@@ -112,9 +112,9 @@ def init_st():
 
 
 def get_p():
-
+    status = False
     if (int.from_bytes(i2c.readfrom_mem(65, STMPE_FIFO_STA, 1), 'big') & STMPE_FIFO_STA_EMPTY):
-        return (0, 0, 0)
+        return (status, 0, 0, 0)
     else:
         x = 0
         y = 0
@@ -124,19 +124,27 @@ def get_p():
             x = struct.unpack('>H', i2c.readfrom_mem(65, 0x4D, 2))[0]
             y = struct.unpack('>H', i2c.readfrom_mem(65, 0x4F, 2))[0]
             z = struct.unpack('>B', i2c.readfrom_mem(65, 0x51, 1))[0]
+            status = True
         # reset interrupt
         writeRegister8(STMPE_INT_STA, 0xFF)#  reset all ints
-        return (x, y, z)
+        return (status, x, y, z)
 
 def get_point():
     # return x, y, z by processing z1 and z2
     # convert to mm
     panel_x = 469 # active area of panel
     panel_y = 294
-    in_x, in_y, in_z = get_p()
-    x = panel_x * ((4095 - in_x) / 4095)
-    y = panel_y * ((4095 - in_y) / 4095)
-    z = 0
-    if in_z > 5:
-        z = 4095 - in_z
-    return (x, y, z)
+    status, in_x, in_y, in_z = get_p()
+    if status:
+        x = panel_x * ((4095 - in_x) / 4095)
+        y = panel_y * ((4095 - in_y) / 4095)
+        z = 0
+        if in_z > 5:
+            z = 256 - in_z
+        return (status, x, y, z)
+    else:
+        return (False, 0, 0, 0)
+
+# init
+init_st()
+
