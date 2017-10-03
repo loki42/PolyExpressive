@@ -25,8 +25,7 @@ num_x = int(panel_x/grid_x)
 current_action = None
 end_action = None
 clock_playing = False
-# TODO
-# chrono = Timer.Chrono()
+clock_start = 0
 
 # Used for debouncing
 minimum_tap_interval = 60 * 1000 * 1000 * 1 / 300 # 300 is MAXIMUM_BPM;
@@ -139,20 +138,18 @@ def tap_tempo():
 
 def inner_execute_action(ap, z):
     global clock_playing
+    global clock_start
     if ap["t"] == "start":
         send_clock_message(MIDI_COMMANDS["start"])
-        # TODO
-        # chrono.reset()
-        # chrono.start()
+        clock_start = time.ticks_us()
         clock_playing = True
     if ap["t"] == "continue":
         send_clock_message(MIDI_COMMANDS["continue"])
-        # chrono.reset()
-        # chrono.start()
+        clock_start = time.ticks_us()
         clock_playing = True
     elif ap["t"] == "stop":
         send_clock_message(MIDI_COMMANDS["stop"])
-        # chrono.stop()
+        clock_start = 0
         clock_playing = False
     elif ap["t"] == "tap":
         tap_tempo()
@@ -194,12 +191,12 @@ def execute_action(actions, action_id, z):
 
 
 def tick_midi_clock():
+    global clock_start
     if clock_playing == True:
-        pass
-        # TODO
-        # if chrono.read_us() > clock_interval_us:
-        #     chrono.reset()
-        #     send_clock_message(MIDI_COMMANDS["clock"])
+        delta = time.ticks_diff(time.ticks_us(), clock_start) # compute time difference
+        if delta > clock_interval_us:
+            clock_start = time.ticks_us()
+            send_clock_message(MIDI_COMMANDS["clock"])
 # main loop
 def core_loop():
     # send clock first, if we're sending clock
