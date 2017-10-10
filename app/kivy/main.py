@@ -3,6 +3,7 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.properties import ObjectProperty
+from kivy.properties import BooleanProperty
 from kivy.uix.image import Image
 
 from kivymd.bottomsheet import MDListBottomSheet, MDGridBottomSheet
@@ -89,7 +90,7 @@ NavigationLayout:
         NavigationDrawerIconButton:
             icon: 'checkbox-blank-circle'
             text: "Set Layout"
-            on_release: app.root.ids.scr_mngr.current = 'select_layout'
+            on_release: app.go_to_page("select_layout", "Select Layout")
         NavigationDrawerIconButton:
             icon: 'checkbox-blank-circle'
             text: "Labels"
@@ -150,11 +151,11 @@ NavigationLayout:
         orientation: 'vertical'
         Toolbar:
             id: toolbar
-            title: 'KivyMD Kitchen Sink'
+            title: 'Poly Expressive'
             md_bg_color: app.theme_cls.primary_color
             background_palette: 'Primary'
             background_hue: '500'
-            left_action_items: [['menu', lambda x: app.root.toggle_nav_drawer()]]
+            left_action_items: [['menu', lambda x: app.previous_page()]]
             right_action_items: [['dots-vertical', lambda x: app.root.toggle_nav_drawer()]]
         ScreenManager:
             id: scr_mngr
@@ -180,7 +181,7 @@ NavigationLayout:
                     size_hint: None, None
                     size: 4 * dp(48), dp(48)
                     pos_hint: {'center_x': 0.5, 'center_y': 0.2}
-                    on_release: app.root.ids.scr_mngr.current = 'select_layout'
+                    on_release: app.go_to_page("select_layout", "Select Layout")
             Screen:
                 name: 'button'
                 BoxLayout:
@@ -275,7 +276,7 @@ NavigationLayout:
                 name: 'select_layout'
                 ScrollView:
                     do_scroll_x: False
-                    GridLayout:
+                    DataTileGrid:
                         cols: 2
                         row_default_height: (self.width - self.cols*self.spacing[0])/self.cols
                         row_force_default: True
@@ -283,27 +284,30 @@ NavigationLayout:
                         height: self.minimum_height
                         padding: dp(4), dp(4)
                         spacing: dp(4)
-                        SmartTileWithLabel:
-                            mipmap: True
-                            source: './assets/layout1.png'
-                            text: "Default"
-                            on_release: app.root.ids.scr_mngr.current = 'choose_pedals'
-                        SmartTileWithLabel:
-                            mipmap: True
-                            source: './assets/layout1.png'
-                            text: "Default"
-                        SmartTileWithLabel:
-                            mipmap: True
-                            source: './assets/layout1.png'
-                            text: "Default"
-                        SmartTileWithLabel:
-                            mipmap: True
-                            source: './assets/layout1.png'
-                            text: "Default"
-                        SmartTileWithLabel:
-                            mipmap: True
-                            source: './assets/layout1.png'
-                            text: "Default"
+                        items: app.available_layouts
+            Screen:
+                name: 'edit_mat'
+                GridLayout:
+                    cols: 3
+                    row_default_height: (self.width - self.cols*self.spacing[0])/self.cols
+                    row_force_default: True
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(0), dp(0)
+                    spacing: dp(0)
+                    MDFlatButton:
+                        text: 'MDFlatButton'
+                        pos_hint: {'center_x': 0.5, 'center_y': 0.6}
+                    MDFlatButton:
+                        text: 'MDFlatButton'
+                        pos_hint: {'center_x': 0.5, 'center_y': 0.6}
+                    MDFlatButton:
+                        text: 'MDFlatButton'
+                        pos_hint: {'center_x': 0.5, 'center_y': 0.6}
+                    MDFlatButton:
+                        text: 'MDFlatButton'
+                        pos_hint: {'center_x': 0.5, 'center_y': 0.6}
+
             Screen:
                 name: 'labels'
                 ScrollView:
@@ -404,10 +408,34 @@ NavigationLayout:
 
             Screen:
                 name: 'choose_pedals'
-                ScrollView:
-                    do_scroll_x: False
-                    DataView:
-                        items: app.available_pedals
+                BoxLayout:
+                    orientation: 'vertical'
+                    MDLabel:
+                        font_style: 'Subhead'
+                        theme_text_color: 'Primary'
+                        text: "Selected"
+                        halign: 'left'
+                    DataList:
+                        id: selected_pedals_dl
+                        items: app.selected_pedals
+                    MDLabel:
+                        font_style: 'Subhead'
+                        theme_text_color: 'Primary'
+                        text: "Available"
+                        halign: 'left'
+                    ScrollView:
+                        do_scroll_x: False
+                        DataList:
+                            id: available_pedals_dl
+                            items: app.available_pedals
+                    MDFloatingActionButton:
+                        id:                    next_pedals_selected
+                        icon:                'check'
+                        opposite_colors:    True
+                        elevation_normal:    8
+                        pos_hint:            {'center_x': 0.5, 'center_y': 0.2}
+                        disabled: app.next_pedals_disabled
+                        on_release: app.go_to_page("edit_mat", "Edit Mat")
 
             Screen:
                 name: 'menu'
@@ -861,11 +889,17 @@ class HackedDemoNavDrawer(MDNavigationDrawer):
             self._header_container.add_widget(widget)
         else:
             super(MDNavigationDrawer, self).add_widget(widget, index)
+from itertools import izip
+
+def pairwise(t):
+    it = iter(t)
+    return izip(it,it)
 
 class KitchenSink(App):
     theme_cls = ThemeManager()
     previous_date = ObjectProperty()
     title = "KivyMD Kitchen Sink"
+    next_pedals_disabled = BooleanProperty(True)
 
     menu_items = [
         {'viewclass': 'MDMenuItem',
@@ -884,6 +918,47 @@ class KitchenSink(App):
          'text': 'Example item'},
     ]
 
+    t_available_layouts = [{"title":"Eventide H9", "thumbnail" : './assets/layout1.png'},
+            {"title":"Line 6", "thumbnail" : './assets/layout1.png'},
+            {"title":"Chase", "thumbnail" : './assets/layout1.png'}
+            ]
+
+
+    def go_to_page(self, page, title):
+        self.root.ids.scr_mngr.current = page
+        self.set_toolbar_title(title)
+
+    def set_toolbar_title(self, title):
+        self.root.ids.toolbar.title = title
+
+    def previous_page(self):
+        pass
+
+    def select_pedal(self, ctx):
+        print("select pedal", ctx)
+        if ctx in self.root.ids.available_pedals_dl.items:
+            self.root.ids.available_pedals_dl.items.remove(ctx)
+            self.root.ids.selected_pedals_dl.items.append(ctx)
+        elif ctx in self.root.ids.selected_pedals_dl.items:
+            self.root.ids.selected_pedals_dl.items.remove(ctx)
+            self.root.ids.available_pedals_dl.items.append(ctx)
+
+        self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
+
+        print(self.root.ids.selected_pedals_dl.items)
+
+    def click_set_layout(self, layout):
+        print("set layout")
+        self.go_to_page("choose_pedals", "Choose Pedals")
+
+    for i,a in enumerate(t_available_layouts):
+        t_available_layouts[i]["action"] = click_set_layout
+    available_layouts = t_available_layouts
+
+    selected_pedals = []
+    available_pedals = [{"text":a, "secondary_text":b, "action": select_pedal} for a, b in pairwise(("H9", "Eventide",
+        "M9", "Line 6", "Brothers", "Chase Bliss"))]
+
     def build(self):
         main_widget = Builder.load_string(main_widget_kv)
         # self.theme_cls.theme_style = 'Dark'
@@ -892,6 +967,7 @@ class KitchenSink(App):
             on_text_validate=self.set_error_message,
             on_focus=self.set_error_message)
         self.bottom_navigation_remove_mobile(main_widget)
+
         return main_widget
 
     def bottom_navigation_remove_mobile(self, widget):

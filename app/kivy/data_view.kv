@@ -1,0 +1,14 @@
+#!text
+#:import SmartTile kivymd.grid.SmartTile
+#:import TwoLineListItem kivymd.list.TwoLineListItem
+[DataTileGridItem@GridLayout]:
+    SmartTileWithLabel:
+        mipmap: True
+        source: ctx.thumbnail
+        text: ctx.title
+        on_release: ctx.action(app, ctx) 
+[DataListItem@MDList]:
+    TwoLineListItem:
+        text: ctx.text
+        secondary_text: ctx.secondary_text
+        on_release: ctx.action(app, ctx) 
