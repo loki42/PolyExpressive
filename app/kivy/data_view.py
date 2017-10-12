@@ -17,7 +17,7 @@ class DataTileGrid(GridLayout):
        for item in self.items:
            w = Builder.template(self.item_template, **item)
            self.add_widget(w)
-           print(item)
+           print("adding", item)
 
 class DataList(MDList):
 
