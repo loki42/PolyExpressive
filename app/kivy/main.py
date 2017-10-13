@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.metrics import dp
@@ -117,16 +118,19 @@ BoxLayout:
                     orientation: 'horizontal'
                     size_hint: 1, 0.6
                     MDFlatButton:
+                        id: 0
                         text: 'MDFlatButton'
                         size_hint: 0.4, 1
                         md_bg_color: get_color_from_hex(colors['Teal']['200'])
                         on_release: app.edit_menu(self, "0")
                     MDFlatButton:
+                        id: 1
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
                         md_bg_color: get_color_from_hex(colors['Teal']['500'])
                         on_release: app.edit_menu(self, "1")
                     MDFlatButton:
+                        id: 2
                         text: 'MDFlatButton'
                         size_hint: 0.4, 1
                         md_bg_color: get_color_from_hex(colors['Teal']['800'])
@@ -135,22 +139,27 @@ BoxLayout:
                     orientation: 'horizontal'
                     size_hint: 1, 0.4
                     MDFlatButton:
+                        id: 3
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
                         md_bg_color: get_color_from_hex(colors['Teal']['A100'])
                     MDFlatButton:
+                        id: 4
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
                         md_bg_color: get_color_from_hex(colors['Teal']['A100'])
                     MDFlatButton:
+                        id: 5
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
                         md_bg_color: get_color_from_hex(colors['Teal']['A100'])
                     MDFlatButton:
+                        id: 6
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
                         md_bg_color: get_color_from_hex(colors['Teal']['A100'])
                     MDFlatButton:
+                        id: 7
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
                         md_bg_color: get_color_from_hex(colors['Teal']['A100'])
@@ -204,7 +213,7 @@ BoxLayout:
                             text: "Selected Controls"
                             halign: 'left'
                         DataList:
-                            id: selected_controls_dl
+                            id: selected_standard_controls_dl
                             items: app.selected_standard_controls
                         MDLabel:
                             font_style: 'Subhead'
@@ -214,7 +223,7 @@ BoxLayout:
                         ScrollView:
                             do_scroll_x: False
                             DataList:
-                                id: selected_controls_dl
+                                id: available_standard_controls_dl
                                 items: app.available_standard_controls
                         MDFloatingActionButton:
                             id:                    controls_selected
@@ -222,8 +231,8 @@ BoxLayout:
                             opposite_colors:    True
                             elevation_normal:    8
                             pos_hint:            {'center_x': 0.5, 'center_y': 0.2}
-                            disabled: app.controls_selected_disabled
-                            on_release: app.go_to_page("edit_mat", "Edit Mat")
+                            disabled: app.next_standard_controls_disabled
+                            on_release: app.set_standard_controls()
                 MDTab:
                     name: 'Advanced'
                     text: 'Advanced'
@@ -237,24 +246,27 @@ BoxLayout:
 '''
 action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
 
-mat_def = {"0":{"color":(0,1,0,0), "text": "Fuzz", "actions": {"e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}]}}}
+mat_def = {}
+for i in range(8):
+    mat_def[str(i)] = {"color":(0,0,0,0), "text": "", "standard_controls": []}
 
-default_curves = {"1", ["linear", [0,0],[127,127], True]]}
+default_curves = {"1": ["linear", [0,0],[127,127], True]}
+current_selected_cell = "0" ## current target for editing / bit dodgy
 
 advanced_controls = {
 "Chase Bliss:Brothers":[
-    {"name":"Gain A", "type": "CC", "controller":14, "curve":"1"}
-    {"name":"Master", "type": "CC", "controller":15, "curve":"1"}
-    {"name":"Gain B", "type": "CC", "controller":16, "curve":"1"}
-    {"name":"Tone A", "type": "CC", "controller":17, "curve":"1"}
-    {"name":"Mix / Stack", "type": "CC", "controller":18, "curve":"1"}
-    {"name":"Tone B", "type": "CC", "controller":19, "curve":"1"}
-    {"name":"Channel A Effect Select", "type": "CC", "controller":21, "enum":{"Boost":1, "Drive":2, "Fuzz":3}}
-    {"name":"Channel Order", "type": "CC", "controller":22, "enum":{"Parallel":1, "A > B":2, "B > A":3}}
-    {"name":"Channel A Effect Select", "type": "CC", "controller":23, "enum":{"Boost":1, "Drive":2, "Fuzz":3}}
-    {"name":"Expression", "type": "CC", "controller":100, "curve":"1"}
-    {"name":"Engage Last Preset", "type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}}
-    {"name":"Bypass Switch", "type": "CC", "controller":103, "enum":{"Both Enabled": 127, "Only A": 85, "Only B": 45, "Bypass":0}}
+    {"name":"Gain A", "type": "CC", "controller":14, "curve":"1"},
+    {"name":"Master", "type": "CC", "controller":15, "curve":"1"},
+    {"name":"Gain B", "type": "CC", "controller":16, "curve":"1"},
+    {"name":"Tone A", "type": "CC", "controller":17, "curve":"1"},
+    {"name":"Mix / Stack", "type": "CC", "controller":18, "curve":"1"},
+    {"name":"Tone B", "type": "CC", "controller":19, "curve":"1"},
+    {"name":"Channel A Effect Select", "type": "CC", "controller":21, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
+    {"name":"Channel Order", "type": "CC", "controller":22, "enum":{"Parallel":1, "A > B":2, "B > A":3}},
+    {"name":"Channel A Effect Select", "type": "CC", "controller":23, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
+    {"name":"Expression", "type": "CC", "controller":100, "curve":"1"},
+    {"name":"Engage Last Preset", "type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}},
+    {"name":"Bypass Switch", "type": "CC", "controller":103, "enum":{"Both Enabled": 127, "Only A": 85, "Only B": 45, "Bypass":0}},
     {"name":"Preset Select", "type": "PC"}
     ]
 }
@@ -268,10 +280,11 @@ standard_controls = {"Chase Bliss:Brothers":[
     ["Tone B", "Tone B", "on_foot_move", "1"],
     ["Channel A Boost", "Channel A Effect Select", "on_foot_down", "1"],
     ["Channel A Drive", "Channel A Effect Select", "on_foot_down", "2"],
-    ["Channel A Fuzz", "Channel A Effect Select", "on_foot_down", "3"]
+    ["Channel A Fuzz", "Channel A Effect Select", "on_foot_down", "3"]]
     }
 
 included_pedals = []
+included_standard_controls = []
 
 layout_def = [["row", 1, ["col", 0.6, [[0, 0.4], [1, 0.2], [2, 0.4]]]],
     ["row", 1, ["col", 0.4, [[3, 0.2], [4, 0.2],[5, 0.2],[6, 0.2],[7, 0.2]]]]]
@@ -296,7 +309,7 @@ class KitchenSink(App):
     theme_cls = ThemeManager()
     title = "KivyMD Kitchen Sink"
     next_pedals_disabled = BooleanProperty(True)
-    controls_selected_disabled = BooleanProperty(True)
+    next_standard_controls_disabled = BooleanProperty(True)
 
 # self.go_to_page("choose_pedals", "Choose Pedals")
 
@@ -330,15 +343,54 @@ class KitchenSink(App):
 
         print(self.root.ids.selected_pedals_dl.items)
 
+    def select_control(self, ctx):
+        print("select control", ctx)
+        if ctx in self.root.ids.available_standard_controls_dl.items:
+            self.root.ids.available_standard_controls_dl.items.remove(ctx)
+            self.root.ids.selected_standard_controls_dl.items.append(ctx)
+        elif ctx in self.root.ids.selected_standard_controls_dl.items:
+            self.root.ids.selected_standard_controls_dl.items.remove(ctx)
+            self.root.ids.available_standard_controls_dl.items.append(ctx)
+
+        self.next_standard_controls_disabled = not self.root.ids.selected_standard_controls_dl.items
+        global included_standard_controls
+        included_standard_controls = self.root.ids.selected_standard_controls_dl.items
+
+        print(self.root.ids.selected_standard_controls_dl.items)
+
+    def set_standard_controls(self):
+        # global for current cell as can't work out a neat way
+        mat_def[current_selected_cell]["standard_controls"] = included_standard_controls
+        self.go_to_page("edit_mat", "Edit Mat")
+
     def click_set_layout(self, layout):
         print("set layout")
         self.go_to_page("choose_pedals", "Choose Pedals")
+
+    def set_up_action_page(self, cell_id):
+        self.available_standard_controls = []
+        current_keys = [a["text"] for a in mat_def[cell_id]["standard_controls"]]
+        if included_pedals:
+            for pedal in included_pedals:
+                if pedal["id"] in standard_controls:
+                    for control in standard_controls[pedal["id"]]:
+                        if control[0] not in current_keys:
+                            print("control 0 is", control[0])
+                            # self.root.ids.available_standard_controls_dl.items.append({"text":control[0],
+                            self.available_standard_controls.append({"text":control[0],
+                                "secondary_text":pedal["id"],
+                                "action": KitchenSink.select_control})
+            self.root.ids.selected_standard_controls_dl.items = mat_def[cell_id]["standard_controls"]
+            self.root.ids.available_standard_controls_dl.items = self.available_standard_controls
+        global current_selected_cell
+        current_selected_cell = cell_id
+        self.go_to_page("set_actions", "Set Action")
 
     def edit_menu(self, parent, cell_id):
         menu_items = [
             {'viewclass': 'MDMenuItem',
              'text': 'Set Action',
-             'on_release' : lambda *x: self.go_to_page("set_actions", "Set Action")
+             'on_release' : lambda *x: self.set_up_action_page(cell_id)
              },
             {'viewclass': 'MDMenuItem',
              'text': 'Set Square Color',
@@ -356,7 +408,7 @@ class KitchenSink(App):
     available_layouts = t_available_layouts
 
     selected_pedals = []
-    available_pedals = [{"text":a, "secondary_text":b, "action": select_pedal} for a, b in pairwise(("H9", "Eventide",
+    available_pedals = [{"text":a, "secondary_text":b, "action": select_pedal, "id": b+":"+a} for a, b in pairwise(("H9", "Eventide",
         "M9", "Line 6", "Brothers", "Chase Bliss"))]
 
     selected_standard_controls = []
@@ -376,6 +428,7 @@ class KitchenSink(App):
         content.hint_text="Enter name for the area"
         content.helper_text="You can leave this blank if you want"
         content.helper_text_mode="on_focus"
+        content.text = mat_def[cell_id]["text"]
         self.dialog = MDDialog(title="Set area text",
                                content=content,
                                size_hint=(.95, None),
@@ -383,6 +436,7 @@ class KitchenSink(App):
                                auto_dismiss=False)
         def set_text(x):
             mat_def[cell_id]["text"] = content.text
+            self.root.ids[cell_id].text = content.text
             self.dialog.dismiss()
 
         self.dialog.add_action_button("Set",
