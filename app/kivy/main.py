@@ -358,12 +358,66 @@ class KitchenSink(App):
 
         print(self.root.ids.selected_pedals_dl.items)
 
+    def set_control_direction(self, ctx, direction):
+        ctx["direction"] = direction
+        self.dialog.dismiss()
+        self.select_control(ctx)
+
     def select_control(self, ctx):
         print("select control", ctx)
         if ctx in self.root.ids.available_standard_controls_dl.items:
-            self.root.ids.available_standard_controls_dl.items.remove(ctx)
-            self.root.ids.selected_standard_controls_dl.items.append(ctx)
+            # check if it's a on_foot_move, if so it needs a direction
+
+            if get_standard_controls_from_key(ctx["key"])[1] == "on_foot_move" and "direction" not in ctx:
+                content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None,
+                                    padding= 48, spacing= 10)
+                # contentVj = MDLabel(font_style='Body1',
+                #           theme_text_color='Secondary',
+                #           text="This is a dialog with a title and some text. "
+                #                "That's pretty awesome right!",
+                #           size_hint_y=None,
+                #           valign='top')
+                # content.hint_text="Choose direction for controller"
+                # content.helper_text="You can leave this blank if you want"
+                # content.helper_text_mode="on_focus"
+                # content.text = mat_def[cell_id]["text"]
+
+                hor_button = MDRaisedButton(
+                        text= "Horizontal",
+                        opposite_colors= True,
+                        size_hint= (None, None),
+                        size= (4 * dp(48), dp(48)),
+                        pos_hint= {'center_x': 0.5, 'center_y': 0.6},
+                        on_release= self.set_control_direction(ctx, "horizontal")
+                content.add_widget(hor_button)
+                ver_button = MDRaisedButton(
+                        text= "Vertical",
+                        opposite_colors= True,
+                        size_hint= (None, None),
+                        size= (4 * dp(48), dp(48)),
+                        pos_hint= {'center_x': 0.5, 'center_y': 0.6},
+                        on_release= self.set_control_direction(ctx, "vertical")
+                content.add_widget(ver_button)
+                pres_button = MDRaisedButton(
+                        text= "Pressure",
+                        opposite_colors= True,
+                        size_hint= (None, None),
+                        size= (4 * dp(48), dp(48)),
+                        pos_hint= {'center_x': 0.5, 'center_y': 0.6},
+                        on_release= self.set_control_direction(ctx, "pressure")
+                content.add_widget(pres_button)
+                self.dialog = MDDialog(title="What Direction should this respond to",
+                                       content=content,
+                                       size_hint=(.95, None),
+                                       height=dp(300),
+                                       auto_dismiss=False)
+                self.dialog.open()
+            else:
+                self.root.ids.available_standard_controls_dl.items.remove(ctx)
+                self.root.ids.selected_standard_controls_dl.items.append(ctx)
         elif ctx in self.root.ids.selected_standard_controls_dl.items:
+            if "direction" in ctx:
+                ctx.pop("direction")
             self.root.ids.selected_standard_controls_dl.items.remove(ctx)
             self.root.ids.available_standard_controls_dl.items.append(ctx)
 
