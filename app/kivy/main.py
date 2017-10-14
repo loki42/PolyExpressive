@@ -143,26 +143,31 @@ BoxLayout:
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
                         md_bg_color: get_color_from_hex(colors['Teal']['A100'])
+                        on_release: app.edit_menu(self, "3")
                     MDFlatButton:
                         id: 4
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
                         md_bg_color: get_color_from_hex(colors['Teal']['A100'])
+                        on_release: app.edit_menu(self, "4")
                     MDFlatButton:
                         id: 5
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
                         md_bg_color: get_color_from_hex(colors['Teal']['A100'])
+                        on_release: app.edit_menu(self, "5")
                     MDFlatButton:
                         id: 6
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
                         md_bg_color: get_color_from_hex(colors['Teal']['A100'])
+                        on_release: app.edit_menu(self, "6")
                     MDFlatButton:
                         id: 7
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
                         md_bg_color: get_color_from_hex(colors['Teal']['A100'])
+                        on_release: app.edit_menu(self, "7")
 
 
         Screen:
@@ -254,33 +259,33 @@ default_curves = {"1": ["linear", [0,0],[127,127], True]}
 current_selected_cell = "0" ## current target for editing / bit dodgy
 
 advanced_controls = {
-"Chase Bliss:Brothers":[
-    {"name":"Gain A", "type": "CC", "controller":14, "curve":"1"},
-    {"name":"Master", "type": "CC", "controller":15, "curve":"1"},
-    {"name":"Gain B", "type": "CC", "controller":16, "curve":"1"},
-    {"name":"Tone A", "type": "CC", "controller":17, "curve":"1"},
-    {"name":"Mix / Stack", "type": "CC", "controller":18, "curve":"1"},
-    {"name":"Tone B", "type": "CC", "controller":19, "curve":"1"},
-    {"name":"Channel A Effect Select", "type": "CC", "controller":21, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
-    {"name":"Channel Order", "type": "CC", "controller":22, "enum":{"Parallel":1, "A > B":2, "B > A":3}},
-    {"name":"Channel A Effect Select", "type": "CC", "controller":23, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
-    {"name":"Expression", "type": "CC", "controller":100, "curve":"1"},
-    {"name":"Engage Last Preset", "type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}},
-    {"name":"Bypass Switch", "type": "CC", "controller":103, "enum":{"Both Enabled": 127, "Only A": 85, "Only B": 45, "Bypass":0}},
-    {"name":"Preset Select", "type": "PC"}
-    ]
+"Chase Bliss:Brothers":{
+    "Gain A": {"type": "CC", "controller":14, "curve":"1"},
+    "Master": {"type": "CC", "controller":15, "curve":"1"},
+    "Gain B": {"type": "CC", "controller":16, "curve":"1"},
+    "Tone A": {"type": "CC", "controller":17, "curve":"1"},
+    "Mix / Stack": {"type": "CC", "controller":18, "curve":"1"},
+    "Tone B": {"type": "CC", "controller":19, "curve":"1"},
+    "Channel A Effect Select": {"type": "CC", "controller":21, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
+    "Channel Order": {"type": "CC", "controller":22, "enum":{"Parallel":1, "A > B":2, "B > A":3}},
+    "Channel A Effect Select": {"type": "CC", "controller":23, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
+    "Expression": {"type": "CC", "controller":100, "curve":"1"},
+    "Engage Last Preset": {"type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}},
+    "Bypass Switch": {"type": "CC", "controller":103, "enum":{"Both Enabled": 127, "Only A": 85, "Only B": 45, "Bypass":0}},
+    "Preset Select": {"type": "PC"}
+    }
 }
 
-standard_controls = {"Chase Bliss:Brothers":[
-    ["Gain A", "Gain A", "on_foot_move", "1"],
-    ["Master", "Master", "on_foot_move", "1"],
-    ["Gain B", "Gain B", "on_foot_move", "1"],
-    ["Tone A", "Tone A", "on_foot_move", "1"],
-    ["Mix / Stack", "Mix / Stack", "on_foot_move", "1"],
-    ["Tone B", "Tone B", "on_foot_move", "1"],
-    ["Channel A Boost", "Channel A Effect Select", "on_foot_down", "1"],
-    ["Channel A Drive", "Channel A Effect Select", "on_foot_down", "2"],
-    ["Channel A Fuzz", "Channel A Effect Select", "on_foot_down", "3"]]
+standard_controls = {"Chase Bliss:Brothers":{
+    "Gain A": ["Gain A", "on_foot_move", "1"],
+    "Master": ["Master", "on_foot_move", "1"],
+    "Gain B": ["Gain B", "on_foot_move", "1"],
+    "Tone A": ["Tone A", "on_foot_move", "1"],
+    "Mix / Stack": ["Mix / Stack", "on_foot_move", "1"],
+    "Tone B": ["Tone B", "on_foot_move", "1"],
+    "Channel A Boost": ["Channel A Effect Select", "on_foot_down", "1"],
+    "Channel A Drive": ["Channel A Effect Select", "on_foot_down", "2"],
+    "Channel A Fuzz": ["Channel A Effect Select", "on_foot_down", "3"]}
     }
 
 included_pedals = []
@@ -297,6 +302,16 @@ layout_def = [["row", 1, ["col", 0.6, [[0, 0.4], [1, 0.2], [2, 0.4]]]],
 """
 
 from itertools import izip
+
+def get_standard_controls_from_key(key):
+    maker_model, channel, control = key.split("|")
+    return standard_controls[maker_model][control]
+
+def split_standard_controls_key(key):
+    return key.split("|")
+
+def get_standard_controls_key(maker_model, channel, control):
+    return "|".join((maker_model, str(channel), control))
 
 def pairwise(t):
     it = iter(t)
@@ -360,7 +375,9 @@ class KitchenSink(App):
 
     def set_standard_controls(self):
         # global for current cell as can't work out a neat way
-        mat_def[current_selected_cell]["standard_controls"] = included_standard_controls
+        # included_standard_controls is the UI items, need to transfer it to the actual items
+        mat_def[current_selected_cell]["standard_controls"] = [a["key"] for a in included_standard_controls]
+        print("mat is", mat_def)
         self.go_to_page("edit_mat", "Edit Mat")
 
     def click_set_layout(self, layout):
@@ -369,21 +386,37 @@ class KitchenSink(App):
 
     def set_up_action_page(self, cell_id):
         self.available_standard_controls = []
-        current_keys = [a["text"] for a in mat_def[cell_id]["standard_controls"]]
+        selected_standard_controls = []
+        current_keys = mat_def[cell_id]["standard_controls"]
         if included_pedals:
             for pedal in included_pedals:
                 if pedal["id"] in standard_controls:
-                    for control in standard_controls[pedal["id"]]:
-                        if control[0] not in current_keys:
+                    for control_name, control in standard_controls[pedal["id"]].items():
+                        control_key = get_standard_controls_key(pedal["id"], 2, control_name)
+                        if control_key not in current_keys:
                             print("control 0 is", control[0])
                             # self.root.ids.available_standard_controls_dl.items.append({"text":control[0],
-                            self.available_standard_controls.append({"text":control[0],
+                            self.available_standard_controls.append({"text":control_name,
                                 "secondary_text":pedal["id"],
-                                "action": KitchenSink.select_control})
-            self.root.ids.selected_standard_controls_dl.items = mat_def[cell_id]["standard_controls"]
+                                "pedal_id":pedal["id"],
+                                "action": KitchenSink.select_control,
+                                "key": control_key })
+
+            for key in current_keys:
+                maker_model, channel, control = split_standard_controls_key(key)
+                # self.root.ids.available_standard_controls_dl.items.append({"text":control[0],
+                selected_standard_controls.append({"text":control,
+                    "secondary_text":maker_model,
+                    "pedal_id":maker_model,
+                    "action": KitchenSink.select_control,
+                    "key": key })
+
+            self.root.ids.selected_standard_controls_dl.items = selected_standard_controls
             self.root.ids.available_standard_controls_dl.items = self.available_standard_controls
         global current_selected_cell
         current_selected_cell = cell_id
+        global included_standard_controls
+        included_standard_controls = self.root.ids.selected_standard_controls_dl.items
         self.go_to_page("set_actions", "Set Action")
 
     def edit_menu(self, parent, cell_id):
