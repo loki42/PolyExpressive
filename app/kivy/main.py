@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+from __future__ import division
+
+import json
+
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.metrics import dp
@@ -23,6 +27,7 @@ from kivymd.theming import ThemeManager
 from kivymd.time_picker import MDTimePicker
 from kivymd.menu import MDDropdownMenu
 from kivymd.textfields import MDTextField
+from kivymd.button import MDRaisedButton
 
 import data_view
 
@@ -70,7 +75,7 @@ BoxLayout:
         background_palette: 'Primary'
         background_hue: '500'
         left_action_items: [['menu', lambda x: app.previous_page()]]
-        right_action_items: [['dots-vertical', lambda x: app.root.toggle_nav_drawer()]]
+        right_action_items: [['dots-vertical', lambda x: app.show_global_edit_menu(self)]]
     ScreenManager:
         id: scr_mngr
         Screen:
@@ -114,6 +119,7 @@ BoxLayout:
             BoxLayout:
                 orientation: 'vertical'
                 size_hint: 1, 1
+                id: edit_mat_box
                 BoxLayout:
                     orientation: 'horizontal'
                     size_hint: 1, 0.6
@@ -255,7 +261,7 @@ mat_def = {}
 for i in range(8):
     mat_def[str(i)] = {"color":(0,0,0,0), "text": "", "standard_controls": []}
 
-default_curves = {"1": ["linear", [0,0],[127,127], True]}
+default_curves = {"1": ["linear", [[0,0],[127,127]], True]}
 current_selected_cell = "0" ## current target for editing / bit dodgy
 
 advanced_controls = {
@@ -283,12 +289,12 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Tone A": ["Tone A", "on_foot_move", "1"],
     "Mix / Stack": ["Mix / Stack", "on_foot_move", "1"],
     "Tone B": ["Tone B", "on_foot_move", "1"],
-    "Channel A Boost": ["Channel A Effect Select", "on_foot_down", "1"],
-    "Channel A Drive": ["Channel A Effect Select", "on_foot_down", "2"],
-    "Channel A Fuzz": ["Channel A Effect Select", "on_foot_down", "3"]}
+    "Channel A Boost": ["Channel A Effect Select", "on_foot_down", "Boost"],
+    "Channel A Drive": ["Channel A Effect Select", "on_foot_down", "Drive"],
+    "Channel A Fuzz": ["Channel A Effect Select", "on_foot_down", "Fuzz"]}
     }
 
-included_pedals = []
+included_pedals = [] # pedal / channel pairs
 included_standard_controls = []
 
 layout_def = [["row", 1, ["col", 0.6, [[0, 0.4], [1, 0.2], [2, 0.4]]]],
@@ -359,18 +365,17 @@ class KitchenSink(App):
         print(self.root.ids.selected_pedals_dl.items)
 
     def set_control_direction(self, ctx, direction):
-        ctx["direction"] = direction
         self.dialog.dismiss()
-        self.select_control(ctx)
+        self.select_control(ctx, direction=direction)
 
-    def select_control(self, ctx):
+    def select_control(self, ctx, direction=None):
         print("select control", ctx)
         if ctx in self.root.ids.available_standard_controls_dl.items:
             # check if it's a on_foot_move, if so it needs a direction
 
-            if get_standard_controls_from_key(ctx["key"])[1] == "on_foot_move" and "direction" not in ctx:
-                content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None,
-                                    padding= 48, spacing= 10)
+            if get_standard_controls_from_key(ctx["key"])[1] == "on_foot_move" and not direction:
+                content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None, size=(200, 200),
+                                    padding= 48)
                 # contentVj = MDLabel(font_style='Body1',
                 #           theme_text_color='Secondary',
                 #           text="This is a dialog with a title and some text. "
@@ -386,39 +391,38 @@ class KitchenSink(App):
                         text= "Horizontal",
                         opposite_colors= True,
                         size_hint= (None, None),
-                        size= (4 * dp(48), dp(48)),
-                        pos_hint= {'center_x': 0.5, 'center_y': 0.6},
-                        on_release= self.set_control_direction(ctx, "horizontal")
+                        pos_hint= {'center_x': 0.5, 'center_y': 0.3},
+                        on_release= lambda *x: self.set_control_direction(ctx, "horizontal"))
                 content.add_widget(hor_button)
                 ver_button = MDRaisedButton(
                         text= "Vertical",
                         opposite_colors= True,
                         size_hint= (None, None),
-                        size= (4 * dp(48), dp(48)),
                         pos_hint= {'center_x': 0.5, 'center_y': 0.6},
-                        on_release= self.set_control_direction(ctx, "vertical")
+                        on_release= lambda *x: self.set_control_direction(ctx, "vertical"))
                 content.add_widget(ver_button)
                 pres_button = MDRaisedButton(
                         text= "Pressure",
                         opposite_colors= True,
                         size_hint= (None, None),
-                        size= (4 * dp(48), dp(48)),
-                        pos_hint= {'center_x': 0.5, 'center_y': 0.6},
-                        on_release= self.set_control_direction(ctx, "pressure")
+                        pos_hint= {'center_x': 0.5, 'center_y': 0.9},
+                        on_release= lambda *x: self.set_control_direction(ctx, "pressure"))
                 content.add_widget(pres_button)
                 self.dialog = MDDialog(title="What Direction should this respond to",
                                        content=content,
-                                       size_hint=(.95, None),
+                                       size_hint=(.80, None),
                                        height=dp(300),
                                        auto_dismiss=False)
                 self.dialog.open()
             else:
                 self.root.ids.available_standard_controls_dl.items.remove(ctx)
+                if direction:
+                    ctx["direction"] = direction
                 self.root.ids.selected_standard_controls_dl.items.append(ctx)
         elif ctx in self.root.ids.selected_standard_controls_dl.items:
+            self.root.ids.selected_standard_controls_dl.items.remove(ctx)
             if "direction" in ctx:
                 ctx.pop("direction")
-            self.root.ids.selected_standard_controls_dl.items.remove(ctx)
             self.root.ids.available_standard_controls_dl.items.append(ctx)
 
         self.next_standard_controls_disabled = not self.root.ids.selected_standard_controls_dl.items
@@ -430,7 +434,7 @@ class KitchenSink(App):
     def set_standard_controls(self):
         # global for current cell as can't work out a neat way
         # included_standard_controls is the UI items, need to transfer it to the actual items
-        mat_def[current_selected_cell]["standard_controls"] = [a["key"] for a in included_standard_controls]
+        mat_def[current_selected_cell]["standard_controls"] = [(a["key"], a["direction"] if "direction" in a else None)  for a in included_standard_controls]
         print("mat is", mat_def)
         self.go_to_page("edit_mat", "Edit Mat")
 
@@ -441,7 +445,8 @@ class KitchenSink(App):
     def set_up_action_page(self, cell_id):
         self.available_standard_controls = []
         selected_standard_controls = []
-        current_keys = mat_def[cell_id]["standard_controls"]
+        current_controls = mat_def[cell_id]["standard_controls"]
+        current_keys = [a[0] for a in current_controls]
         if included_pedals:
             for pedal in included_pedals:
                 if pedal["id"] in standard_controls:
@@ -456,14 +461,17 @@ class KitchenSink(App):
                                 "action": KitchenSink.select_control,
                                 "key": control_key })
 
-            for key in current_keys:
+            for key, val in current_controls:
                 maker_model, channel, control = split_standard_controls_key(key)
                 # self.root.ids.available_standard_controls_dl.items.append({"text":control[0],
-                selected_standard_controls.append({"text":control,
+                c = {"text":control,
                     "secondary_text":maker_model,
                     "pedal_id":maker_model,
                     "action": KitchenSink.select_control,
-                    "key": key })
+                    "key": key }
+                if val:
+                    c["direction"] = val
+                selected_standard_controls.append(c)
 
             self.root.ids.selected_standard_controls_dl.items = selected_standard_controls
             self.root.ids.available_standard_controls_dl.items = self.available_standard_controls
@@ -474,6 +482,22 @@ class KitchenSink(App):
         self.go_to_page("set_actions", "Set Action")
 
     def edit_menu(self, parent, cell_id):
+        print("pos is", parent.pos, "size is", parent.size)
+##
+        # out_cell = {}
+        # size_x = 420.0
+        # size_y = 297.0
+        # # if output_size == "a3":
+        # display_size = self.root.ids["edit_mat_box"].size
+
+        # x_fac = size_x / display_size[0]
+        # y_fac = size_y / display_size[1]
+        # out_cell["x1"] = self.root.ids[cell_id].pos[0] * x_fac
+        # out_cell["y1"] = self.root.ids[cell_id].pos[1] * y_fac
+        # out_cell["x2"] = out_cell["x1"] + (self.root.ids[cell_id].size[0] * x_fac)
+        # out_cell["y2"] = out_cell["y1"] + (self.root.ids[cell_id].size[1] * y_fac)
+        # print("print space", out_cell)
+# ##
         menu_items = [
             {'viewclass': 'MDMenuItem',
              'text': 'Set Action',
@@ -486,6 +510,23 @@ class KitchenSink(App):
             {'viewclass': 'MDMenuItem',
              'text': 'Set Text',
              'on_release' : lambda *x: self.show_set_text_dialog(cell_id)
+             },
+        ]
+        MDDropdownMenu(items=menu_items, width_mult=4).open(parent)
+
+    def show_global_edit_menu(self, parent):
+        menu_items = [
+            {'viewclass': 'MDMenuItem',
+             'text': 'Save',
+             'on_release' : lambda *x: self.go_to_page("choose_pedals", "Choose Pedals")
+             },
+            {'viewclass': 'MDMenuItem',
+             'text': 'Export PDF to print',
+             'on_release' : lambda *x: self.go_to_page("choose_pedals", "Choose Pedals")
+             },
+            {'viewclass': 'MDMenuItem',
+             'text': 'Send to Poly Expressive',
+             'on_release' : lambda *x: self.send_to_poly()
              },
         ]
         MDDropdownMenu(items=menu_items, width_mult=4).open(parent)
@@ -551,11 +592,90 @@ class KitchenSink(App):
                                       action=set_text)
         self.dialog.open()
 
-    def on_pause(self):
-        return True
+    def send_to_poly(self):
+        print(self.mat_to_poly_json(output_size="a3"))
 
-    def on_stop(self):
-        pass
+    def mat_to_poly_json(self, output_size="a3"):
+        size_x = 420.0
+        size_y = 297.0
+        # if output_size == "a3":
+        display_size = self.root.ids["edit_mat_box"].size
+        x_fac = size_x / float(display_size[0])
+        y_fac = size_y / float(display_size[1])
+
+        MIDI_messages = { "note_off":0x80, "note_off":0x90, "PP":0xA0, "CC": 0xB0, "PC":0xC0, "CP":0xD0, "PB":0xE0}
+        def standard_controls_to_json(control):
+            # "Tone B": ["Tone B", "on_foot_move", "1"],
+            # "Channel A Boost": ["Channel A Effect Select", "on_foot_down", "Boost"],
+            # "Tone B": {"type": "CC", "controller":19, "curve":"1"},
+            # "Channel A Effect Select": {"type": "CC", "controller":21, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
+            maker_model, channel, standard_control = split_standard_controls_key(control)
+            s_c = get_standard_controls_from_key(control)
+            a_c = advanced_controls[maker_model][s_c[0]]
+            action = s_c[1]
+            block = {}
+
+            if a_c["type"] in MIDI_messages:
+                block["t"] = "m"
+                block["b1"] = MIDI_messages[a_c["type"]] | int(channel)
+                if "controller" in a_c:
+                    block["b2"] = a_c["controller"]
+                if "curve" in a_c:
+                    block["c"] = default_curves[s_c[2]][1]
+                elif "enum" in a_c:
+                    block["b3"] = a_c["enum"][s_c[2]]
+                else:
+                    block["b3"] = s_c[2]
+            return (action, block)
+
+        out_mat = []
+        for cell_id, cell_content in mat_def.items():
+            out_cell = {}
+            for control, val in cell_content["standard_controls"]:
+                action, block = standard_controls_to_json(control)
+                if action == "on_foot_move":
+                    # sort by direction
+                    if "c" not in out_cell:
+                        out_cell["c"] = {}
+                    if val == "horizontal":
+                        if "x" not in out_cell["c"]:
+                            out_cell["c"]["x"] = []
+                        out_cell["c"]["x"].append(block)
+                    elif val == "vertical":
+                        if "y" not in out_cell["c"]:
+                            out_cell["c"]["y"] = []
+                        out_cell["c"]["y"].append(block)
+                    else:
+                        if "z" not in out_cell["c"]:
+                            out_cell["c"]["z"] = []
+                        out_cell["c"]["z"].append(block)
+                elif action == "on_foot_down":
+                    if "s" not in out_cell:
+                        out_cell["s"] = []
+                    out_cell["s"].append(block)
+                else:
+                    if "e" not in out_cell:
+                        out_cell["e"] = []
+                    out_cell["e"].append(block)
+            out_cell["x1"] = self.root.ids[cell_id].pos[0] * x_fac
+            out_cell["y1"] = self.root.ids[cell_id].pos[1] * y_fac
+            out_cell["x2"] = out_cell["x1"] + (self.root.ids[cell_id].size[0] * x_fac)
+            out_cell["y2"] = out_cell["y1"] + (self.root.ids[cell_id].size[1] * y_fac)
+            out_mat.append(out_cell)
+        return json.dumps(out_mat)
+
+        # action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
+
+        # mat_def = {}
+        # for i in range(8):
+        #     mat_def[str(i)] = {"color":(0,0,0,0), "text": "", "standard_controls": []}
+
+
+        def on_pause(self):
+            return True
+
+        def on_stop(self):
+            pass
 
 
 # class AutonomousColorWheel(ColorWheel):
