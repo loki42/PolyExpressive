@@ -273,8 +273,10 @@ def http_update_action_list(httpClient, httpResponse) :
         t_action_list[0]['x1']
         update_mat(t_action_list)
         content = True
-    except:
-        content = False
+        print("update action list worked")
+    except Exception as e:
+        print("error in update action list:", e)
+        content = str(e)
     httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(content))
 
 

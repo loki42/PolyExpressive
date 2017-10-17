@@ -257,9 +257,10 @@ BoxLayout:
 '''
 action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
 
-mat_def = {}
+# pedal / channel pairs
+mat_def = {"cells":{}, "layout":1, "name":"unnamed", "included_pedals":[]}
 for i in range(8):
-    mat_def[str(i)] = {"color":(0,0,0,0), "text": "", "standard_controls": []}
+    mat_def["cells"][str(i)] = {"color":(0,0,0,0), "text": "", "standard_controls": []}
 
 default_curves = {"1": ["linear", [[0,0],[127,127]], True]}
 current_selected_cell = "0" ## current target for editing / bit dodgy
@@ -294,7 +295,6 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Channel A Fuzz": ["Channel A Effect Select", "on_foot_down", "Fuzz"]}
     }
 
-included_pedals = [] # pedal / channel pairs
 included_standard_controls = []
 
 layout_def = [["row", 1, ["col", 0.6, [[0, 0.4], [1, 0.2], [2, 0.4]]]],
@@ -359,8 +359,7 @@ class KitchenSink(App):
             self.root.ids.available_pedals_dl.items.append(ctx)
 
         self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
-        global included_pedals
-        included_pedals = self.root.ids.selected_pedals_dl.items
+        mat_def["included_pedals"] = self.root.ids.selected_pedals_dl.items
 
         print(self.root.ids.selected_pedals_dl.items)
 
@@ -434,7 +433,7 @@ class KitchenSink(App):
     def set_standard_controls(self):
         # global for current cell as can't work out a neat way
         # included_standard_controls is the UI items, need to transfer it to the actual items
-        mat_def[current_selected_cell]["standard_controls"] = [(a["key"], a["direction"] if "direction" in a else None)  for a in included_standard_controls]
+        mat_def["cells"][current_selected_cell]["standard_controls"] = [(a["key"], a["direction"] if "direction" in a else None)  for a in included_standard_controls]
         print("mat is", mat_def)
         self.go_to_page("edit_mat", "Edit Mat")
 
@@ -445,10 +444,10 @@ class KitchenSink(App):
     def set_up_action_page(self, cell_id):
         self.available_standard_controls = []
         selected_standard_controls = []
-        current_controls = mat_def[cell_id]["standard_controls"]
+        current_controls = mat_def["cells"][cell_id]["standard_controls"]
         current_keys = [a[0] for a in current_controls]
-        if included_pedals:
-            for pedal in included_pedals:
+        if mat_def["included_pedals"]:
+            for pedal in mat_def["included_pedals"]:
                 if pedal["id"] in standard_controls:
                     for control_name, control in standard_controls[pedal["id"]].items():
                         control_key = get_standard_controls_key(pedal["id"], 2, control_name)
@@ -518,7 +517,7 @@ class KitchenSink(App):
         menu_items = [
             {'viewclass': 'MDMenuItem',
              'text': 'Save',
-             'on_release' : lambda *x: self.go_to_page("choose_pedals", "Choose Pedals")
+             'on_release' : lambda *x: self.show_save_mat_dialog()
              },
             {'viewclass': 'MDMenuItem',
              'text': 'Export PDF to print',
@@ -556,19 +555,41 @@ class KitchenSink(App):
         content.hint_text="Enter name for the area"
         content.helper_text="You can leave this blank if you want"
         content.helper_text_mode="on_focus"
-        content.text = mat_def[cell_id]["text"]
+        content.text = mat_def["cells"][cell_id]["text"]
         self.dialog = MDDialog(title="Set area text",
                                content=content,
                                size_hint=(.95, None),
                                height=dp(300),
                                auto_dismiss=False)
         def set_text(x):
-            mat_def[cell_id]["text"] = content.text
+            mat_def["cells"][cell_id]["text"] = content.text
             self.root.ids[cell_id].text = content.text
             self.dialog.dismiss()
 
         self.dialog.add_action_button("Set",
                                       action=set_text)
+        self.dialog.open()
+
+    def show_save_mat_dialog(self):
+        content = MDTextField()
+        content.hint_text="Enter name for this mat"
+        content.helper_text="This can be a description or what ever helps"
+        content.helper_text_mode="on_focus"
+        content.text = mat_def["name"] if mat_def["name"] != "unnamed" else ""
+        self.dialog = MDDialog(title="Save mat",
+                               content=content,
+                               size_hint=(.95, None),
+                               height=dp(300),
+                               auto_dismiss=False)
+        # TODO require text
+        def save_mat(x):
+            mat_def["name"] = content.text
+            with open("test.json", "w") as f:
+                json.dump(mat_def, f)
+            self.dialog.dismiss()
+
+        self.dialog.add_action_button("Set",
+                                      action=save_mat)
         self.dialog.open()
 
     def show_set_color_dialog(self, cell_id):
@@ -585,7 +606,7 @@ class KitchenSink(App):
                                height=dp(300),
                                auto_dismiss=False)
         def set_text(x):
-            mat_def[cell_id]["text"] = content.text
+            mat_def["cells"][cell_id]["text"] = content.text
             self.dialog.dismiss()
 
         self.dialog.add_action_button("Set",
@@ -629,7 +650,7 @@ class KitchenSink(App):
             return (action, block)
 
         out_mat = []
-        for cell_id, cell_content in mat_def.items():
+        for cell_id, cell_content in mat_def["cells"].items():
             out_cell = {}
             for control, val in cell_content["standard_controls"]:
                 action, block = standard_controls_to_json(control)
