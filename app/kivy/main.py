@@ -12,6 +12,7 @@ from kivy.properties import BooleanProperty
 from kivy.uix.image import Image
 from kivy.uix.colorpicker import ColorWheel
 from kivy.uix.boxlayout import BoxLayout
+from kivy.network.urlrequest import UrlRequest
 
 from kivymd.bottomsheet import MDListBottomSheet, MDGridBottomSheet
 from kivymd.button import MDIconButton
@@ -86,7 +87,7 @@ BoxLayout:
                 size_hint: None, None
                 size: 4 * dp(48), dp(48)
                 pos_hint: {'center_x': 0.5, 'center_y': 0.6}
-                on_release: app.go_to_page("select_layout", "Select Layout")
+                on_release: app.go_to_page("list_my_mats", "My Mats")
             MDRaisedButton:
                 text: "Search Mats"
                 opposite_colors: True
@@ -101,6 +102,14 @@ BoxLayout:
                 size: 4 * dp(48), dp(48)
                 pos_hint: {'center_x': 0.5, 'center_y': 0.2}
                 on_release: app.go_to_page("select_layout", "Select Layout")
+
+        Screen:
+            name: 'list_my_mats'
+            ScrollView:
+                do_scroll_x: False
+                DataList:
+                    id: my_mat_dl
+                    items: app.my_mats_names
         Screen:
             name: 'select_layout'
             ScrollView:
@@ -255,7 +264,14 @@ BoxLayout:
 
 
 '''
-action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
+# action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
+
+my_mats = {}
+try:
+    with open('my_mats.json') as f:
+        my_mats = json.load(f)
+except IOError as e:
+    print("saved mats don't exist")
 
 # pedal / channel pairs
 mat_def = {"cells":{}, "layout":1, "name":"unnamed", "included_pedals":[]}
@@ -275,7 +291,7 @@ advanced_controls = {
     "Tone B": {"type": "CC", "controller":19, "curve":"1"},
     "Channel A Effect Select": {"type": "CC", "controller":21, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
     "Channel Order": {"type": "CC", "controller":22, "enum":{"Parallel":1, "A > B":2, "B > A":3}},
-    "Channel A Effect Select": {"type": "CC", "controller":23, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
+    "Channel B Effect Select": {"type": "CC", "controller":23, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
     "Expression": {"type": "CC", "controller":100, "curve":"1"},
     "Engage Last Preset": {"type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}},
     "Bypass Switch": {"type": "CC", "controller":103, "enum":{"Both Enabled": 127, "Only A": 85, "Only B": 45, "Bypass":0}},
@@ -292,7 +308,13 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Tone B": ["Tone B", "on_foot_move", "1"],
     "Channel A Boost": ["Channel A Effect Select", "on_foot_down", "Boost"],
     "Channel A Drive": ["Channel A Effect Select", "on_foot_down", "Drive"],
-    "Channel A Fuzz": ["Channel A Effect Select", "on_foot_down", "Fuzz"]}
+    "Channel A Fuzz": ["Channel A Effect Select", "on_foot_down", "Fuzz"],
+    "Order A > B": ["Channel Order", "on_foot_down", "A > B"],
+    "Order Parallel": ["Channel Order", "on_foot_down", "Parallel"],
+    "Order B > A": ["Channel Order", "on_foot_down", "B > A"],
+    "Channel B Boost": ["Channel B Effect Select", "on_foot_down", "Boost"],
+    "Channel B Drive": ["Channel B Effect Select", "on_foot_down", "Drive"],
+    "Channel B Fuzz": ["Channel B Effect Select", "on_foot_down", "Fuzz"]}
     }
 
 included_standard_controls = []
@@ -359,9 +381,15 @@ class KitchenSink(App):
             self.root.ids.available_pedals_dl.items.append(ctx)
 
         self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
-        mat_def["included_pedals"] = self.root.ids.selected_pedals_dl.items
+        mat_def["included_pedals"] = [a["id"] for a in self.root.ids.selected_pedals_dl.items]
 
         print(self.root.ids.selected_pedals_dl.items)
+
+    def select_mat(self, ctx):
+        global mat_def
+        mat_def = my_mats[ctx["id"]]
+        print("setting mat to", ctx["id"], "my_mats", my_mats)
+        self.go_to_page("edit_mat", "Edit Mat")
 
     def set_control_direction(self, ctx, direction):
         self.dialog.dismiss()
@@ -442,21 +470,22 @@ class KitchenSink(App):
         self.go_to_page("choose_pedals", "Choose Pedals")
 
     def set_up_action_page(self, cell_id):
+        print(mat_def)
         self.available_standard_controls = []
         selected_standard_controls = []
         current_controls = mat_def["cells"][cell_id]["standard_controls"]
         current_keys = [a[0] for a in current_controls]
         if mat_def["included_pedals"]:
             for pedal in mat_def["included_pedals"]:
-                if pedal["id"] in standard_controls:
-                    for control_name, control in standard_controls[pedal["id"]].items():
-                        control_key = get_standard_controls_key(pedal["id"], 2, control_name)
+                if pedal in standard_controls:
+                    for control_name, control in standard_controls[pedal].items():
+                        control_key = get_standard_controls_key(pedal, 2, control_name)
                         if control_key not in current_keys:
                             print("control 0 is", control[0])
                             # self.root.ids.available_standard_controls_dl.items.append({"text":control[0],
                             self.available_standard_controls.append({"text":control_name,
-                                "secondary_text":pedal["id"],
-                                "pedal_id":pedal["id"],
+                                "secondary_text":pedal,
+                                "pedal_id":pedal,
                                 "action": KitchenSink.select_control,
                                 "key": control_key })
 
@@ -541,6 +570,8 @@ class KitchenSink(App):
     selected_standard_controls = []
     available_standard_controls = []
 
+    my_mats_names = [{"text":a, "secondary_text":"", "action": select_mat, "id": a} for a in my_mats.keys()]
+
     def build(self):
         main_widget = Builder.load_string(main_widget_kv)
         # self.theme_cls.theme_style = 'Dark'
@@ -584,8 +615,10 @@ class KitchenSink(App):
         # TODO require text
         def save_mat(x):
             mat_def["name"] = content.text
-            with open("test.json", "w") as f:
-                json.dump(mat_def, f)
+            # TODO check if existing with this name and ask
+            my_mats[content.text] = mat_def
+            with open("my_mats.json", "w") as f:
+                json.dump(my_mats, f)
             self.dialog.dismiss()
 
         self.dialog.add_action_button("Set",
@@ -613,16 +646,33 @@ class KitchenSink(App):
                                       action=set_text)
         self.dialog.open()
 
+
+
+
+
+# headers = {'Content-type': 'application/x-www-form-urlencoded',
+#           'Accept': 'text/plain'}
     def send_to_poly(self):
-        print(self.mat_to_poly_json(output_size="a3"))
+        def bug_posted(req, result):
+            print('Our bug is posted!')
+            print(result)
+
+        def fail(req, result):
+            print('Request failed')
+            print(result)
+
+
+        mat_json = self.mat_to_poly_json(output_size="a3")
+        print(mat_json)
+        req = UrlRequest('http://192.168.4.1/update_action_list', on_success=bug_posted, on_failure=fail, on_error=fail, req_body=mat_json)
 
     def mat_to_poly_json(self, output_size="a3"):
         size_x = 420.0
         size_y = 297.0
         # if output_size == "a3":
-        display_size = self.root.ids["edit_mat_box"].size
-        x_fac = size_x / float(display_size[0])
-        y_fac = size_y / float(display_size[1])
+        display_size_x, display_size_y = self.root.ids["edit_mat_box"].size
+        x_fac = size_x / float(display_size_x)
+        y_fac = size_y / float(display_size_y)
 
         MIDI_messages = { "note_off":0x80, "note_off":0x90, "PP":0xA0, "CC": 0xB0, "PC":0xC0, "CP":0xD0, "PB":0xE0}
         def standard_controls_to_json(control):
@@ -678,19 +728,18 @@ class KitchenSink(App):
                     if "e" not in out_cell:
                         out_cell["e"] = []
                     out_cell["e"].append(block)
-            out_cell["x1"] = self.root.ids[cell_id].pos[0] * x_fac
-            out_cell["y1"] = self.root.ids[cell_id].pos[1] * y_fac
-            out_cell["x2"] = out_cell["x1"] + (self.root.ids[cell_id].size[0] * x_fac)
-            out_cell["y2"] = out_cell["y1"] + (self.root.ids[cell_id].size[1] * y_fac)
+
+            x1 = self.root.ids[cell_id].pos[0]
+            y1 = self.root.ids[cell_id].pos[1]
+            x2 = x1 + (self.root.ids[cell_id].size[0])
+            y2 = y1 + (self.root.ids[cell_id].size[1])
+
+            out_cell["x2"] = (display_size_x - x1) * x_fac
+            out_cell["y2"] = (display_size_y - y1) * y_fac
+            out_cell["x1"] = (display_size_x - x2) * x_fac
+            out_cell["y1"] = (display_size_y - y2) * y_fac
             out_mat.append(out_cell)
         return json.dumps(out_mat)
-
-        # action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
-
-        # mat_def = {}
-        # for i in range(8):
-        #     mat_def[str(i)] = {"color":(0,0,0,0), "text": "", "standard_controls": []}
-
 
         def on_pause(self):
             return True
