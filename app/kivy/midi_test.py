@@ -30,7 +30,17 @@ from kivymd.menu import MDDropdownMenu
 from kivymd.textfields import MDTextField
 from kivymd.button import MDRaisedButton
 
+from threading import Thread
+from Queue import Queue, Empty
+import time
+
+from kivy.clock import Clock
+from kivy.utils import get_color_from_hex
+from kivymd.color_definitions import colors
+
 import data_view
+
+q = Queue()
 
 main_widget_kv = '''
 #:import Toolbar kivymd.toolbar.Toolbar
@@ -81,50 +91,6 @@ BoxLayout:
         id: scr_mngr
         Screen:
             name: 'home'
-            MDRaisedButton:
-                text: "My Mats"
-                opposite_colors: True
-                size_hint: None, None
-                size: 4 * dp(48), dp(48)
-                pos_hint: {'center_x': 0.5, 'center_y': 0.6}
-                on_release: app.go_to_page("list_my_mats", "My Mats")
-            MDRaisedButton:
-                text: "Search Mats"
-                opposite_colors: True
-                size_hint: None, None
-                size: 4 * dp(48), dp(48)
-                pos_hint: {'center_x': 0.5, 'center_y': 0.4}
-                on_release: app.go_to_page("select_layout", "Select Layout")
-            MDRaisedButton:
-                text: "New Mat"
-                opposite_colors: True
-                size_hint: None, None
-                size: 4 * dp(48), dp(48)
-                pos_hint: {'center_x': 0.5, 'center_y': 0.2}
-                on_release: app.go_to_page("select_layout", "Select Layout")
-
-        Screen:
-            name: 'list_my_mats'
-            ScrollView:
-                do_scroll_x: False
-                DataList:
-                    id: my_mat_dl
-                    items: app.my_mats_names
-        Screen:
-            name: 'select_layout'
-            ScrollView:
-                do_scroll_x: False
-                DataTileGrid:
-                    cols: 2
-                    row_default_height: (self.width - self.cols*self.spacing[0])/self.cols
-                    row_force_default: True
-                    size_hint_y: None
-                    height: self.minimum_height
-                    padding: dp(4), dp(4)
-                    spacing: dp(4)
-                    items: app.available_layouts
-        Screen:
-            name: 'edit_mat'
             BoxLayout:
                 orientation: 'vertical'
                 size_hint: 1, 1
@@ -185,87 +151,7 @@ BoxLayout:
                         on_release: app.edit_menu(self, "7")
 
 
-        Screen:
-            name: 'choose_pedals'
-            BoxLayout:
-                orientation: 'vertical'
-                MDLabel:
-                    font_style: 'Subhead'
-                    theme_text_color: 'Primary'
-                    text: "Selected"
-                    halign: 'left'
-                DataList:
-                    id: selected_pedals_dl
-                    items: app.selected_pedals
-                MDLabel:
-                    font_style: 'Subhead'
-                    theme_text_color: 'Primary'
-                    text: "Available"
-                    halign: 'left'
-                ScrollView:
-                    do_scroll_x: False
-                    DataList:
-                        id: available_pedals_dl
-                        items: app.available_pedals
-                MDFloatingActionButton:
-                    id:                    next_pedals_selected
-                    icon:                'check'
-                    opposite_colors:    True
-                    elevation_normal:    8
-                    pos_hint:            {'center_x': 0.5, 'center_y': 0.2}
-                    disabled: app.next_pedals_disabled
-                    on_release: app.go_to_page("edit_mat", "Edit Mat")
-
-        Screen:
-            name: 'set_actions'
-            MDTabbedPanel:
-                id: tab_panel
-                tab_display_mode:'text'
-
-                MDTab:
-                    name: 'Standard'
-                    text: "Standard" # Why are these not set!!! comment in example
-                    BoxLayout:
-                        orientation: 'vertical'
-                        MDLabel:
-                            font_style: 'Subhead'
-                            theme_text_color: 'Primary'
-                            text: "Selected Controls"
-                            halign: 'left'
-                        DataList:
-                            id: selected_standard_controls_dl
-                            items: app.selected_standard_controls
-                        MDLabel:
-                            font_style: 'Subhead'
-                            theme_text_color: 'Primary'
-                            text: "Available Controls"
-                            halign: 'left'
-                        ScrollView:
-                            do_scroll_x: False
-                            DataList:
-                                id: available_standard_controls_dl
-                                items: app.available_standard_controls
-                        MDFloatingActionButton:
-                            id:                    controls_selected
-                            icon:                'check'
-                            opposite_colors:    True
-                            elevation_normal:    8
-                            pos_hint:            {'center_x': 0.5, 'center_y': 0.2}
-                            disabled: app.next_standard_controls_disabled
-                            on_release: app.set_standard_controls()
-                MDTab:
-                    name: 'Advanced'
-                    text: 'Advanced'
-                    MDLabel:
-                        font_style: 'Body1'
-                        theme_text_color: 'Primary'
-                        text: "Show movies here :)"
-                        halign: 'center'
-
-
 '''
-# action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
-
 my_mats = {}
 try:
     with open('my_mats.json') as f:
@@ -353,6 +239,7 @@ class KitchenSink(App):
     title = "KivyMD Kitchen Sink"
     next_pedals_disabled = BooleanProperty(True)
     next_standard_controls_disabled = BooleanProperty(True)
+    inverted_mat = {}
 
 # self.go_to_page("choose_pedals", "Choose Pedals")
 
@@ -360,6 +247,38 @@ class KitchenSink(App):
             {"title":"Line 6", "thumbnail" : './assets/kitten-1049129_1280.jpg'},
             {"title":"Chase", "thumbnail" : './assets/robin-944887_1280.jpg'}
             ]
+
+    def __init__(self):
+        super(KitchenSink, self).__init__()
+        global mat_def
+        mat_def = my_mats["brothers all switches"] # XXX specify mat here
+        self.inverted_mat = self.invert_mat()
+        Clock.schedule_interval(self.get_from_queue, 0.001)
+
+    def get_from_queue(self, dt):
+        # print("---------> ShowGUI.get_from_queue() entry")
+        try:
+            midi_event = q.get(False)
+            # highligh square that matches this MIDI message
+            # print("SimKivy.get_from_queue(): got data from queue: ",  midi_event[0][0])
+            midi_d = midi_event[0]
+            cell_id = -1
+            if (midi_d[0], midi_d[1]) in self.inverted_mat:
+                cell_id = self.inverted_mat[(midi_d[0], midi_d[1])]
+                # draw the CC value
+                self.root.ids[cell_id].text = " C : " + str(midi_d[0:3])
+            elif (midi_d[0], midi_d[1], midi_d[2]) in self.inverted_mat:
+                cell_id = self.inverted_mat[(midi_d[0], midi_d[1], midi_d[2])]
+                self.root.ids[cell_id].text = " E : " + str(midi_d[0:3])
+
+            if cell_id > -1:
+                print ("found cell,", cell_id)
+                self.root.ids[cell_id].md_bg_color = get_color_from_hex(colors['Pink']['A100'])
+
+        except Empty:
+            pass
+            # print("Error - no data received on queue.")
+            # print("Unschedule Clock's schedule")
 
     def go_to_page(self, page, title):
         self.root.ids.scr_mngr.current = page
@@ -670,11 +589,9 @@ class KitchenSink(App):
         size_x = 420.0
         size_y = 297.0
         # if output_size == "a3":
-        display_size_x, display_size_y = self.root.ids["edit_mat_box"].size
-        x_fac = 1 / float(display_size_x)
-        y_fac = 1 / float(display_size_y)
-        # x_y_fac = size_x / float(display_size_y)
-        # y_x_fac = size_y / float(display_size_x)
+        display_size = self.root.ids["edit_mat_box"].size
+        x_fac = size_x / float(display_size[0])
+        y_fac = size_y / float(display_size[1])
 
         MIDI_messages = { "note_off":0x80, "note_off":0x90, "PP":0xA0, "CC": 0xB0, "PC":0xC0, "CP":0xD0, "PB":0xE0}
         def standard_controls_to_json(control):
@@ -730,20 +647,10 @@ class KitchenSink(App):
                     if "e" not in out_cell:
                         out_cell["e"] = []
                     out_cell["e"].append(block)
-
-            x1 = self.root.ids[cell_id].pos[0]
-            y1 = self.root.ids[cell_id].pos[1]
-            x2 = x1 + (self.root.ids[cell_id].size[0])
-            y2 = y1 + (self.root.ids[cell_id].size[1])
-
-            # out_cell["x2"] = (display_size_x - x1) * x_fac
-            # out_cell["y2"] = (display_size_y - y1) * y_fac
-            # out_cell["x1"] = (display_size_x - x2) * x_fac
-            # out_cell["y1"] = (display_size_y - y2) * y_fac
-            out_cell["y2"] = x2 * x_fac * size_y
-            out_cell["x1"] = size_x - (y2 * y_fac * size_x)
-            out_cell["y1"] = x1 * x_fac * size_y
-            out_cell["x2"] = size_x - (y1 * y_fac * size_x)
+            out_cell["x1"] = self.root.ids[cell_id].pos[0] * x_fac
+            out_cell["y1"] = self.root.ids[cell_id].pos[1] * y_fac
+            out_cell["x2"] = out_cell["x1"] + (self.root.ids[cell_id].size[0] * x_fac)
+            out_cell["y2"] = out_cell["y1"] + (self.root.ids[cell_id].size[1] * y_fac)
             out_mat.append(out_cell)
         return json.dumps(out_mat)
 
@@ -753,16 +660,176 @@ class KitchenSink(App):
         def on_stop(self):
             pass
 
+    def invert_mat(self):
+        # given midi message find cell
+        MIDI_messages = { "note_off":0x80, "note_off":0x90, "PP":0xA0, "CC": 0xB0, "PC":0xC0, "CP":0xD0, "PB":0xE0}
+        def standard_controls_to_json(control):
+            # "Tone B": ["Tone B", "on_foot_move", "1"],
+            # "Channel A Boost": ["Channel A Effect Select", "on_foot_down", "Boost"],
+            # "Tone B": {"type": "CC", "controller":19, "curve":"1"},
+            # "Channel A Effect Select": {"type": "CC", "controller":21, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
+            maker_model, channel, standard_control = split_standard_controls_key(control)
+            s_c = get_standard_controls_from_key(control)
+            a_c = advanced_controls[maker_model][s_c[0]]
+            action = s_c[1]
+            block = {}
 
-# class AutonomousColorWheel(ColorWheel):
-#     sv_s = 1
-#     def __init__(self, **kwarg):
-#         super(AutonomousColorWheel, self).__init__(**kwarg)
-#         self.init_wheel(dt = 0)
+            if a_c["type"] in MIDI_messages:
+                block["t"] = "m"
+                block["b1"] = MIDI_messages[a_c["type"]] | int(channel)
+                if "controller" in a_c:
+                    block["b2"] = a_c["controller"]
+                if "curve" in a_c:
+                    block["c"] = default_curves[s_c[2]][1]
+                elif "enum" in a_c:
+                    block["b3"] = a_c["enum"][s_c[2]]
+                else:
+                    block["b3"] = s_c[2]
+            return (action, block)
 
-#     def on__hsv(self, instance, value):
-#         super(AutonomousColorWheel, self).on__hsv(instance, value)
-#         print(self.rgba)     #Or any method you want to trigger
+        out_mat = {}
+        for cell_id, cell_content in mat_def["cells"].items():
+            for control, val in cell_content["standard_controls"]:
+                action, block = standard_controls_to_json(control)
+                if action == "on_foot_move":
+                    out_mat[(block["b1"], block["b2"])] = cell_id
+                elif action == "on_foot_down":
+                    out_mat[(block["b1"], block["b2"], block["b3"])] = cell_id
+                else:
+                    out_mat[(block["b1"], block["b2"], block["b3"])] = cell_id
+        return out_mat
+
+        def on_pause(self):
+            return True
+
+        def on_stop(self):
+            pass
+
+
+# from kivy.base import EventLoop
+
+# def mainloop(self):
+#     # replaced while with if
+#     if not EventLoop.quit and EventLoop.status == 'started':
+#         try:
+#             self._mainloop()
+#         except EventLoop.BaseException as inst:
+#             # use exception manager first
+#             r = EventLoop.ExceptionManager.handle_exception(inst)
+#             if r == EventLoop.ExceptionManager.RAISE:
+#                 EventLoop.stopTouchApp()
+#                 raise
+#             else:
+#                 pass
+
+
+# if __name__ == '__main__':
+#     from kivy.base import runTouchApp
+#     runTouchApp(KitchenSink(), slave=True)
+#     # monkey patch
+#     EventLoop.window.mainloop = mainloop
+#     while True:
+#         EventLoop.window.mainloop(EventLoop.window)
+#         # print('do the other stuff')
+#         if EventLoop.quit:
+#             break
+import sys
+import os
+
+import pygame.midi
+
+try:  # Ensure set available for output example
+    set
+except NameError:
+    from sets import Set as set
+
+
+def print_device_info():
+    pygame.midi.init()
+    _print_device_info()
+    pygame.midi.quit()
+
+def _print_device_info():
+    for i in range( pygame.midi.get_count() ):
+        r = pygame.midi.get_device_info(i)
+        (interf, name, input, output, opened) = r
+
+        in_out = ""
+        if input:
+            in_out = "(input)"
+        if output:
+            in_out = "(output)"
+
+        print ("%2i: interface :%s:, name :%s:, opened :%s:  %s" %
+               (i, interf, name, opened, in_out))
+
+going = True
+def input_main(device_id = None):
+    # pygame.init()
+    # pygame.fastevent.init()
+    # event_get = pygame.fastevent.get
+    # event_post = pygame.fastevent.post
+
+    pygame.midi.init()
+
+    _print_device_info()
+
+
+    if device_id is None:
+        input_id = pygame.midi.get_default_input_id()
+    else:
+        input_id = device_id
+
+    print ("using input_id :%s:" % input_id)
+    i = pygame.midi.Input( input_id )
+
+    # pygame.display.set_mode((1,1))
+
+
+    global going
+    going = True
+    while going:
+        # events = event_get()
+        # for e in events:
+        #     if e.type in [QUIT]:
+        #         going = False
+        #     if e.type in [KEYDOWN]:
+        #         going = False
+        #     if e.type in [pygame.midi.MIDIIN]:
+        #         print (e)
+
+        if i.poll():
+            midi_events = i.read(10)
+            for e in midi_events:
+                q.put(e)
+            # convert them into pygame events.
+            # midi_evs = pygame.midi.midis2events(midi_events, i.device_id)
+
+            # for m_e in midi_evs:
+            #     event_post( m_e )
+
+    del i
+    pygame.midi.quit()
+
+class SimSocket():
+    def __init__(self, queue):
+        self.q = queue
+
+    def put_on_queue(self):
+        input_main()
 
 if __name__ == '__main__':
+    ss = SimSocket(q)
+
+    simSocket_thread = Thread(name="simSocket",target=ss.put_on_queue)
+    simSocket_thread.start()
+
+    print("Starting KivyGui().run()")
+
     KitchenSink().run()
+    global going
+    going = False
+    print("kivy done")
+
+
+
