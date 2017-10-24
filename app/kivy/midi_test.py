@@ -86,7 +86,7 @@ BoxLayout:
         background_palette: 'Primary'
         background_hue: '500'
         left_action_items: [['menu', lambda x: app.previous_page()]]
-        right_action_items: [['dots-vertical', lambda x: app.show_global_edit_menu(self)]]
+        right_action_items: [['dots-vertical', lambda x: app.reset_colors()]]
     ScreenManager:
         id: scr_mngr
         Screen:
@@ -289,6 +289,11 @@ class KitchenSink(App):
 
     def previous_page(self):
         pass
+
+    def reset_colors(self):
+        import random
+        for cell_id in mat_def["cells"].keys():
+            self.root.ids[cell_id].md_bg_color = get_color_from_hex(random.choice(colors['Teal'].items())[1])
 
     def select_pedal(self, ctx):
         print("select pedal", ctx)

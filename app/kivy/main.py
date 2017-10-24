@@ -2,7 +2,7 @@
 from __future__ import print_function
 from __future__ import division
 
-import json
+import json, os, inspect
 
 from kivy.app import App
 from kivy.lang import Builder
@@ -136,19 +136,19 @@ BoxLayout:
                         id: 0
                         text: 'MDFlatButton'
                         size_hint: 0.4, 1
-                        md_bg_color: get_color_from_hex(colors['Teal']['200'])
+                        md_bg_color: get_color_from_hex('ee4498')
                         on_release: app.edit_menu(self, "0")
                     MDFlatButton:
                         id: 1
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex(colors['Teal']['500'])
+                        md_bg_color: get_color_from_hex('49c3e9')
                         on_release: app.edit_menu(self, "1")
                     MDFlatButton:
                         id: 2
                         text: 'MDFlatButton'
                         size_hint: 0.4, 1
-                        md_bg_color: get_color_from_hex(colors['Teal']['800'])
+                        md_bg_color: get_color_from_hex('f37021')
                         on_release: app.edit_menu(self, "2")
                 BoxLayout:
                     orientation: 'horizontal'
@@ -157,31 +157,31 @@ BoxLayout:
                         id: 3
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex(colors['Teal']['A100'])
+                        md_bg_color: get_color_from_hex('2c79be')
                         on_release: app.edit_menu(self, "3")
                     MDFlatButton:
                         id: 4
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex(colors['Teal']['A100'])
+                        md_bg_color: get_color_from_hex('e2412b')
                         on_release: app.edit_menu(self, "4")
                     MDFlatButton:
                         id: 5
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex(colors['Teal']['A100'])
+                        md_bg_color: get_color_from_hex('894c9e')
                         on_release: app.edit_menu(self, "5")
                     MDFlatButton:
                         id: 6
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex(colors['Teal']['A100'])
+                        md_bg_color: get_color_from_hex('4cb853')
                         on_release: app.edit_menu(self, "6")
                     MDFlatButton:
                         id: 7
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex(colors['Teal']['A100'])
+                        md_bg_color: get_color_from_hex('eedc2a')
                         on_release: app.edit_menu(self, "7")
 
 
@@ -550,7 +550,7 @@ class KitchenSink(App):
              },
             {'viewclass': 'MDMenuItem',
              'text': 'Export PDF to print',
-             'on_release' : lambda *x: self.go_to_page("choose_pedals", "Choose Pedals")
+             'on_release' : lambda *x: self.mat_to_pdf()
              },
             {'viewclass': 'MDMenuItem',
              'text': 'Send to Poly Expressive',
@@ -747,11 +747,66 @@ class KitchenSink(App):
             out_mat.append(out_cell)
         return json.dumps(out_mat)
 
-        def on_pause(self):
-            return True
+    def on_pause(self):
+        return True
 
-        def on_stop(self):
-            pass
+    def on_stop(self):
+        pass
+
+    def mat_to_pdf(self, output_size="a3"):
+        from fpdf import FPDF
+        size_x = 469.0
+        size_y = 294.0
+        pdf = FPDF('L', 'mm', (size_y, size_x))
+        pdf.add_page()
+        filepath = os.path.join(os.path.dirname(os.path.abspath(inspect.stack()[0][1])), "assets", "Esphimere Bold.otf")
+        pdf.add_font('esphimere', '', filepath, uni=True)
+        pdf.set_font('esphimere', '', 46)
+        pdf.set_margins(0, 0, 0)
+        pdf.set_auto_page_break(False)
+        pdf.set_text_color(255)
+
+
+        # if output_size == "a3":
+        display_size_x, display_size_y = self.root.ids["edit_mat_box"].size
+        x_fac = 1 / float(display_size_x)
+        y_fac = 1 / float(display_size_y)
+        # x_y_fac = size_x / float(display_size_y)
+        # y_x_fac = size_y / float(display_size_x)
+
+        out_mat = []
+        for cell_id, cell_content in mat_def["cells"].items():
+            out_cell = {}
+
+            x1 = self.root.ids[cell_id].pos[0]
+            y1 = self.root.ids[cell_id].pos[1]
+            x2 = x1 + (self.root.ids[cell_id].size[0])
+            y2 = y1 + (self.root.ids[cell_id].size[1])
+
+            # out_cell["x2"] = (display_size_x - x1) * x_fac
+            # out_cell["y2"] = (display_size_y - y1) * y_fac
+            # out_cell["x1"] = (display_size_x - x2) * x_fac
+            # out_cell["y1"] = (display_size_y - y2) * y_fac
+            out_y2 = size_y - (y1 * y_fac * size_y)
+            out_x2 = (x2 * x_fac * size_x)
+            out_y1 = size_y - (y2 * y_fac * size_y)
+            out_x1 = (x1 * x_fac * size_x)
+
+            color = self.root.ids[cell_id].md_bg_color
+            color = [a * 255 for a in color[0:-1]]
+            pdf.set_fill_color(*color)
+
+            text_margin = 20
+            text = cell_content["text"]
+            # pdf.rect(out_x1, out_y1, out_x2-out_x1, out_y2-out_y1, "F")
+            # if text:
+            #     pdf.text(out_x1+text_margin, out_y1+text_margin, text)
+            pdf.set_xy(out_x1, out_y1)
+            pdf.multi_cell(out_x2-out_x1, out_y2-out_y1, text, border = 0,
+                    align = 'C', fill = True)
+
+        pdf.output('tuto1.pdf', 'F')
+
 
 
 # class AutonomousColorWheel(ColorWheel):

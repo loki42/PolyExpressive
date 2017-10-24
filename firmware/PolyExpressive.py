@@ -165,11 +165,11 @@ def execute_continous_action(actions, x1, y1, x2, y2, x, y, z):
         m_x = transform_to_range(x, x1, x2)
         for action in actions['x']:
             map_and_send_midi(action, m_x)
-    elif 'y' in actions:
+    if 'y' in actions:
         m_y = transform_to_range(y, y1, y2)
         for action in actions['y']:
             map_and_send_midi(action, m_y)
-    elif 'z' in actions:
+    if 'z' in actions:
         # z is already transformed to the currect range
         for action in actions['z']:
             map_and_send_midi(action, z)
