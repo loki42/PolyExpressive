@@ -272,6 +272,7 @@ class KitchenSink(App):
                 self.root.ids[cell_id].text = " E : " + str(midi_d[0:3])
 
             if cell_id > -1:
+                print("midi is", midi_d)
                 print ("found cell,", cell_id)
                 self.root.ids[cell_id].md_bg_color = get_color_from_hex(colors['Pink']['A100'])
 
@@ -612,7 +613,7 @@ class KitchenSink(App):
 
             if a_c["type"] in MIDI_messages:
                 block["t"] = "m"
-                block["b1"] = MIDI_messages[a_c["type"]] | int(channel)
+                block["b1"] = MIDI_messages[a_c["type"]] | int(channel-1)
                 if "controller" in a_c:
                     block["b2"] = a_c["controller"]
                 if "curve" in a_c:
@@ -681,7 +682,7 @@ class KitchenSink(App):
 
             if a_c["type"] in MIDI_messages:
                 block["t"] = "m"
-                block["b1"] = MIDI_messages[a_c["type"]] | int(channel)
+                block["b1"] = MIDI_messages[a_c["type"]] | (int(channel)-1)
                 if "controller" in a_c:
                     block["b2"] = a_c["controller"]
                 if "curve" in a_c:

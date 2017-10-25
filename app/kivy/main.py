@@ -296,6 +296,16 @@ advanced_controls = {
     "Engage Last Preset": {"type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}},
     "Bypass Switch": {"type": "CC", "controller":103, "enum":{"Both Enabled": 127, "Only A": 85, "Only B": 45, "Bypass":0}},
     "Preset Select": {"type": "PC"}
+    },
+"Line 6:M9":{
+    "Expression Pedal 1": {"type": "CC", "controller":1, "curve":"1"},
+    "Expression Pedal 2": {"type": "CC", "controller":2, "curve":"1"},
+    "FX Unit 1A": {"type": "CC", "controller":11, "enum":{"Bypass":0, "On":127}},
+    "FX Unit 1B": {"type": "CC", "controller":12, "enum":{"Bypass":0, "On":127}},
+    "FX Unit 2A": {"type": "CC", "controller":14, "enum":{"Bypass":0, "On":127}},
+    "FX Unit 2B": {"type": "CC", "controller":15, "enum":{"Bypass":0, "On":127}},
+    "FX Unit 3A": {"type": "CC", "controller":17, "enum":{"Bypass":0, "On":127}},
+    "FX Unit 3B": {"type": "CC", "controller":18, "enum":{"Bypass":0, "On":127}}
     }
 }
 
@@ -314,7 +324,23 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Order B > A": ["Channel Order", "on_foot_down", "B > A"],
     "Channel B Boost": ["Channel B Effect Select", "on_foot_down", "Boost"],
     "Channel B Drive": ["Channel B Effect Select", "on_foot_down", "Drive"],
-    "Channel B Fuzz": ["Channel B Effect Select", "on_foot_down", "Fuzz"]}
+    "Channel B Fuzz": ["Channel B Effect Select", "on_foot_down", "Fuzz"]},
+    "Line 6:M9":{
+    "Expression Pedal 1": ["Expression Pedal 1", "on_foot_move", "1"],
+    "Expression Pedal 2": ["Expression Pedal 2", "on_foot_move", "1"],
+    "FX Unit 1A On": ["FX Unit 1A", "on_foot_down", "On"],
+    "FX Unit 1B On": ["FX Unit 1B", "on_foot_down", "On"],
+    "FX Unit 2A On": ["FX Unit 2A", "on_foot_down", "On"],
+    "FX Unit 2B On": ["FX Unit 2B", "on_foot_down", "On"],
+    "FX Unit 3A On": ["FX Unit 3A", "on_foot_down", "On"],
+    "FX Unit 3B On": ["FX Unit 3B", "on_foot_down", "On"],
+    "FX Unit 1A Bypass": ["FX Unit 1A", "on_foot_down", "Bypass"],
+    "FX Unit 1B Bypass": ["FX Unit 1B", "on_foot_down", "Bypass"],
+    "FX Unit 2A Bypass": ["FX Unit 2A", "on_foot_down", "Bypass"],
+    "FX Unit 2B Bypass": ["FX Unit 2B", "on_foot_down", "Bypass"],
+    "FX Unit 3A Bypass": ["FX Unit 3A", "on_foot_down", "Bypass"],
+    "FX Unit 3B Bypass": ["FX Unit 3B", "on_foot_down", "Bypass"]
+        }
     }
 
 included_standard_controls = []
@@ -388,6 +414,8 @@ class KitchenSink(App):
     def select_mat(self, ctx):
         global mat_def
         mat_def = my_mats[ctx["id"]]
+        for cell_id, cell_content in mat_def["cells"].items():
+            self.root.ids[cell_id].text = cell_content["text"]
         print("setting mat to", ctx["id"], "my_mats", my_mats)
         self.go_to_page("edit_mat", "Edit Mat")
 
@@ -690,7 +718,7 @@ class KitchenSink(App):
 
             if a_c["type"] in MIDI_messages:
                 block["t"] = "m"
-                block["b1"] = MIDI_messages[a_c["type"]] | int(channel)
+                block["b1"] = MIDI_messages[a_c["type"]] | (int(channel)-1) # channel from 1-16 mapped to 0-15 here
                 if "controller" in a_c:
                     block["b2"] = a_c["controller"]
                 if "curve" in a_c:
@@ -797,7 +825,7 @@ class KitchenSink(App):
             pdf.set_fill_color(*color)
 
             text_margin = 20
-            text = cell_content["text"]
+            text = cell_content["text"].upper()
             # pdf.rect(out_x1, out_y1, out_x2-out_x1, out_y2-out_y1, "F")
             # if text:
             #     pdf.text(out_x1+text_margin, out_y1+text_margin, text)
@@ -808,6 +836,93 @@ class KitchenSink(App):
         pdf.output('tuto1.pdf', 'F')
 
 
+class MatLayoutContainer(BoxLayout):
+
+    def __init__(self, **kwargs):
+        super(InterfaceManager, self).__init__(**kwargs)
+
+        self.first = Button(text="First")
+        self.first.bind(on_press=self.show_second)
+
+        self.second = Button(text="Second")
+        self.second.bind(on_press=self.show_final)
+
+        self.final = Label(text="Hello World")
+        self.add_widget(self.first)
+
+    def show_second(self, button):
+        self.clear_widgets()
+        self.add_widget(self.second)
+
+    def show_final(self, button):
+        self.clear_widgets()
+        self.add_widget(self.final)
+"""
+
+        Screen:
+            name: 'edit_mat'
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint: 1, 1
+                id: edit_mat_box
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint: 1, 0.6
+                    MDFlatButton:
+                        id: 0
+                        text: 'MDFlatButton'
+                        size_hint: 0.4, 1
+                        md_bg_color: get_color_from_hex('ee4498')
+                        on_release: app.edit_menu(self, "0")
+                    MDFlatButton:
+                        id: 1
+                        text: 'MDFlatButton'
+                        size_hint: 0.2, 1
+                        md_bg_color: get_color_from_hex('49c3e9')
+                        on_release: app.edit_menu(self, "1")
+                    MDFlatButton:
+                        id: 2
+                        text: 'MDFlatButton'
+                        size_hint: 0.4, 1
+                        md_bg_color: get_color_from_hex('f37021')
+                        on_release: app.edit_menu(self, "2")
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint: 1, 0.4
+                    MDFlatButton:
+                        id: 3
+                        text: 'MDFlatButton'
+                        size_hint: 0.2, 1
+                        md_bg_color: get_color_from_hex('2c79be')
+                        on_release: app.edit_menu(self, "3")
+                    MDFlatButton:
+                        id: 4
+                        text: 'MDFlatButton'
+                        size_hint: 0.2, 1
+                        md_bg_color: get_color_from_hex('e2412b')
+                        on_release: app.edit_menu(self, "4")
+                    MDFlatButton:
+                        id: 5
+                        text: 'MDFlatButton'
+                        size_hint: 0.2, 1
+                        md_bg_color: get_color_from_hex('894c9e')
+                        on_release: app.edit_menu(self, "5")
+                    MDFlatButton:
+                        id: 6
+                        text: 'MDFlatButton'
+                        size_hint: 0.2, 1
+                        md_bg_color: get_color_from_hex('4cb853')
+                        on_release: app.edit_menu(self, "6")
+                    MDFlatButton:
+                        id: 7
+                        text: 'MDFlatButton'
+                        size_hint: 0.2, 1
+                        md_bg_color: get_color_from_hex('eedc2a')
+                        on_release: app.edit_menu(self, "7")
+
+
+
+"""
 
 # class AutonomousColorWheel(ColorWheel):
 #     sv_s = 1
