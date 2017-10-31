@@ -29,6 +29,8 @@ from kivymd.time_picker import MDTimePicker
 from kivymd.menu import MDDropdownMenu
 from kivymd.textfields import MDTextField
 from kivymd.button import MDRaisedButton
+from kivymd.button import MDFlatButton
+from kivy.utils import get_color_from_hex
 
 import data_view
 
@@ -131,7 +133,7 @@ BoxLayout:
                 id: edit_mat_box
                 BoxLayout:
                     orientation: 'horizontal'
-                    size_hint: 1, 0.6
+                    size_hint: 1, 0.4
                     MDFlatButton:
                         id: 0
                         text: 'MDFlatButton'
@@ -183,7 +185,6 @@ BoxLayout:
                         size_hint: 0.2, 1
                         md_bg_color: get_color_from_hex('eedc2a')
                         on_release: app.edit_menu(self, "7")
-
 
         Screen:
             name: 'choose_pedals'
@@ -275,8 +276,11 @@ except IOError as e:
 
 # pedal / channel pairs
 mat_def = {"cells":{}, "layout":1, "name":"unnamed", "included_pedals":[]}
-for i in range(8):
-    mat_def["cells"][str(i)] = {"color":(0,0,0,0), "text": "", "standard_controls": []}
+def default_cells(num_cells):
+    for i in range(num_cells):
+        mat_def["cells"][str(i)] = {"color":(0,0,0,0), "text": "", "standard_controls": []}
+
+default_cells(8)
 
 default_curves = {"1": ["linear", [[0,0],[127,127]], True]}
 current_selected_cell = "0" ## current target for editing / bit dodgy
@@ -380,11 +384,13 @@ class KitchenSink(App):
     next_pedals_disabled = BooleanProperty(True)
     next_standard_controls_disabled = BooleanProperty(True)
 
+    cell_rows = []
+    cell_buttons = {}
 # self.go_to_page("choose_pedals", "Choose Pedals")
 
-    t_available_layouts = [{"title":"Eventide H9", "thumbnail" : './assets/layout1.png'},
-            {"title":"Line 6", "thumbnail" : './assets/kitten-1049129_1280.jpg'},
-            {"title":"Chase", "thumbnail" : './assets/robin-944887_1280.jpg'}
+    t_available_layouts = [{"title":"1", "thumbnail" : './assets/layout1.png', "layout_id":1},
+            {"title":"2", "thumbnail" : './assets/kitten-1049129_1280.jpg', "layout_id":2},
+            {"title":"3", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":3}
             ]
 
     def go_to_page(self, page, title):
@@ -414,10 +420,12 @@ class KitchenSink(App):
     def select_mat(self, ctx):
         global mat_def
         mat_def = my_mats[ctx["id"]]
+        self.show_layout(self.root.ids["edit_mat_box"], mat_def["layout"])
         for cell_id, cell_content in mat_def["cells"].items():
-            self.root.ids[cell_id].text = cell_content["text"]
+            self.cell_buttons[cell_id].text = cell_content["text"]
         print("setting mat to", ctx["id"], "my_mats", my_mats)
         self.go_to_page("edit_mat", "Edit Mat")
+
 
     def set_control_direction(self, ctx, direction):
         self.dialog.dismiss()
@@ -493,8 +501,11 @@ class KitchenSink(App):
         print("mat is", mat_def)
         self.go_to_page("edit_mat", "Edit Mat")
 
-    def click_set_layout(self, layout):
+    def click_set_layout(self, ctx):
         print("set layout")
+        # set layout
+        mat_def["layout"] = ctx["layout_id"]
+        self.show_layout(self.root.ids["edit_mat_box"], mat_def["layout"])
         self.go_to_page("choose_pedals", "Choose Pedals")
 
     def set_up_action_page(self, cell_id):
@@ -539,21 +550,6 @@ class KitchenSink(App):
 
     def edit_menu(self, parent, cell_id):
         print("pos is", parent.pos, "size is", parent.size)
-##
-        # out_cell = {}
-        # size_x = 420.0
-        # size_y = 297.0
-        # # if output_size == "a3":
-        # display_size = self.root.ids["edit_mat_box"].size
-
-        # x_fac = size_x / display_size[0]
-        # y_fac = size_y / display_size[1]
-        # out_cell["x1"] = self.root.ids[cell_id].pos[0] * x_fac
-        # out_cell["y1"] = self.root.ids[cell_id].pos[1] * y_fac
-        # out_cell["x2"] = out_cell["x1"] + (self.root.ids[cell_id].size[0] * x_fac)
-        # out_cell["y2"] = out_cell["y1"] + (self.root.ids[cell_id].size[1] * y_fac)
-        # print("print space", out_cell)
-# ##
         menu_items = [
             {'viewclass': 'MDMenuItem',
              'text': 'Set Action',
@@ -622,7 +618,7 @@ class KitchenSink(App):
                                auto_dismiss=False)
         def set_text(x):
             mat_def["cells"][cell_id]["text"] = content.text
-            self.root.ids[cell_id].text = content.text
+            self.cell_buttons[cell_id].text = content.text
             self.dialog.dismiss()
 
         self.dialog.add_action_button("Set",
@@ -759,10 +755,10 @@ class KitchenSink(App):
                         out_cell["e"] = []
                     out_cell["e"].append(block)
 
-            x1 = self.root.ids[cell_id].pos[0]
-            y1 = self.root.ids[cell_id].pos[1]
-            x2 = x1 + (self.root.ids[cell_id].size[0])
-            y2 = y1 + (self.root.ids[cell_id].size[1])
+            x1 = self.cell_buttons[cell_id].pos[0]
+            y1 = self.cell_buttons[cell_id].pos[1]
+            x2 = x1 + (self.cell_buttons[cell_id].size[0])
+            y2 = y1 + (self.cell_buttons[cell_id].size[1])
 
             # out_cell["x2"] = (display_size_x - x1) * x_fac
             # out_cell["y2"] = (display_size_y - y1) * y_fac
@@ -806,10 +802,10 @@ class KitchenSink(App):
         for cell_id, cell_content in mat_def["cells"].items():
             out_cell = {}
 
-            x1 = self.root.ids[cell_id].pos[0]
-            y1 = self.root.ids[cell_id].pos[1]
-            x2 = x1 + (self.root.ids[cell_id].size[0])
-            y2 = y1 + (self.root.ids[cell_id].size[1])
+            x1 = self.cell_buttons[cell_id].pos[0]
+            y1 = self.cell_buttons[cell_id].pos[1]
+            x2 = x1 + (self.cell_buttons[cell_id].size[0])
+            y2 = y1 + (self.cell_buttons[cell_id].size[1])
 
             # out_cell["x2"] = (display_size_x - x1) * x_fac
             # out_cell["y2"] = (display_size_y - y1) * y_fac
@@ -820,7 +816,7 @@ class KitchenSink(App):
             out_y1 = size_y - (y2 * y_fac * size_y)
             out_x1 = (x1 * x_fac * size_x)
 
-            color = self.root.ids[cell_id].md_bg_color
+            color = self.cell_buttons[cell_id].md_bg_color
             color = [a * 255 for a in color[0:-1]]
             pdf.set_fill_color(*color)
 
@@ -836,32 +832,63 @@ class KitchenSink(App):
         pdf.output('tuto1.pdf', 'F')
 
 
-class MatLayoutContainer(BoxLayout):
+# class MatLayoutContainer(BoxLayout):
 
-    def __init__(self, **kwargs):
-        super(InterfaceManager, self).__init__(**kwargs)
+    # def __init__(self, **kwargs):
+    #     # self.size_hint = (1,1)
+    #     super(BoxLayout, self).__init__(**kwargs)
+    #     self.orientation = "vertical"
+    #     self.show_layout(1)
 
-        self.first = Button(text="First")
-        self.first.bind(on_press=self.show_second)
 
-        self.second = Button(text="Second")
-        self.second.bind(on_press=self.show_final)
+    def show_layout(self, target, layout_def_id):
+        self.layouts = {}
+        self.layouts[1] = [[0.6, [[0.4, "ee4498"], [0.2, "49c3e9"],  [0.4, "f37021"]]],
+                [0.4, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]]]
+        self.layouts[2] = [[0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]],
+                [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]],
+                [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]],
+                [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]]]
+        self.layouts[3] = [[0.5, [[0.4, "ee4498"], [0.2, "49c3e9"],  [0.4, "f37021"]]],
+                [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]],
+                [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]]]
+        self.layouts[4] = [[0.5, [[0.33, "ee4498"], [0.33, "49c3e9"],  [0.33, "f37021"]]],
+                [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]],
+                [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]]]
+        target.clear_widgets()
+        cell_id = 0
+        self.cell_rows = []
+        self.cell_buttons = {}
 
-        self.final = Label(text="Hello World")
-        self.add_widget(self.first)
+        for row in self.layouts[layout_def_id]:
+            r = BoxLayout(orientation="horizontal", size_hint=(1, row[0]))
+            r.orientation="horizontal"
+            r.size_hint=(1, row[0])
+            for col in row[1]:
+                print("col is", col, "cell id is", cell_id)
+                b = MDFlatButton(
+                        text= "test",
+                        id=str(cell_id),
+                        md_bg_color= get_color_from_hex(col[1]),
+                        size_hint= (col[0], 1),
+                        on_release= lambda x, cell_id=cell_id: self.edit_menu(b, str(cell_id)))
+                b.md_bg_color= get_color_from_hex(col[1])
+                b.id=str(cell_id)
+                b.size_hint= (col[0], 1)
+                r.add_widget(b)
+                self.cell_buttons[str(cell_id)] = b
+                cell_id += 1
 
-    def show_second(self, button):
-        self.clear_widgets()
-        self.add_widget(self.second)
+            default_cells(cell_id-1)
+            target.add_widget(r)
+            self.cell_rows.append(r)
 
-    def show_final(self, button):
-        self.clear_widgets()
-        self.add_widget(self.final)
+
 """
 
         Screen:
             name: 'edit_mat'
-            BoxLayout:
+            MatLayoutContainer:
                 orientation: 'vertical'
                 size_hint: 1, 1
                 id: edit_mat_box
@@ -872,19 +899,19 @@ class MatLayoutContainer(BoxLayout):
                         id: 0
                         text: 'MDFlatButton'
                         size_hint: 0.4, 1
-                        md_bg_color: get_color_from_hex('ee4498')
+                        md_bg_color: get_color_from_hex('')
                         on_release: app.edit_menu(self, "0")
                     MDFlatButton:
                         id: 1
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex('49c3e9')
+                        md_bg_color: get_color_from_hex('')
                         on_release: app.edit_menu(self, "1")
                     MDFlatButton:
                         id: 2
                         text: 'MDFlatButton'
                         size_hint: 0.4, 1
-                        md_bg_color: get_color_from_hex('f37021')
+                        md_bg_color: get_color_from_hex('')
                         on_release: app.edit_menu(self, "2")
                 BoxLayout:
                     orientation: 'horizontal'
@@ -893,31 +920,31 @@ class MatLayoutContainer(BoxLayout):
                         id: 3
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex('2c79be')
+                        md_bg_color: get_color_from_hex('')
                         on_release: app.edit_menu(self, "3")
                     MDFlatButton:
                         id: 4
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex('e2412b')
+                        md_bg_color: get_color_from_hex('')
                         on_release: app.edit_menu(self, "4")
                     MDFlatButton:
                         id: 5
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex('894c9e')
+                        md_bg_color: get_color_from_hex('')
                         on_release: app.edit_menu(self, "5")
                     MDFlatButton:
                         id: 6
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex('4cb853')
+                        md_bg_color: get_color_from_hex('')
                         on_release: app.edit_menu(self, "6")
                     MDFlatButton:
                         id: 7
                         text: 'MDFlatButton'
                         size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex('eedc2a')
+                        md_bg_color: get_color_from_hex('')
                         on_release: app.edit_menu(self, "7")
 
 

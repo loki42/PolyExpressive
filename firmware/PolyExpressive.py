@@ -43,7 +43,9 @@ action_list = []
 with open('action_list.json', 'r') as f:
     action_list = json.load(f)
 
+hold_cell_mode = True
 toggle_states = {}
+prev_sent = {"b1":0, "b2":0, "b3":0}
 
 MIDI_COMMANDS = {
         "clock": 0xF8,
@@ -59,6 +61,7 @@ def send_clock_message(command):
     uart.write(bytes((command,)))
 
 def transform_to_range(x, x1, x2):
+    x = max(min(x, x2), x1)
     return ((x-x1) / (x2-x1)) * 127
 
 def point_to_action(x, y, z):
@@ -96,12 +99,20 @@ def evaluate_curve(curve, v):
     t = (v-curve[near-1][0]) / (curve[near][0] - curve[near-1][0])
     return int(lerp(curve[near-1][1], curve[near][1], t))
 
-def map_and_send_midi(action, param):
+def map_and_send_midi(action, param, remove_dup=True):
     # evalate curve
     mapped_param = evaluate_curve(action['c'], param)
     # send MIDI with param
+    if remove_dup:
+        if action["b1"] == prev_sent["b1"] and action["b2"] == prev_sent["b2"] and mapped_param == prev_sent["b3"]:
+            return
+        else:
+            prev_sent["b1"] = action["b1"]
+            prev_sent["b2"] = action["b2"]
+            prev_sent["b3"] = mapped_param
+
     send_midi_message(action["b1"], action["b2"], mapped_param)
-    print("sending midi", action["b1"], action["b2"], mapped_param)
+    # print("sending midi", action["b1"], action["b2"], mapped_param)
 
 def update_bpm(bpm):
     global clock_interval_us
@@ -155,7 +166,7 @@ def inner_execute_action(ap, z):
         tap_tempo()
     elif ap["t"] == "m":
         if "c" in ap:
-            map_and_send_midi(ap, z)
+            map_and_send_midi(ap, z, False)
         else:
             # send MIDI no parameters
             send_midi_message(ap["b1"], ap["b2"], ap["b3"])
@@ -216,10 +227,15 @@ def core_loop():
                 end_action = None
             current_action = None
         else:
-            action_id, action = point_to_action(x, y, z)
+            if hold_cell_mode and current_action is not None: # only change action on initial foot down
+                action_id = current_action['id']
+                action = current_action
+            else:
+                action_id, action = point_to_action(x, y, z)
+
             if action != False:
                 if current_action is None or current_action['id'] != action_id: # compare id's
-                    print("action occured", action_id)
+                    # print("action occured", action_id)
                     # the new action isn't the same as the previous current action so execute any end_action
                     if end_action is not None:
                         # run them

@@ -258,23 +258,24 @@ class KitchenSink(App):
     def get_from_queue(self, dt):
         # print("---------> ShowGUI.get_from_queue() entry")
         try:
-            midi_event = q.get(False)
-            # highligh square that matches this MIDI message
-            # print("SimKivy.get_from_queue(): got data from queue: ",  midi_event[0][0])
-            midi_d = midi_event[0]
-            cell_id = -1
-            if (midi_d[0], midi_d[1]) in self.inverted_mat:
-                cell_id = self.inverted_mat[(midi_d[0], midi_d[1])]
-                # draw the CC value
-                self.root.ids[cell_id].text = " C : " + str(midi_d[0:3])
-            elif (midi_d[0], midi_d[1], midi_d[2]) in self.inverted_mat:
-                cell_id = self.inverted_mat[(midi_d[0], midi_d[1], midi_d[2])]
-                self.root.ids[cell_id].text = " E : " + str(midi_d[0:3])
+            while True:
+                midi_event = q.get(False)
+                # highligh square that matches this MIDI message
+                # print("SimKivy.get_from_queue(): got data from queue: ",  midi_event[0][0])
+                midi_d = midi_event[0]
+                cell_id = -1
+                if (midi_d[0], midi_d[1]) in self.inverted_mat:
+                    cell_id = self.inverted_mat[(midi_d[0], midi_d[1])]
+                    # draw the CC value
+                    self.root.ids[cell_id].text = " C : " + str(midi_d[0:3])
+                elif (midi_d[0], midi_d[1], midi_d[2]) in self.inverted_mat:
+                    cell_id = self.inverted_mat[(midi_d[0], midi_d[1], midi_d[2])]
+                    self.root.ids[cell_id].text = " E : " + str(midi_d[0:3])
 
-            if cell_id > -1:
-                print("midi is", midi_d)
-                print ("found cell,", cell_id)
-                self.root.ids[cell_id].md_bg_color = get_color_from_hex(colors['Pink']['A100'])
+                if cell_id > -1:
+                    # print("midi is", midi_d)
+                    # print ("found cell,", cell_id)
+                    self.root.ids[cell_id].md_bg_color = get_color_from_hex(colors['Pink']['A100'])
 
         except Empty:
             pass
