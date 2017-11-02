@@ -277,8 +277,9 @@ except IOError as e:
 # pedal / channel pairs
 mat_def = {"cells":{}, "layout":1, "name":"unnamed", "included_pedals":[]}
 def default_cells(num_cells):
-    for i in range(num_cells):
-        mat_def["cells"][str(i)] = {"color":(0,0,0,0), "text": "", "standard_controls": []}
+    for i in range(0, num_cells):
+        if str(i) not in mat_def["cells"]:
+            mat_def["cells"][str(i)] = {"color":(0,0,0,0), "text": "", "standard_controls": []}
 
 default_cells(8)
 
@@ -295,7 +296,7 @@ advanced_controls = {
     "Tone B": {"type": "CC", "controller":19, "curve":"1"},
     "Channel A Effect Select": {"type": "CC", "controller":21, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
     "Channel Order": {"type": "CC", "controller":22, "enum":{"Parallel":1, "A > B":2, "B > A":3}},
-    "Channel B Effect Select": {"type": "CC", "controller":23, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
+    "Channel B Effect Select": {"type": "CC", "controller":23, "enum":{"Boost":3, "Drive":2, "Fuzz":1}},
     "Expression": {"type": "CC", "controller":100, "curve":"1"},
     "Engage Last Preset": {"type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}},
     "Bypass Switch": {"type": "CC", "controller":103, "enum":{"Both Enabled": 127, "Only A": 85, "Only B": 45, "Bypass":0}},
@@ -310,7 +311,37 @@ advanced_controls = {
     "FX Unit 2B": {"type": "CC", "controller":15, "enum":{"Bypass":0, "On":127}},
     "FX Unit 3A": {"type": "CC", "controller":17, "enum":{"Bypass":0, "On":127}},
     "FX Unit 3B": {"type": "CC", "controller":18, "enum":{"Bypass":0, "On":127}}
-    }
+    },
+"DAW:DAW":{
+    "Macro 1": {"type": "CC", "controller":20, "curve":"1"},
+    "Macro 2": {"type": "CC", "controller":21, "curve":"1"},
+    "Macro 3": {"type": "CC", "controller":22, "curve":"1"},
+    "Macro 4": {"type": "CC", "controller":23, "curve":"1"},
+    "Macro 5": {"type": "CC", "controller":24, "curve":"1"},
+    "Macro 6": {"type": "CC", "controller":25, "curve":"1"},
+    "Macro 7": {"type": "CC", "controller":26, "curve":"1"},
+    "Macro 8": {"type": "CC", "controller":27, "curve":"1"},
+    "Pads": {"type": "PC"}
+    },
+"Pigtronix:Echolution 2 Deluxe":{
+    "Exp Pedal Input": {"type": "CC", "controller":4, "curve":"1"},
+    "Repeates": {"type": "CC", "controller":12, "curve":"1"},
+    "Time Knob": {"type": "CC", "controller":13, "curve":"1"},
+    "Mix": {"type": "CC", "controller":14, "curve":"1"},
+    "LFO Speed": {"type": "CC", "controller":15, "curve":"1"},
+    "Mod Depth": {"type": "CC", "controller":16, "curve":"1"},
+    "Time": {"type": "CC", "controller":17, "enum":{"Short":3, "Medium":4, "Long":5}},
+    "SFX": {"type": "CC", "controller":18, "enum":{"Off":3, "Pong":4, "Halo":5, "Pong And Halo":6}},
+    "Taps": {"type": "CC", "controller":19, "enum":{"First Tap 0ff":3, "First Tap 1":4, "First Tap 3/4":5}},
+    "Filter Type": {"type": "CC", "controller":20, "enum":{"Filter Off":3, "Lowpass On":4, "Tape On":5, "Comb On": 6,
+        "Sweep Off": 7, "Sweep On": 8, "Crush Off": 9, "Crush On": 10 }},
+    "Bypass Type": {"type": "CC", "controller":21, "enum":{"None":3, "Trails On":4, "Listen On":5, "Dry Kill Off 1":6, "Dry Kill Off 2":7}}, # TODO skipped a few here
+    "LFO Mod Type": {"type": "CC", "controller":24, "enum":{"Triangle":3, "Square":4, "Saw":5, "Random":6, "Super Triangle": 7,
+        "Super Square": 8, "Super Saw": 9, "Super Random": 10}},
+    "Filter Cutoff": {"type": "CC", "controller":74, "curve":"1"},
+    "Second Tap Volume": {"type": "CC", "controller":76, "curve":"1"}, # TODO lots more to add
+    "Preset Select": {"type": "PC"}
+    },
 }
 
 standard_controls = {"Chase Bliss:Brothers":{
@@ -344,6 +375,15 @@ standard_controls = {"Chase Bliss:Brothers":{
     "FX Unit 2B Bypass": ["FX Unit 2B", "on_foot_down", "Bypass"],
     "FX Unit 3A Bypass": ["FX Unit 3A", "on_foot_down", "Bypass"],
     "FX Unit 3B Bypass": ["FX Unit 3B", "on_foot_down", "Bypass"]
+        },
+    "DAW:DAW":{
+    "Macro 1": ["Macro 1", "on_foot_move", "1"],
+    "Macro 2": ["Macro 2", "on_foot_move", "1"],
+    "Macro 3": ["Macro 3", "on_foot_move", "1"],
+    "Macro 4": ["Macro 4", "on_foot_move", "1"],
+    "Macro 5": ["Macro 5", "on_foot_move", "1"],
+    "Macro 6": ["Macro 6", "on_foot_move", "1"],
+    "Macro 7": ["Macro 7", "on_foot_move", "1"]
         }
     }
 
@@ -375,6 +415,35 @@ def pairwise(t):
     it = iter(t)
     return izip(it,it)
 
+def clamp(val, minimum=0, maximum=255):
+    if val < minimum:
+        return minimum
+    if val > maximum:
+        return maximum
+    return val
+
+def colorscale(hexstr, scalefactor):
+    """
+    To darken the color, use a float value between 0 and 1.
+    To brighten the color, use a float value greater than 1.
+    >>> colorscale("DF3C3C", .5)
+    6F1E1E
+    >>> colorscale("52D24F", 1.6)
+    83FF7E
+    >>> colorscale("4F75D2", 1)
+    4F75D2
+    """
+    if scalefactor < 0 or len(hexstr) != 6:
+        return hexstr
+
+    r, g, b = int(hexstr[:2], 16), int(hexstr[2:4], 16), int(hexstr[4:], 16)
+
+    r = clamp(r * scalefactor)
+    g = clamp(g * scalefactor)
+    b = clamp(b * scalefactor)
+
+    return "%02x%02x%02x" % (r, g, b)
+
 def menu_release(x):
     print("release menu", x)
 
@@ -390,7 +459,8 @@ class KitchenSink(App):
 
     t_available_layouts = [{"title":"1", "thumbnail" : './assets/layout1.png', "layout_id":1},
             {"title":"2", "thumbnail" : './assets/kitten-1049129_1280.jpg', "layout_id":2},
-            {"title":"3", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":3}
+            {"title":"3", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":3},
+            {"title":"4", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":4}
             ]
 
     def go_to_page(self, page, title):
@@ -734,11 +804,11 @@ class KitchenSink(App):
                     # sort by direction
                     if "c" not in out_cell:
                         out_cell["c"] = {}
-                    if val == "horizontal":
+                    if val == "vertical": # this is switched because the axis in the firmware is different
                         if "x" not in out_cell["c"]:
                             out_cell["c"]["x"] = []
                         out_cell["c"]["x"].append(block)
-                    elif val == "vertical":
+                    elif val == "horizontal":
                         if "y" not in out_cell["c"]:
                             out_cell["c"]["y"] = []
                         out_cell["c"]["y"].append(block)
@@ -779,15 +849,17 @@ class KitchenSink(App):
 
     def mat_to_pdf(self, output_size="a3"):
         from fpdf import FPDF
-        size_x = 469.0
-        size_y = 294.0
+        # size_x = 469.0
+        # size_y = 294.0
+        size_x = 420.0 # a3
+        size_y = 297.0
         pdf = FPDF('L', 'mm', (size_y, size_x))
         pdf.add_page()
         filepath = os.path.join(os.path.dirname(os.path.abspath(inspect.stack()[0][1])), "assets", "Esphimere Bold.otf")
         pdf.add_font('esphimere', '', filepath, uni=True)
         pdf.set_font('esphimere', '', 46)
         pdf.set_margins(0, 0, 0)
-        pdf.set_auto_page_break(False)
+        pdf.set_auto_page_break(False, 0.0)
         pdf.set_text_color(255)
 
 
@@ -854,7 +926,8 @@ class KitchenSink(App):
                 [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]]]
         self.layouts[4] = [[0.5, [[0.33, "ee4498"], [0.33, "49c3e9"],  [0.33, "f37021"]]],
                 [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]],
-                [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]]]
+                [0.25, [[0.2, colorscale("2c79be", 1.2)], [0.2, colorscale("e2412b", 1.2)], 
+                    [0.2, colorscale("894c9e", 1.2)], [0.2, colorscale("4cb853", 1.2)], [0.2, colorscale("eedc2a", 1.2)]]]]
         target.clear_widgets()
         cell_id = 0
         self.cell_rows = []
@@ -879,7 +952,7 @@ class KitchenSink(App):
                 self.cell_buttons[str(cell_id)] = b
                 cell_id += 1
 
-            default_cells(cell_id-1)
+            default_cells(cell_id)
             target.add_widget(r)
             self.cell_rows.append(r)
 
