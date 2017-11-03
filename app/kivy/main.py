@@ -374,7 +374,8 @@ standard_controls = {"Chase Bliss:Brothers":{
     "FX Unit 2A Bypass": ["FX Unit 2A", "on_foot_down", "Bypass"],
     "FX Unit 2B Bypass": ["FX Unit 2B", "on_foot_down", "Bypass"],
     "FX Unit 3A Bypass": ["FX Unit 3A", "on_foot_down", "Bypass"],
-    "FX Unit 3B Bypass": ["FX Unit 3B", "on_foot_down", "Bypass"]
+    "FX Unit 3B Bypass": ["FX Unit 3B", "on_foot_down", "Bypass"],
+    "FX Unit 1A Toggle": ["FX Unit 1A", "on_foot_down_toggle", "On", "FX Unit 1A", "Bypass"]
         },
     "DAW:DAW":{
     "Macro 1": ["Macro 1", "on_foot_move", "1"],
@@ -778,22 +779,35 @@ class KitchenSink(App):
             # "Channel A Effect Select": {"type": "CC", "controller":21, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
             maker_model, channel, standard_control = split_standard_controls_key(control)
             s_c = get_standard_controls_from_key(control)
-            a_c = advanced_controls[maker_model][s_c[0]]
             action = s_c[1]
-            block = {}
+            out_block = {}
 
-            if a_c["type"] in MIDI_messages:
-                block["t"] = "m"
-                block["b1"] = MIDI_messages[a_c["type"]] | (int(channel)-1) # channel from 1-16 mapped to 0-15 here
-                if "controller" in a_c:
-                    block["b2"] = a_c["controller"]
-                if "curve" in a_c:
-                    block["c"] = default_curves[s_c[2]][1]
-                elif "enum" in a_c:
-                    block["b3"] = a_c["enum"][s_c[2]]
-                else:
-                    block["b3"] = s_c[2]
-            return (action, block)
+            def control_to_block(a_c, value):
+                block = {}
+
+                if a_c["type"] in MIDI_messages:
+                    block["t"] = "m"
+                    block["b1"] = MIDI_messages[a_c["type"]] | (int(channel)-1) # channel from 1-16 mapped to 0-15 here
+                    if "controller" in a_c:
+                        block["b2"] = a_c["controller"]
+                    if "curve" in a_c:
+                        block["c"] = default_curves[value][1]
+                    elif "enum" in a_c:
+                        block["b3"] = a_c["enum"][value]
+                    else:
+                        block["b3"] = value
+                return block
+
+            if "toggle" in action:
+                # start and end action
+                out_block["t"] = "t"
+                out_block["on"] = control_to_block(advanced_controls[maker_model][s_c[0]], s_c[2])
+                out_block["off"] = control_to_block(advanced_controls[maker_model][s_c[3]], s_c[4])
+            else:
+                # just one action
+                out_block = control_to_block(advanced_controls[maker_model][s_c[0]], s_c[2])
+
+            return (action, out_block)
 
         out_mat = []
         for cell_id, cell_content in mat_def["cells"].items():
@@ -817,6 +831,10 @@ class KitchenSink(App):
                             out_cell["c"]["z"] = []
                         out_cell["c"]["z"].append(block)
                 elif action == "on_foot_down":
+                    if "s" not in out_cell:
+                        out_cell["s"] = []
+                    out_cell["s"].append(block)
+                elif action == "on_foot_down_toggle":
                     if "s" not in out_cell:
                         out_cell["s"] = []
                     out_cell["s"].append(block)
