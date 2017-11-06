@@ -54,8 +54,11 @@ MIDI_COMMANDS = {
         "stop": 0xFC
         }
 
-def send_midi_message(command, data1, data2=0):
-    uart.write(bytes((command, data1, data2)))
+def send_midi_message(command, data1, data2=None):
+    if data2 is not None:
+        uart.write(bytes((command, data1, data2)))
+    else:
+        uart.write(bytes((command, data1)))
 
 def send_clock_message(command):
     uart.write(bytes((command,)))
@@ -169,7 +172,10 @@ def inner_execute_action(ap, z):
             map_and_send_midi(ap, z, False)
         else:
             # send MIDI no parameters
-            send_midi_message(ap["b1"], ap["b2"], ap["b3"])
+            if "b3" in ap:
+                send_midi_message(ap["b1"], ap["b2"], ap["b3"])
+            else:
+                send_midi_message(ap["b1"], ap["b2"])
 
 def execute_continous_action(actions, x1, y1, x2, y2, x, y, z):
     if 'x' in actions:

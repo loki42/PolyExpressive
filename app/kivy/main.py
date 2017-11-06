@@ -342,6 +342,111 @@ advanced_controls = {
     "Second Tap Volume": {"type": "CC", "controller":76, "curve":"1"}, # TODO lots more to add
     "Preset Select": {"type": "PC"}
     },
+"Peavey:Vypyr Pro":{
+    "FB_LFT_ASSIGN_B": {"type": "CC", "controller":0x00, "curve":"1"},
+    "BANK_SELECT": {"type": "CC", "controller":0x01, "curve":"1"},
+    "BRIGHT": {"type": "CC", "controller":0x02, "curve":"1"},
+    "DELAY_BYPASS": {"type": "CC", "controller":0x03, "curve":"1"},
+    "DELAY_FDBK": {"type": "CC", "controller":0x04, "curve":"1"},
+    "DELAY_LVL": {"type": "CC", "controller":0x05, "curve":"1"},
+    "DELAY_MOD": {"type": "CC", "controller":0x06, "curve":"1"},
+    "MVOL": {"type": "CC", "controller":0x07, "curve":"1"},
+    "TAP": {"type": "CC", "controller":0x08, "curve":"1"},
+    "DELAY_TONE": {"type": "CC", "controller":0x09, "curve":"1"},
+    "DELAY_TYPE": {"type": "CC", "controller":0x0A, "enum":{"Analog":1, "Digital":2, "Modulation":3,
+        "Multi-tap":4, "Tape":5, "Tube":6}},
+    "FB_LFT_MAX_B": {"type": "CC", "controller":0x0B, "curve":"1"},
+    "FB_BST_LVL": {"type": "CC", "controller":0x0C, "curve":"1"},
+    "FB_BST_SW": {"type": "CC", "controller":0x0D, "curve":"1"},
+    "FB_LFT_MIN_B": {"type": "CC", "controller":0x0E, "curve":"1"},
+    "FB_LFT_ASSIGN": {"type": "CC", "controller":0x0F, "curve":"1"},
+    "FB_LFT_MAX": {"type": "CC", "controller":0x10, "curve":"1"},
+    "FB_LFT_MIN": {"type": "CC", "controller":0x11, "curve":"1"},
+    "FB_LFT_PARAM": {"type": "CC", "controller":0x12, "curve":"1"},
+    "FB_RGT_ASSIGN": {"type": "CC", "controller":0x13, "curve":"1"},
+    "FB_RGT_MAX": {"type": "CC", "controller":0x14, "curve":"1"},
+    "FB_RGT_MIN": {"type": "CC", "controller":0x15, "curve":"1"},
+    "FB_RGT_PARAM": {"type": "CC", "controller":0x16, "curve":"1"},
+    "INPUT_GAIN": {"type": "CC", "controller":0x17, "curve":"1"},
+    "LOOPER_CMD": {"type": "CC", "controller":0x18, "curve":"1"},
+    "LOOPER_LVL": {"type": "CC", "controller":0x19, "curve":"1"},
+    "NG_SEL": {"type": "CC", "controller":0x1A, "curve":"1"},
+    "NGGI_DECAY": {"type": "CC", "controller":0x1B, "curve":"1"},
+    "NGGI_THRESH": {"type": "CC", "controller":0x1C, "curve":"1"},
+    "PRESENCE": {"type": "CC", "controller":0x1D, "curve":"1"},
+    "RESONANCE": {"type": "CC", "controller":0x1E, "curve":"1"},
+    "FB_LFT_PARAM_B": {"type": "CC", "controller":0x1F, "curve":"1"},
+    "AUXM_PROG": {"type": "CC", "controller":0x20, "curve":"1"},
+    "REVERB_TYPE": {"type": "CC", "controller":0x21, "curve":"1"},
+    "FB_LFT_ASSIGN_C": {"type": "CC", "controller":0x22, "curve":"1"},
+    "FB_LFT_MAX_C": {"type": "CC", "controller":0x23, "curve":"1"},
+    "FB_LFT_MIN_C": {"type": "CC", "controller":0x24, "curve":"1"},
+    "FB_LFT_PARAM_C": {"type": "CC", "controller":0x25, "curve":"1"},
+    "FB_RGT_ASSIGN_B": {"type": "CC", "controller":0x26, "curve":"1"},
+    "FB_RGT_MAX_B": {"type": "CC", "controller":0x27, "curve":"1"},
+    "REVERB_BYPASS": {"type": "CC", "controller":0x28, "curve":"1"},
+    "REVERB_PARAM1": {"type": "CC", "controller":0x29, "curve":"1"},
+    "REVERB_PARAM2": {"type": "CC", "controller":0x2A, "curve":"1"},
+    "REVERB_PARAM3": {"type": "CC", "controller":0x2B, "curve":"1"},
+    "REVERB_PARAM4": {"type": "CC", "controller":0x2C, "curve":"1"},
+    "REVERB_PARAM5": {"type": "CC", "controller":0x2D, "curve":"1"},
+    "SLOT1_BYPASS": {"type": "CC", "controller":0x2E, "curve":"1"},
+    "SLOT1_MODEL": {"type": "CC", "controller":0x2F, "curve":"1"},
+    "SLOT1_P1": {"type": "CC", "controller":0x30, "curve":"1"},
+    "SLOT1_P2": {"type": "CC", "controller":0x31, "curve":"1"},
+    "SLOT1_P3": {"type": "CC", "controller":0x32, "curve":"1"},
+    "SLOT1_P4": {"type": "CC", "controller":0x33, "curve":"1"},
+    "SLOT1_P5": {"type": "CC", "controller":0x34, "curve":"1"},
+    "SLOT1_TYPE": {"type": "CC", "controller":0x35, "curve":"1"},
+    "TUNER_NOTE": {"type": "CC", "controller":0x36, "curve":"1"},
+    "TUNER_CENTS": {"type": "CC", "controller":0x37, "curve":"1"},
+    "FB_RGT_MIN_B": {"type": "CC", "controller":0x38, "curve":"1"},
+    "FB_RGT_PARAM_B": {"type": "CC", "controller":0x39, "curve":"1"},
+    "FB_RGT_ASSIGN_C": {"type": "CC", "controller":0x3A, "curve":"1"},
+    "FB_RGT_MAX_C": {"type": "CC", "controller":0x3B, "curve":"1"},
+    "FB_RGT_MIN_C": {"type": "CC", "controller":0x3C, "curve":"1"},
+    "SLOT2_BYPASS": {"type": "CC", "controller":0x3D, "curve":"1"},
+    "SLOT2_MODEL": {"type": "CC", "controller":0x3E, "curve":"1"},
+    "SLOT2_P1": {"type": "CC", "controller":0x3F, "curve":"1"},
+    "SLOT2_P2": {"type": "CC", "controller":0x40, "curve":"1"},
+    "SLOT2_P3": {"type": "CC", "controller":0x41, "curve":"1"},
+    "SLOT2_P4": {"type": "CC", "controller":0x42, "curve":"1"},
+    "SLOT2_P5": {"type": "CC", "controller":0x43, "curve":"1"},
+    "SLOT2_TYPE": {"type": "CC", "controller":0x44, "curve":"1"},
+    "SLOT3_BYPASS": {"type": "CC", "controller":0x45, "curve":"1"},
+    "SLOT3_MODEL": {"type": "CC", "controller":0x46, "curve":"1"},
+    "SLOT3_P1": {"type": "CC", "controller":0x47, "curve":"1"},
+    "SLOT3_P2": {"type": "CC", "controller":0x48, "curve":"1"},
+    "SLOT3_P3": {"type": "CC", "controller":0x49, "curve":"1"},
+    "SLOT3_P4": {"type": "CC", "controller":0x4A, "curve":"1"},
+    "SLOT3_P5": {"type": "CC", "controller":0x4B, "curve":"1"},
+    "SLOT3_TYPE": {"type": "CC", "controller":0x4C, "curve":"1"},
+    "SLOT4_BYPASS": {"type": "CC", "controller":0x4D, "curve":"1"},
+    "SLOT4_MODEL": {"type": "CC", "controller":0x4E, "curve":"1"},
+    "SLOT4_P1": {"type": "CC", "controller":0x4F, "curve":"1"},
+    "SLOT4_P2": {"type": "CC", "controller":0x50, "curve":"1"},
+    "SLOT4_P3": {"type": "CC", "controller":0x51, "curve":"1"},
+    "SLOT4_P4": {"type": "CC", "controller":0x52, "curve":"1"},
+    "SLOT4_P5": {"type": "CC", "controller":0x53, "curve":"1"},
+    "SLOT4_TYPE": {"type": "CC", "controller":0x54, "curve":"1"},
+    "LFT_LVL": {"type": "CC", "controller":0x55, "curve":"1"},
+    "WAH_INTENS": {"type": "CC", "controller":0x56, "curve":"1"},
+    "RGT_LVL": {"type": "CC", "controller":0x57, "curve":"1"},
+    "TEMPO_HI": {"type": "CC", "controller":0x58, "curve":"1"},
+    "TEMPO_LO": {"type": "CC", "controller":0x59, "curve":"1"},
+    "TEMPO_MODE": {"type": "CC", "controller":0x5A, "curve":"1"},
+    "TEMPO_SHFT": {"type": "CC", "controller":0x5B, "curve":"1"},
+    "NGCI_DECAY": {"type": "CC", "controller":0x5C, "curve":"1"},
+    "NGCI_THRESH": {"type": "CC", "controller":0x5D, "curve":"1"},
+    "NGCO_DECAY": {"type": "CC", "controller":0x5E, "curve":"1"},
+    "NGCO_THRESH": {"type": "CC", "controller":0x5F, "curve":"1"},
+    "DLY_TRAILS": {"type": "CC", "controller":0x6A, "curve":"1"},
+    "REV_TRAILS": {"type": "CC", "controller":0x6B, "curve":"1"},
+    "LFT_SWITCH": {"type": "CC", "controller":0x6C, "curve":"1"},
+    "RGT_SWITCH": {"type": "CC", "controller":0x6D, "curve":"1"},
+    "NGCI_ATTEN": {"type": "CC", "controller":0x6E, "curve":"1"},
+    "NGCO_ATTEN": {"type": "CC", "controller":0x6F, "curve":"1"}
+    }
 }
 
 standard_controls = {"Chase Bliss:Brothers":{
@@ -384,7 +489,18 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Macro 4": ["Macro 4", "on_foot_move", "1"],
     "Macro 5": ["Macro 5", "on_foot_move", "1"],
     "Macro 6": ["Macro 6", "on_foot_move", "1"],
-    "Macro 7": ["Macro 7", "on_foot_move", "1"]
+    "Macro 7": ["Macro 7", "on_foot_move", "1"],
+    "Macro 8": ["Macro 8", "on_foot_move", "1"],
+    "Pad 1": ["Pads", "on_foot_down", 1],
+    "Pad 2": ["Pads", "on_foot_down", 2],
+    "Pad 3": ["Pads", "on_foot_down", 3],
+    "Pad 4": ["Pads", "on_foot_down", 4],
+    "Pad 5": ["Pads", "on_foot_down", 5],
+    "Pad 6": ["Pads", "on_foot_down", 6],
+    "Pad 7": ["Pads", "on_foot_down", 7],
+    "Pad 8": ["Pads", "on_foot_down", 8],
+    "Pad 9": ["Pads", "on_foot_down", 9],
+    "Pad 10": ["Pads", "on_foot_down", 10]
         }
     }
 
@@ -553,11 +669,13 @@ class KitchenSink(App):
                 if direction:
                     ctx["direction"] = direction
                 self.root.ids.selected_standard_controls_dl.items.append(ctx)
+                self.root.ids.selected_standard_controls_dl.items = sorted(self.root.ids.selected_standard_controls_dl.items, key=lambda x: x["text"])
         elif ctx in self.root.ids.selected_standard_controls_dl.items:
             self.root.ids.selected_standard_controls_dl.items.remove(ctx)
             if "direction" in ctx:
                 ctx.pop("direction")
             self.root.ids.available_standard_controls_dl.items.append(ctx)
+            self.root.ids.available_standard_controls_dl.items = sorted(self.root.ids.available_standard_controls_dl.items, key=lambda x: x["text"])
 
         self.next_standard_controls_disabled = not self.root.ids.selected_standard_controls_dl.items
         global included_standard_controls
@@ -612,7 +730,9 @@ class KitchenSink(App):
                 selected_standard_controls.append(c)
 
             self.root.ids.selected_standard_controls_dl.items = selected_standard_controls
+            self.root.ids.selected_standard_controls_dl.items = sorted(self.root.ids.selected_standard_controls_dl.items, key=lambda x: x["text"])
             self.root.ids.available_standard_controls_dl.items = self.available_standard_controls
+            self.root.ids.available_standard_controls_dl.items = sorted(self.root.ids.available_standard_controls_dl.items, key=lambda x: x["text"])
         global current_selected_cell
         current_selected_cell = cell_id
         global included_standard_controls
@@ -660,7 +780,7 @@ class KitchenSink(App):
 
     selected_pedals = []
     available_pedals = [{"text":a, "secondary_text":b, "action": select_pedal, "id": b+":"+a} for a, b in pairwise(("H9", "Eventide",
-        "M9", "Line 6", "Brothers", "Chase Bliss"))]
+        "M9", "Line 6", "Brothers", "Chase Bliss", "DAW", "DAW"))]
 
     selected_standard_controls = []
     available_standard_controls = []
@@ -788,14 +908,17 @@ class KitchenSink(App):
                 if a_c["type"] in MIDI_messages:
                     block["t"] = "m"
                     block["b1"] = MIDI_messages[a_c["type"]] | (int(channel)-1) # channel from 1-16 mapped to 0-15 here
-                    if "controller" in a_c:
-                        block["b2"] = a_c["controller"]
-                    if "curve" in a_c:
-                        block["c"] = default_curves[value][1]
-                    elif "enum" in a_c:
-                        block["b3"] = a_c["enum"][value]
+                    if a_c["type"] in ["CP", "PC"]: # 2 byte messages
+                        block["b2"] = value
                     else:
-                        block["b3"] = value
+                        if "controller" in a_c:
+                            block["b2"] = a_c["controller"]
+                        if "curve" in a_c:
+                            block["c"] = default_curves[value][1]
+                        elif "enum" in a_c:
+                            block["b3"] = a_c["enum"][value]
+                        else:
+                            block["b3"] = value
                 return block
 
             if "toggle" in action:
@@ -878,7 +1001,8 @@ class KitchenSink(App):
         pdf.set_font('esphimere', '', 46)
         pdf.set_margins(0, 0, 0)
         pdf.set_auto_page_break(False, 0.0)
-        pdf.set_text_color(255)
+        # pdf.set_text_color(255)
+        pdf.set_text_color(0)
 
 
         # if output_size == "a3":
@@ -909,6 +1033,8 @@ class KitchenSink(App):
             color = self.cell_buttons[cell_id].md_bg_color
             color = [a * 255 for a in color[0:-1]]
             pdf.set_fill_color(*color)
+            pdf.set_draw_color(0)
+            pdf.set_line_width(1.0)
 
             text_margin = 20
             text = cell_content["text"].upper()
@@ -916,8 +1042,8 @@ class KitchenSink(App):
             # if text:
             #     pdf.text(out_x1+text_margin, out_y1+text_margin, text)
             pdf.set_xy(out_x1, out_y1)
-            pdf.multi_cell(out_x2-out_x1, out_y2-out_y1, text, border = 0,
-                    align = 'C', fill = True)
+            pdf.multi_cell(out_x2-out_x1, out_y2-out_y1, text, border = 1,
+                    align = 'C', fill = False)
 
         pdf.output('tuto1.pdf', 'F')
 
