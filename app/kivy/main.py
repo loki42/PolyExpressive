@@ -346,12 +346,12 @@ advanced_controls = {
     "FB_LFT_ASSIGN_B": {"type": "CC", "controller":0x00, "curve":"1"},
     "BANK_SELECT": {"type": "CC", "controller":0x01, "curve":"1"},
     "BRIGHT": {"type": "CC", "controller":0x02, "curve":"1"},
-    "DELAY_BYPASS": {"type": "CC", "controller":0x03, "curve":"1"},
+    "DELAY_BYPASS": {"type": "CC", "controller":0x03, "enum":{"Bypass":127, "On":0}},
     "DELAY_FDBK": {"type": "CC", "controller":0x04, "curve":"1"},
     "DELAY_LVL": {"type": "CC", "controller":0x05, "curve":"1"},
     "DELAY_MOD": {"type": "CC", "controller":0x06, "curve":"1"},
     "MVOL": {"type": "CC", "controller":0x07, "curve":"1"},
-    "TAP": {"type": "CC", "controller":0x08, "curve":"1"},
+    "TAP": {"type": "CC", "controller":0x08, "curve":"1", "enum":{"Tap":127}},
     "DELAY_TONE": {"type": "CC", "controller":0x09, "curve":"1"},
     "DELAY_TYPE": {"type": "CC", "controller":0x0A, "enum":{"Analog":1, "Digital":2, "Modulation":3,
         "Multi-tap":4, "Tape":5, "Tube":6}},
@@ -384,7 +384,7 @@ advanced_controls = {
     "FB_LFT_PARAM_C": {"type": "CC", "controller":0x25, "curve":"1"},
     "FB_RGT_ASSIGN_B": {"type": "CC", "controller":0x26, "curve":"1"},
     "FB_RGT_MAX_B": {"type": "CC", "controller":0x27, "curve":"1"},
-    "REVERB_BYPASS": {"type": "CC", "controller":0x28, "curve":"1"},
+    "REVERB_BYPASS": {"type": "CC", "controller":0x28, "enum":{"Bypass":127, "On":0}},
     "REVERB_PARAM1": {"type": "CC", "controller":0x29, "curve":"1"},
     "REVERB_PARAM2": {"type": "CC", "controller":0x2A, "curve":"1"},
     "REVERB_PARAM3": {"type": "CC", "controller":0x2B, "curve":"1"},
@@ -465,7 +465,7 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Channel B Boost": ["Channel B Effect Select", "on_foot_down", "Boost"],
     "Channel B Drive": ["Channel B Effect Select", "on_foot_down", "Drive"],
     "Channel B Fuzz": ["Channel B Effect Select", "on_foot_down", "Fuzz"]},
-    "Line 6:M9":{
+"Line 6:M9":{
     "Expression Pedal 1": ["Expression Pedal 1", "on_foot_move", "1"],
     "Expression Pedal 2": ["Expression Pedal 2", "on_foot_move", "1"],
     "FX Unit 1A On": ["FX Unit 1A", "on_foot_down", "On"],
@@ -482,7 +482,7 @@ standard_controls = {"Chase Bliss:Brothers":{
     "FX Unit 3B Bypass": ["FX Unit 3B", "on_foot_down", "Bypass"],
     "FX Unit 1A Toggle": ["FX Unit 1A", "on_foot_down_toggle", "On", "FX Unit 1A", "Bypass"]
         },
-    "DAW:DAW":{
+"DAW:DAW":{
     "Macro 1": ["Macro 1", "on_foot_move", "1"],
     "Macro 2": ["Macro 2", "on_foot_move", "1"],
     "Macro 3": ["Macro 3", "on_foot_move", "1"],
@@ -501,7 +501,33 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Pad 8": ["Pads", "on_foot_down", 8],
     "Pad 9": ["Pads", "on_foot_down", 9],
     "Pad 10": ["Pads", "on_foot_down", 10]
-        }
+        },
+"Peavey:Vypyr Pro":{
+    "SLOT1_P1": ["SLOT1_P1", "on_foot_move", "1"],
+    "SLOT1_P2": ["SLOT1_P2", "on_foot_move", "1"],
+    "SLOT1_P3": ["SLOT1_P3", "on_foot_move", "1"],
+    "SLOT1_P4": ["SLOT1_P4", "on_foot_move", "1"],
+    "SLOT2_P1": ["SLOT2_P1", "on_foot_move", "1"],
+    "SLOT2_P2": ["SLOT2_P2", "on_foot_move", "1"],
+    "SLOT2_P3": ["SLOT2_P3", "on_foot_move", "1"],
+    "SLOT2_P4": ["SLOT2_P4", "on_foot_move", "1"],
+    "SLOT3_P1": ["SLOT3_P1", "on_foot_move", "1"],
+    "SLOT3_P2": ["SLOT3_P2", "on_foot_move", "1"],
+    "SLOT3_P3": ["SLOT3_P3", "on_foot_move", "1"],
+    "SLOT3_P4": ["SLOT3_P4", "on_foot_move", "1"],
+    "SLOT4_P1": ["SLOT4_P1", "on_foot_move", "1"],
+    "SLOT4_P2": ["SLOT4_P2", "on_foot_move", "1"],
+    "SLOT4_P3": ["SLOT4_P3", "on_foot_move", "1"],
+    "SLOT4_P4": ["SLOT4_P4", "on_foot_move", "1"],
+    "Delay Toggle": ["DELAY_BYPASS", "on_foot_down_toggle", "On", "DELAY_BYPASS", "Bypass"],
+    "DELAY_FDBK": ["DELAY_FDBK", "on_foot_move", "1"],
+    "DELAY_LVL": ["DELAY_LVL", "on_foot_move", "1"],
+    "DELAY_MOD": ["DELAY_MOD", "on_foot_move", "1"],
+    "TAP": ["TAP", "on_foot_down",  "Tap"],
+    "DELAY_TONE": ["DELAY_TONE", "on_foot_move", "1"],
+    "DELAY_TYPE Analog": ["DELAY_TYPE", "on_foot_down", "Analog"],
+    "DELAY_TYPE Modulation": ["DELAY_TYPE", "on_foot_down", "Modulation"],
+    "DELAY_TYPE Multi-tap": ["DELAY_TYPE", "on_foot_down", "Multi-tap"]
     }
 
 included_standard_controls = []
