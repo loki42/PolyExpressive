@@ -292,7 +292,8 @@ default_channels = {
     "DAW:DAW":6,
     "Pigtronix:Echolution 2 Deluxe":11,
     "Peavey:Vypyr Pro":1,
-    "Line 6:Helix":1
+    "Line 6:Helix":1,
+    "Hughes and Kettner:GM4":1
     }
 
 advanced_controls = {
@@ -337,6 +338,17 @@ advanced_controls = {
     "Macro 2": {"type": "CC", "controller":2, "curve":"1"},
     "Macro 3": {"type": "CC", "controller":3, "curve":"1"},
     "Pads": {"type": "PC"}
+    },
+"Hughes and Kettner:GM4":{
+    "Mod": {"type": "CC", "controller":1, "curve":"1"},
+    "Delay Time": {"type": "CC", "controller":4, "curve":"1"},
+    "Bass": {"type": "CC", "controller":21, "curve":"1"},
+    "Mid": {"type": "CC", "controller":22, "curve":"1"},
+    "Treble": {"type": "CC", "controller":23, "curve":"1"},
+    "Resonance": {"type": "CC", "controller":24, "curve":"1"},
+    "Presence": {"type": "CC", "controller":25, "curve":"1"},
+    "Reverb": {"type": "CC", "controller":29, "curve":"1"},
+    "Preset": {"type": "PC"}
     },
 "Pigtronix:Echolution 2 Deluxe":{
     "Exp Pedal Input": {"type": "CC", "controller":4, "curve":"1"},
@@ -522,6 +534,21 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Macro 1": ["Macro 1", "on_foot_move", "1"],
     "Macro 2": ["Macro 2", "on_foot_move", "1"],
     "Macro 3": ["Macro 3", "on_foot_move", "1"],
+    },
+"Hughes and Kettner:GM4":{
+    "Mod": ["Mod", "on_foot_move", "1"],
+    "Delay" ["Delay Time", "on_foot_move", "1"],
+    "Bass":["Bass", "on_foot_move", "1"],
+    "Mid": ["Mid", "on_foot_move", "1"],
+    "Treble": ["Treble", "on_foot_move", "1"],
+    "Resonance": ["Resonance", "on_foot_move", "1"],
+    "Presence": ["Presence", "on_foot_move", "1"],
+    "Reverb": ["Reverb", "on_foot_move", "1"],
+    "1": ["Preset", "on_foot_down", 1],
+    "2": ["Preset", "on_foot_down", 2],
+    "3": ["Preset", "on_foot_down", 3],
+    "4": ["Preset", "on_foot_down", 4],
+    "5": ["Preset", "on_foot_down", 5]
     },
 "Pigtronix:Echolution 2 Deluxe":{
     "Exp Pedal Input": ["Exp Pedal Input", "on_foot_move", "1"],
@@ -852,7 +879,8 @@ class KitchenSink(App):
         "M9", "Line 6", "Brothers", "Chase Bliss", "DAW", "DAW",
         "Vypyr Pro", "Peavey",
         "Echolution 2 Deluxe", "Pigtronix",
-        "Helix", "Line 6"
+        "Helix", "Line 6",
+        "GM4", "Hughes and Kettner"
         ))]
 
 
