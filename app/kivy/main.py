@@ -286,6 +286,15 @@ default_cells(8)
 default_curves = {"1": ["linear", [[0,0],[127,127]], True]}
 current_selected_cell = "0" ## current target for editing / bit dodgy
 
+default_channels = {
+    "Chase Bliss:Brothers":2,
+    "Line 6:M9":4,
+    "DAW:DAW":6,
+    "Pigtronix:Echolution 2 Deluxe":11,
+    "Peavey:Vypyr Pro":1,
+    "Line 6:Helix":1
+    }
+
 advanced_controls = {
 "Chase Bliss:Brothers":{
     "Gain A": {"type": "CC", "controller":14, "curve":"1"},
@@ -323,6 +332,12 @@ advanced_controls = {
     "Macro 8": {"type": "CC", "controller":27, "curve":"1"},
     "Pads": {"type": "PC"}
     },
+"Line 6:Helix":{
+    "Macro 1": {"type": "CC", "controller":1, "curve":"1"},
+    "Macro 2": {"type": "CC", "controller":2, "curve":"1"},
+    "Macro 3": {"type": "CC", "controller":3, "curve":"1"},
+    "Pads": {"type": "PC"}
+    },
 "Pigtronix:Echolution 2 Deluxe":{
     "Exp Pedal Input": {"type": "CC", "controller":4, "curve":"1"},
     "Repeates": {"type": "CC", "controller":12, "curve":"1"},
@@ -340,6 +355,7 @@ advanced_controls = {
         "Super Square": 8, "Super Saw": 9, "Super Random": 10}},
     "Filter Cutoff": {"type": "CC", "controller":74, "curve":"1"},
     "Second Tap Volume": {"type": "CC", "controller":76, "curve":"1"}, # TODO lots more to add
+    "Engage": {"type": "CC", "controller":27, "enum":{"Bypass":4, "On":3}},
     "Preset Select": {"type": "PC"}
     },
 "Peavey:Vypyr Pro":{
@@ -502,6 +518,31 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Pad 9": ["Pads", "on_foot_down", 9],
     "Pad 10": ["Pads", "on_foot_down", 10]
         },
+"Line 6:Helix":{
+    "Macro 1": ["Macro 1", "on_foot_move", "1"],
+    "Macro 2": ["Macro 2", "on_foot_move", "1"],
+    "Macro 3": ["Macro 3", "on_foot_move", "1"],
+    },
+"Pigtronix:Echolution 2 Deluxe":{
+    "Exp Pedal Input": ["Exp Pedal Input", "on_foot_move", "1"],
+    "Repeates": ["Repeates", "on_foot_move", "1"],
+    "Time Knob": ["Time Knob", "on_foot_move", "1"],
+    "Mix": ["Mix", "on_foot_move", "1"],
+    "LFO Speed": ["LFO Speed", "on_foot_move", "1"],
+    "Mod Depth": ["Mod Depth", "on_foot_move", "1"],
+    "Time Short": ["Time", "on_foot_down", "Short"],
+    "Time Long": ["Time", "on_foot_down", "Long"],
+    "Time Toggle": ["Time", "on_foot_down_toggle", "Short", "Time", "Long"],
+    "SFX Toggle": ["SFX", "on_foot_down_toggle", "Pong And Halo", "SFX", "Off"],
+    "Sweep Toggle": ["Filter Type", "on_foot_down_toggle", "Sweep On", "Filter Type", "Sweep Off"],
+    "Crush Toggle": ["Filter Type", "on_foot_down_toggle", "Crush On", "Filter Type", "Crush Off"],
+    "Crush Toggle": ["Filter Type", "on_foot_down_toggle", "Crush On", "Filter Type", "Crush Off"],
+    "Filter Toggle": ["Filter Type", "on_foot_down_toggle", "Lowpass On", "Filter Type", "Filter Off"],
+    "Tape Toggle": ["Filter Type", "on_foot_down_toggle", "Tape On", "Filter Type", "Comb On"],
+    "Triangle Square Toogle": ["LFO Mod Type", "on_foot_down_toggle", "Triangle", "LFO Mod Type", "Square"],
+    "Filter Cutoff": ["Filter Cutoff", "on_foot_move", "1"],
+    "Second Tap Volume": ["Second Tap Volume", "on_foot_move", "1"],
+    },
 "Peavey:Vypyr Pro":{
     "SLOT1_P1": ["SLOT1_P1", "on_foot_move", "1"],
     "SLOT1_P2": ["SLOT1_P2", "on_foot_move", "1"],
@@ -529,6 +570,7 @@ standard_controls = {"Chase Bliss:Brothers":{
     "DELAY_TYPE Modulation": ["DELAY_TYPE", "on_foot_down", "Modulation"],
     "DELAY_TYPE Multi-tap": ["DELAY_TYPE", "on_foot_down", "Multi-tap"]
     }
+}
 
 included_standard_controls = []
 
@@ -603,7 +645,8 @@ class KitchenSink(App):
     t_available_layouts = [{"title":"1", "thumbnail" : './assets/layout1.png', "layout_id":1},
             {"title":"2", "thumbnail" : './assets/kitten-1049129_1280.jpg', "layout_id":2},
             {"title":"3", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":3},
-            {"title":"4", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":4}
+            {"title":"4", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":4},
+            {"title":"5", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":5}
             ]
 
     def go_to_page(self, page, title):
@@ -733,7 +776,7 @@ class KitchenSink(App):
             for pedal in mat_def["included_pedals"]:
                 if pedal in standard_controls:
                     for control_name, control in standard_controls[pedal].items():
-                        control_key = get_standard_controls_key(pedal, 2, control_name)
+                        control_key = get_standard_controls_key(pedal, default_channels[pedal], control_name)
                         if control_key not in current_keys:
                             print("control 0 is", control[0])
                             # self.root.ids.available_standard_controls_dl.items.append({"text":control[0],
@@ -806,7 +849,12 @@ class KitchenSink(App):
 
     selected_pedals = []
     available_pedals = [{"text":a, "secondary_text":b, "action": select_pedal, "id": b+":"+a} for a, b in pairwise(("H9", "Eventide",
-        "M9", "Line 6", "Brothers", "Chase Bliss", "DAW", "DAW"))]
+        "M9", "Line 6", "Brothers", "Chase Bliss", "DAW", "DAW",
+        "Vypyr Pro", "Peavey",
+        "Echolution 2 Deluxe", "Pigtronix",
+        "Helix", "Line 6"
+        ))]
+
 
     selected_standard_controls = []
     available_standard_controls = []
@@ -1016,10 +1064,10 @@ class KitchenSink(App):
 
     def mat_to_pdf(self, output_size="a3"):
         from fpdf import FPDF
-        # size_x = 469.0
-        # size_y = 294.0
-        size_x = 420.0 # a3
-        size_y = 297.0
+        size_x = 469.0
+        size_y = 294.0
+        # size_x = 420.0 # a3
+        # size_y = 297.0
         pdf = FPDF('L', 'mm', (size_y, size_x))
         pdf.add_page()
         filepath = os.path.join(os.path.dirname(os.path.abspath(inspect.stack()[0][1])), "assets", "Esphimere Bold.otf")
@@ -1027,8 +1075,8 @@ class KitchenSink(App):
         pdf.set_font('esphimere', '', 46)
         pdf.set_margins(0, 0, 0)
         pdf.set_auto_page_break(False, 0.0)
-        # pdf.set_text_color(255)
-        pdf.set_text_color(0)
+        pdf.set_text_color(255)
+        # pdf.set_text_color(0)
 
 
         # if output_size == "a3":
@@ -1059,8 +1107,8 @@ class KitchenSink(App):
             color = self.cell_buttons[cell_id].md_bg_color
             color = [a * 255 for a in color[0:-1]]
             pdf.set_fill_color(*color)
-            pdf.set_draw_color(0)
-            pdf.set_line_width(1.0)
+            # pdf.set_draw_color(0)
+            # pdf.set_line_width(1.0)
 
             text_margin = 20
             text = cell_content["text"].upper()
@@ -1068,8 +1116,8 @@ class KitchenSink(App):
             # if text:
             #     pdf.text(out_x1+text_margin, out_y1+text_margin, text)
             pdf.set_xy(out_x1, out_y1)
-            pdf.multi_cell(out_x2-out_x1, out_y2-out_y1, text, border = 1,
-                    align = 'C', fill = False)
+            pdf.multi_cell(out_x2-out_x1, out_y2-out_y1, text, border = 0,
+                    align = 'C', fill = True)
 
         pdf.output('tuto1.pdf', 'F')
 
@@ -1098,6 +1146,8 @@ class KitchenSink(App):
                 [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]],
                 [0.25, [[0.2, colorscale("2c79be", 1.2)], [0.2, colorscale("e2412b", 1.2)], 
                     [0.2, colorscale("894c9e", 1.2)], [0.2, colorscale("4cb853", 1.2)], [0.2, colorscale("eedc2a", 1.2)]]]]
+        self.layouts[5] = [[0.6, [[0.33, "ee4498"], [0.33, "49c3e9"],  [0.33, "f37021"]]],
+                [0.4, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]]]
         target.clear_widgets()
         cell_id = 0
         self.cell_rows = []
