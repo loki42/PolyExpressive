@@ -84,21 +84,21 @@ BoxLayout:
         Screen:
             name: 'home'
             MDRaisedButton:
-                text: "My Mats"
+                text: "My Boards"
                 opposite_colors: True
                 size_hint: None, None
                 size: 4 * dp(48), dp(48)
                 pos_hint: {'center_x': 0.5, 'center_y': 0.6}
-                on_release: app.go_to_page("list_my_mats", "My Mats")
+                on_release: app.go_to_page("list_my_mats", "My Boards")
             MDRaisedButton:
-                text: "Search Mats"
+                text: "Search Boards"
                 opposite_colors: True
                 size_hint: None, None
                 size: 4 * dp(48), dp(48)
                 pos_hint: {'center_x': 0.5, 'center_y': 0.4}
                 on_release: app.go_to_page("select_layout", "Select Layout")
             MDRaisedButton:
-                text: "New Mat"
+                text: "New Board"
                 opposite_colors: True
                 size_hint: None, None
                 size: 4 * dp(48), dp(48)
@@ -213,9 +213,9 @@ BoxLayout:
                     icon:                'check'
                     opposite_colors:    True
                     elevation_normal:    8
-                    pos_hint:            {'center_x': 0.5, 'center_y': 0.2}
+                    pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
                     disabled: app.next_pedals_disabled
-                    on_release: app.go_to_page("edit_mat", "Edit Mat")
+                    on_release: app.go_to_page("edit_mat", "Edit Board")
 
         Screen:
             name: 'set_actions'
@@ -227,33 +227,44 @@ BoxLayout:
                     name: 'Standard'
                     text: "Standard" # Why are these not set!!! comment in example
                     BoxLayout:
-                        orientation: 'vertical'
-                        MDLabel:
-                            font_style: 'Subhead'
-                            theme_text_color: 'Primary'
-                            text: "Selected Controls"
-                            halign: 'left'
-                        DataList:
-                            id: selected_standard_controls_dl
-                            items: app.selected_standard_controls
-                        MDLabel:
-                            font_style: 'Subhead'
-                            theme_text_color: 'Primary'
-                            text: "Available Controls"
-                            halign: 'left'
-                        ScrollView:
-                            do_scroll_x: False
+                        padding: dp(20), dp(4), dp(4), dp(20)
+                        orientation: 'horizontal'
+                        BoxLayout:
+                            padding: dp(20), dp(4), dp(4), dp(20)
+                            orientation: 'vertical'
+                            MDLabel:
+                                font_style: 'Subhead'
+                                theme_text_color: 'Primary'
+                                text: "Selected Controls"
+                                halign: 'left'
+                                size_hint: 1, 0.1
                             DataList:
-                                id: available_standard_controls_dl
-                                items: app.available_standard_controls
-                        MDFloatingActionButton:
-                            id:                    controls_selected
-                            icon:                'check'
-                            opposite_colors:    True
-                            elevation_normal:    8
-                            pos_hint:            {'center_x': 0.5, 'center_y': 0.2}
-                            disabled: app.next_standard_controls_disabled
-                            on_release: app.set_standard_controls()
+                                id: selected_standard_controls_dl
+                                items: app.selected_standard_controls
+                                size_hint: 1, 0.9
+                        BoxLayout:
+                            padding: dp(20), dp(4), dp(4), dp(20)
+                            orientation: 'vertical'
+                            MDLabel:
+                                font_style: 'Subhead'
+                                theme_text_color: 'Primary'
+                                text: "Available Controls"
+                                halign: 'left'
+                                size_hint: 1, 0.1
+                            ScrollView:
+                                do_scroll_x: False
+                                size_hint: 1, 0.9
+                                DataList:
+                                    id: available_standard_controls_dl
+                                    items: app.available_standard_controls
+                            MDFloatingActionButton:
+                                id:                    controls_selected
+                                icon:                'check'
+                                opposite_colors:    True
+                                elevation_normal:    8
+                                pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
+                                disabled: app.next_standard_controls_disabled
+                                on_release: app.set_standard_controls()
                 MDTab:
                     name: 'Advanced'
                     text: 'Advanced'
@@ -661,7 +672,7 @@ def menu_release(x):
 
 class KitchenSink(App):
     theme_cls = ThemeManager()
-    title = "KivyMD Kitchen Sink"
+    title = "Poly Expressive"
     next_pedals_disabled = BooleanProperty(True)
     next_standard_controls_disabled = BooleanProperty(True)
 
@@ -707,7 +718,7 @@ class KitchenSink(App):
         for cell_id, cell_content in mat_def["cells"].items():
             self.cell_buttons[cell_id].text = cell_content["text"]
         print("setting mat to", ctx["id"], "my_mats", my_mats)
-        self.go_to_page("edit_mat", "Edit Mat")
+        self.go_to_page("edit_mat", "Edit Board")
 
 
     def set_control_direction(self, ctx, direction):
@@ -784,7 +795,7 @@ class KitchenSink(App):
         # included_standard_controls is the UI items, need to transfer it to the actual items
         mat_def["cells"][current_selected_cell]["standard_controls"] = [(a["key"], a["direction"] if "direction" in a else None)  for a in included_standard_controls]
         print("mat is", mat_def)
-        self.go_to_page("edit_mat", "Edit Mat")
+        self.go_to_page("edit_mat", "Edit Board")
 
     def click_set_layout(self, ctx):
         print("set layout")
@@ -1150,7 +1161,7 @@ class KitchenSink(App):
         pdf.output('tuto1.pdf', 'F')
 
 
-# class MatLayoutContainer(BoxLayout):
+# class BoardLayoutContainer(BoxLayout):
 
     # def __init__(self, **kwargs):
     #     # self.size_hint = (1,1)
@@ -1211,7 +1222,7 @@ class KitchenSink(App):
 
         Screen:
             name: 'edit_mat'
-            MatLayoutContainer:
+            BoardLayoutContainer:
                 orientation: 'vertical'
                 size_hint: 1, 1
                 id: edit_mat_box
