@@ -342,6 +342,8 @@ advanced_controls = {
     "Macro 6": {"type": "CC", "controller":25, "curve":"1"},
     "Macro 7": {"type": "CC", "controller":26, "curve":"1"},
     "Macro 8": {"type": "CC", "controller":27, "curve":"1"},
+    "Note On": {"type": "note_on", "curve":"1"},
+    "Note Off": {"type": "note_off", "curve":"1"},
     "Pads": {"type": "PC"}
     },
 "Line 6:Helix":{
@@ -539,7 +541,55 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Pad 7": ["Pads", "on_foot_down", 7],
     "Pad 8": ["Pads", "on_foot_down", 8],
     "Pad 9": ["Pads", "on_foot_down", 9],
-    "Pad 10": ["Pads", "on_foot_down", 10]
+    "Pad 10": ["Pads", "on_foot_down", 10],
+    "C4": ["Note On", "on_foot_down", 60],
+    "C4 Off": ["Note Off", "on_foot_up", 60],
+    "C4#": ["Note On", "on_foot_down", 61],
+    "C4# Off": ["Note Off", "on_foot_up", 61],
+    "D4": ["Note On", "on_foot_down", 62],
+    "D4 Off": ["Note Off", "on_foot_up", 62],
+    "D#4": ["Note On", "on_foot_down", 63],
+    "D#4 Off": ["Note Off", "on_foot_up", 63],
+    "E4": ["Note On", "on_foot_down", 64],
+    "E4 Off": ["Note Off", "on_foot_up", 64],
+    "F4": ["Note On", "on_foot_down", 65],
+    "F4 Off": ["Note Off", "on_foot_up", 65],
+    "F#4": ["Note On", "on_foot_down", 66],
+    "F#4 Off": ["Note Off", "on_foot_up", 66],
+    "G4": ["Note On", "on_foot_down", 67],
+    "G4 Off": ["Note Off", "on_foot_up", 67],
+    "G#4": ["Note On", "on_foot_down", 68],
+    "G#4 Off": ["Note Off", "on_foot_up", 68],
+    "A4": ["Note On", "on_foot_down", 69],
+    "A4 Off": ["Note Off", "on_foot_up", 69],
+    "A#4": ["Note On", "on_foot_down", 70],
+    "A#4 Off": ["Note Off", "on_foot_up", 70],
+    "B4": ["Note On", "on_foot_down", 71],
+    "B4 Off": ["Note Off", "on_foot_up", 71],
+    "C5": ["Note On", "on_foot_down", 72],
+    "C5 Off": ["Note Off", "on_foot_up", 72],
+    "C5#": ["Note On", "on_foot_down", 73],
+    "C5# Off": ["Note Off", "on_foot_up", 73],
+    "D5": ["Note On", "on_foot_down", 74],
+    "D5 Off": ["Note Off", "on_foot_up", 74],
+    "D#5": ["Note On", "on_foot_down", 75],
+    "D#5 Off": ["Note Off", "on_foot_up", 75],
+    "E5": ["Note On", "on_foot_down", 76],
+    "E5 Off": ["Note Off", "on_foot_up", 76],
+    "F5": ["Note On", "on_foot_down", 77],
+    "F5 Off": ["Note Off", "on_foot_up", 77],
+    "F#5": ["Note On", "on_foot_down", 78],
+    "F#5 Off": ["Note Off", "on_foot_up", 78],
+    "G5": ["Note On", "on_foot_down", 79],
+    "G5 Off": ["Note Off", "on_foot_up", 79],
+    "G#5": ["Note On", "on_foot_down", 80],
+    "G#5 Off": ["Note Off", "on_foot_up", 80],
+    "A5": ["Note On", "on_foot_down", 81],
+    "A5 Off": ["Note Off", "on_foot_up", 81],
+    "A#5": ["Note On", "on_foot_down", 82],
+    "A#5 Off": ["Note Off", "on_foot_up", 82],
+    "B5": ["Note On", "on_foot_down", 83],
+    "B5 Off": ["Note Off", "on_foot_up", 83]
         },
 "Line 6:Helix":{
     "Macro 1": ["Macro 1", "on_foot_move", "1"],
@@ -684,7 +734,8 @@ class KitchenSink(App):
             {"title":"2", "thumbnail" : './assets/kitten-1049129_1280.jpg', "layout_id":2},
             {"title":"3", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":3},
             {"title":"4", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":4},
-            {"title":"5", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":5}
+            {"title":"5", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":5},
+            {"title":"6", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":6}
             ]
 
     def go_to_page(self, page, title):
@@ -1004,7 +1055,7 @@ class KitchenSink(App):
         # x_y_fac = size_x / float(display_size_y)
         # y_x_fac = size_y / float(display_size_x)
 
-        MIDI_messages = { "note_off":0x80, "note_off":0x90, "PP":0xA0, "CC": 0xB0, "PC":0xC0, "CP":0xD0, "PB":0xE0}
+        MIDI_messages = { "note_off":0x80, "note_on":0x90, "PP":0xA0, "CC": 0xB0, "PC":0xC0, "CP":0xD0, "PB":0xE0}
         def standard_controls_to_json(control):
             # "Tone B": ["Tone B", "on_foot_move", "1"],
             # "Channel A Boost": ["Channel A Effect Select", "on_foot_down", "Boost"],
@@ -1023,6 +1074,9 @@ class KitchenSink(App):
                     block["b1"] = MIDI_messages[a_c["type"]] | (int(channel)-1) # channel from 1-16 mapped to 0-15 here
                     if a_c["type"] in ["CP", "PC"]: # 2 byte messages
                         block["b2"] = value
+                    elif a_c["type"] in ["note_on", "note_off"]:
+                        block["b2"] = value
+                        block["b3"] = 120 # XXX temp
                     else:
                         if "controller" in a_c:
                             block["b2"] = a_c["controller"]
@@ -1189,6 +1243,12 @@ class KitchenSink(App):
                     [0.2, colorscale("894c9e", 1.2)], [0.2, colorscale("4cb853", 1.2)], [0.2, colorscale("eedc2a", 1.2)]]]]
         self.layouts[5] = [[0.6, [[0.33, "ee4498"], [0.33, "49c3e9"],  [0.33, "f37021"]]],
                 [0.4, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]]]
+        self.layouts[6] = [[0.5, [[0.083, "ffffff"], [0.083, "222222"], [0.083, "ffffff"],[0.083, "222222"], 
+            [0.083, "ffffff"],[0.083, "ffffff"],[0.083, "222222"],[0.083, "ffffff"],[0.083, "222222"], 
+            [0.083, "ffffff"],[0.083, "222222"],[0.083, "ffffff"],[0.083, "ffffff"]]],
+            [0.5, [[0.083, "ffffff"], [0.083, "222222"], [0.083, "ffffff"],[0.083, "222222"], 
+            [0.083, "ffffff"],[0.083, "ffffff"],[0.083, "222222"],[0.083, "ffffff"],[0.083, "222222"], 
+            [0.083, "ffffff"],[0.083, "222222"],[0.083, "ffffff"],[0.083, "ffffff"]]]]
         target.clear_widgets()
         cell_id = 0
         self.cell_rows = []
