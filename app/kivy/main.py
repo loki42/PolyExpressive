@@ -304,7 +304,10 @@ default_channels = {
     "Pigtronix:Echolution 2 Deluxe":11,
     "Peavey:Vypyr Pro":1,
     "Line 6:Helix":1,
-    "Hughes and Kettner:GM4":1
+    "Hughes and Kettner:GM4":1,
+    "Elektron:Analog Drive":1,
+    "Kemper:Profiler":3,
+    "Macro:Macro":1
     }
 
 advanced_controls = {
@@ -322,6 +325,49 @@ advanced_controls = {
     "Engage Last Preset": {"type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}},
     "Bypass Switch": {"type": "CC", "controller":103, "enum":{"Both Enabled": 127, "Only A": 85, "Only B": 45, "Bypass":0}},
     "Preset Select": {"type": "PC"}
+    },
+"Elektron:Analog Drive":{
+    "Gain": {"type": "CC", "controller":16, "curve":"1"},
+    "Low": {"type": "CC", "controller":17, "curve":"1"},
+    "Mid Freq": {"type": "CC", "controller":18, "curve":"1"},
+    "Mid": {"type": "CC", "controller":19, "curve":"1"},
+    "High": {"type": "CC", "controller":20, "curve":"1"},
+    "Level": {"type": "CC", "controller":21, "curve":"1"},
+    "Expression Gain": {"type": "CC", "controller":4, "curve":"1"},
+    "Expression Mid": {"type": "CC", "controller":1, "curve":"1"}, #
+    "Circuit Select": {"type": "CC", "controller":3, "enum":{"Clean Boost":1, "Mid Drive":16, "Dirty Drive":32,
+        "Big Dist":48, "Focused Dist":64, "Harmonic Fuzz":80, "High Gain":96, "Thick Gain":112 }},
+    "Enable": {"type": "CC", "controller":103, "enum":{"Enabled": 127, "Bypass":0}},
+    "Preset": {"type": "PC"}
+    },
+"Kemper:Profiler":{
+    "Wah": {"type": "CC", "controller":1, "curve":"1"},
+    "Pitch": {"type": "CC", "controller":4, "curve":"1"},
+    "Volume": {"type": "CC", "controller":7, "curve":"1"},
+    "Morph": {"type": "CC", "controller":11, "curve":"1"},
+    "Delay Mix": {"type": "CC", "controller":68, "curve":"1"},
+    "Delay Feedback": {"type": "CC", "controller":69, "curve":"1"},
+    "Reverb Mix": {"type": "CC", "controller":70, "curve":"1"},
+    "Reverb Time": {"type": "CC", "controller":71, "curve":"1"},
+    "Gain": {"type": "CC", "controller":72, "curve":"1"},
+    "Monitor Volume": {"type": "CC", "controller":73, "curve":"1"},
+    "Invert Stomps": {"type": "CC", "controller":16, "enum":{"On": 127, "Off":0}},
+    "A Toggle": {"type": "CC", "controller":17, "enum":{"On": 127, "Off":0}},
+    "B Toggle": {"type": "CC", "controller":18, "enum":{"On": 127, "Off":0}},
+    "C Toggle": {"type": "CC", "controller":19, "enum":{"On": 127, "Off":0}},
+    "D Toggle": {"type": "CC", "controller":20, "enum":{"On": 127, "Off":0}},
+    "X Toggle": {"type": "CC", "controller":22, "enum":{"On": 127, "Off":0}},
+    "Mod Toggle": {"type": "CC", "controller":24, "enum":{"On": 127, "Off":0}},
+    "Delay Toggle No Spill": {"type": "CC", "controller":26, "enum":{"On": 127, "Off":0}},
+    "Delay Toggle Spill": {"type": "CC", "controller":27, "enum":{"On": 127, "Off":0}},
+    "Reverb Toggle No Spill": {"type": "CC", "controller":28, "enum":{"On": 127, "Off":0}},
+    "Reverb Toggle Spill": {"type": "CC", "controller":29, "enum":{"On": 127, "Off":0}},
+    "Tap": {"type": "CC", "controller":30, "enum":{"On Beat Scan": 127, "Off Beat Scan":0}},
+    "Tuner": {"type": "CC", "controller":31, "enum":{"On": 127, "Off":0}},
+    "Rotary Speed": {"type": "CC", "controller":33, "enum":{"Fast": 127, "Slow":0}},
+    "Delay Infinity": {"type": "CC", "controller":34, "enum":{"On": 127, "Off":0}},
+    "Delay Hold": {"type": "CC", "controller":35, "enum":{"On": 127, "Off":0}},
+    "Preset": {"type": "PC"}
     },
 "Line 6:M9":{
     "Expression Pedal 1": {"type": "CC", "controller":1, "curve":"1"},
@@ -487,6 +533,12 @@ advanced_controls = {
     "RGT_SWITCH": {"type": "CC", "controller":0x6D, "curve":"1"},
     "NGCI_ATTEN": {"type": "CC", "controller":0x6E, "curve":"1"},
     "NGCO_ATTEN": {"type": "CC", "controller":0x6F, "curve":"1"}
+    },
+"Macro:Macro":{
+    "Start Recording Macro": {"type": "start_recording_macro"},
+    "Stop Recording Macro": {"type": "stop_recording_macro"},
+    "Start Macro": {"type": "start_macro"},
+    "Stop Macro": {"type": "stop_macro"}
     }
 }
 
@@ -505,7 +557,57 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Order B > A": ["Channel Order", "on_foot_down", "B > A"],
     "Channel B Boost": ["Channel B Effect Select", "on_foot_down", "Boost"],
     "Channel B Drive": ["Channel B Effect Select", "on_foot_down", "Drive"],
-    "Channel B Fuzz": ["Channel B Effect Select", "on_foot_down", "Fuzz"]},
+    "Channel B Fuzz": ["Channel B Effect Select", "on_foot_down", "Fuzz"]
+    },
+    "Elektron:Analog Drive":{
+    "Gain": ["Gain", "on_foot_move", "1"],
+    "Low": ["Low", "on_foot_move", "1"],
+    "Mid Freq": ["Mid Freq", "on_foot_move", "1"],
+    "Mid": ["Mid", "on_foot_move", "1"],
+    "High": ["High", "on_foot_move", "1"],
+    "Level": ["Level", "on_foot_move", "1"],
+    "Expression Gain": ["Expression Gain", "on_foot_move", "1"],
+    "Expression Mid": ["Expression Mid", "on_foot_move", "1"],
+    "Toggle Enabled": ["Enable", "on_foot_down_toggle", "Enabled", "Enable", "Bypass"],
+    "1": ["Preset", "on_foot_down", 1],
+    "2": ["Preset", "on_foot_down", 2],
+    "3": ["Preset", "on_foot_down", 3],
+    "4": ["Preset", "on_foot_down", 4],
+    "5": ["Preset", "on_foot_down", 5]
+    },
+    "Kemper:Profiler":{
+    "Wah": ["Wah", "on_foot_move", "1"],
+    "Pitch": ["Pitch", "on_foot_move", "1"],
+    "Volume": ["Volume", "on_foot_move", "1"],
+    "Morph": ["Morph", "on_foot_move", "1"],
+    "Delay Mix": ["Delay Mix", "on_foot_move", "1"],
+    "Delay Feedback": ["Delay Feedback", "on_foot_move", "1"],
+    "Reverb Mix": ["Reverb Mix", "on_foot_move", "1"],
+    "Reverb Time": ["Reverb Time", "on_foot_move", "1"],
+    "Gain": ["Gain", "on_foot_move", "1"],
+    "Monitor Volume": ["Monitor Volume", "on_foot_move", "1"],
+    "A Toggle": ["A Toggle", "on_foot_down_toggle", "On", "A Toggle", "Off"],
+    "B Toggle": ["B Toggle", "on_foot_down_toggle", "On", "B Toggle", "Off"],
+    "C Toggle": ["C Toggle", "on_foot_down_toggle", "On", "C Toggle", "Off"],
+    "D Toggle": ["D Toggle", "on_foot_down_toggle", "On", "D Toggle", "Off"],
+    "X Toggle": ["X Toggle", "on_foot_down_toggle", "On", "X Toggle", "Off"],
+    "Mod Toggle": ["Mod Toggle", "on_foot_down_toggle", "On", "Mod Toggle", "Off"],
+    "Delay Toggle No Spill": ["Delay Toggle No Spill", "on_foot_down_toggle", "On", "Delay Toggle No Spill", "Off"],
+    "Delay Toggle Spill": ["Delay Toggle Spill", "on_foot_down_toggle", "On", "Delay Toggle Spill", "Off"],
+    "Reverb Toggle No Spill": ["Reverb Toggle No Spill", "on_foot_down_toggle", "On", "Reverb Toggle No Spill", "Off"],
+    "Reverb Toggle Spill": ["Reverb Toggle Spill", "on_foot_down_toggle", "On", "Reverb Toggle Spill", "Off"],
+    "Tap": ["Tap", "on_foot_down_toggle", "On Beat Scan", "Tap", "Off Beat Scan"],
+    "Tuner Toggle": ["Tuner Toggle", "on_foot_down_toggle", "On", "Tuner Toggle", "Off"],
+    "Rotary Speed": ["Rotary Speed", "on_foot_down_toggle", "Fast", "Rotary Speed", "Slow"],
+    "Delay Infinity": ["Delay Infinity", "on_foot_down_toggle", "On", "Delay Infinity", "Off"],
+    "Delay Hold Down": ["Delay Hold", "on_foot_down", "On"],
+    "Delay Hold Up": ["Delay Hold", "on_foot_up", "Off"],
+    "1": ["Preset", "on_foot_down", 1],
+    "2": ["Preset", "on_foot_down", 2],
+    "3": ["Preset", "on_foot_down", 3],
+    "4": ["Preset", "on_foot_down", 4],
+    "5": ["Preset", "on_foot_down", 5]
+    },
 "Line 6:M9":{
     "Expression Pedal 1": ["Expression Pedal 1", "on_foot_move", "1"],
     "Expression Pedal 2": ["Expression Pedal 2", "on_foot_move", "1"],
@@ -657,6 +759,14 @@ standard_controls = {"Chase Bliss:Brothers":{
     "DELAY_TYPE Analog": ["DELAY_TYPE", "on_foot_down", "Analog"],
     "DELAY_TYPE Modulation": ["DELAY_TYPE", "on_foot_down", "Modulation"],
     "DELAY_TYPE Multi-tap": ["DELAY_TYPE", "on_foot_down", "Multi-tap"]
+    },
+"Macro:Macro":{
+    "Start Recording Macro 1": ["Start Recording Macro", "on_foot_down", 1],
+    "Stop Recording Macro 1": ["Stop Recording Macro", "on_foot_down", 1],
+    "Toggle Macro 1 Recording": ["Start Recording Macro", "on_foot_down_toggle", 1, "Stop Recording Macro", 1],
+    "Start Macro 1": ["Start Macro", "on_foot_down", 1],
+    "Stop Macro 1": ["Stop Macro", "on_foot_down", 1],
+    "Toggle Macro 1": ["Start Macro", "on_foot_down_toggle", 1, "Stop Macro", 1],
     }
 }
 
@@ -942,7 +1052,10 @@ class KitchenSink(App):
         "Vypyr Pro", "Peavey",
         "Echolution 2 Deluxe", "Pigtronix",
         "Helix", "Line 6",
-        "GM4", "Hughes and Kettner"
+        "GM4", "Hughes and Kettner",
+        "Analog Drive", "Elektron",
+        "Profiler", "Kemper",
+        "Macro", "Macro"
         ))]
 
 
@@ -1086,6 +1199,18 @@ class KitchenSink(App):
                             block["b3"] = a_c["enum"][value]
                         else:
                             block["b3"] = value
+                elif a_c["type"] == "start_recording_macro":
+                    block["t"] = "m_r"
+                    block["b1"] = value
+                elif a_c["type"] == "stop_recording_macro":
+                    block["t"] = "m_s"
+                    block["b1"] = value
+                elif a_c["type"] == "start_macro":
+                    block["t"] = "m_p"
+                    block["b1"] = value
+                elif a_c["type"] == "stop_macro":
+                    block["t"] = "m_ps"
+                    block["b1"] = value
                 return block
 
             if "toggle" in action:

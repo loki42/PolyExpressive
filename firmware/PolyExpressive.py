@@ -47,6 +47,10 @@ hold_cell_mode = True
 toggle_states = {}
 prev_sent = {"b1":0, "b2":0, "b3":0}
 
+current_macro = None
+macro_start_time = 0
+playing_macros = {}
+
 MIDI_COMMANDS = {
         "clock": 0xF8,
         "start": 0xFA,
@@ -57,8 +61,15 @@ MIDI_COMMANDS = {
 def send_midi_message(command, data1, data2=None):
     if data2 is not None:
         uart.write(bytes((command, data1, data2)))
+        if current_macro is not None:
+            record_macro(",".join((str(command), str(data1), str(data2))))
     else:
         uart.write(bytes((command, data1)))
+        if current_macro is not None:
+            record_macro(",".join((str(command), str(data1))))
+
+def send_midi_bytes(b):
+    uart.write(b)
 
 def send_clock_message(command):
     uart.write(bytes((command,)))
@@ -155,11 +166,11 @@ def inner_execute_action(ap, z):
     global clock_start
     if ap["t"] == "start":
         send_clock_message(MIDI_COMMANDS["start"])
-        clock_start = time.ticks_us()
+        clock_start = utime.ticks_us()
         clock_playing = True
-    if ap["t"] == "continue":
+    elif ap["t"] == "continue":
         send_clock_message(MIDI_COMMANDS["continue"])
-        clock_start = time.ticks_us()
+        clock_start = utime.ticks_us()
         clock_playing = True
     elif ap["t"] == "stop":
         send_clock_message(MIDI_COMMANDS["stop"])
@@ -167,6 +178,14 @@ def inner_execute_action(ap, z):
         clock_playing = False
     elif ap["t"] == "tap":
         tap_tempo()
+    elif ap["t"] == "m_r":
+        start_record_macro(ap["b1"])
+    elif ap["t"] == "m_s":
+        stop_record_macro(ap["b1"])
+    elif ap["t"] == "m_p":
+        start_play_macro(ap["b1"])
+    elif ap["t"] == "m_ps":
+        stop_macro(ap["b1"])
     elif ap["t"] == "m":
         if "c" in ap:
             map_and_send_midi(ap, z, False)
@@ -207,12 +226,75 @@ def execute_action(actions, action_id, z):
             inner_execute_action(ap, z)
 
 
+def start_record_macro(macro_id):
+    # delete existing file, create new
+    global current_macro
+    global macro_start_time
+    stop_macro(macro_id)
+    macro_start_time = utime.ticks_us()
+    # FIXME auto close macro when it gets to a set size
+    current_macro = open('macro'+str(macro_id), 'w')
+
+def record_macro(midi):
+    #append bytes to file
+    if current_macro is not None:
+        current_macro.write(str(utime.ticks_diff(utime.ticks_us(), macro_start_time))+','+ str(midi) + '\n')
+
+def stop_record_macro(macro_id):
+    global current_macro
+    if current_macro is not None:
+        current_macro.close()
+        current_macro = None
+
+def start_play_macro(macro_id):
+    if macro_id in playing_macros:
+        playing_macros[macro_id][0] = utime.ticks_us()
+        playing_macros[macro_id][1].seek(0)
+    else:
+        playing_macros[macro_id] = [utime.ticks_us(), open('macro'+str(macro_id), 'r'), None]
+
+def stop_macro(macro_id):
+    if macro_id in playing_macros:
+        playing_macros[macro_id][1].close()
+        playing_macros.pop(macro_id)
+
+def play_macro(macro_id):
+    #return bytes
+    # if current item is None
+    while True:
+        if playing_macros[macro_id][2] is None:
+            # pop next time from queue
+            try:
+                line = playing_macros[macro_id][1].readline().strip("\n").split(",")
+                if len(line) == 1:
+                    raise EOFError
+                line = [int(v) for v in line]
+                playing_macros[macro_id][2] = [line[0], line[1:]]
+            except EOFError:
+            # if end of file, reset time, seek to start of file
+                playing_macros[macro_id][1].seek(0)
+                playing_macros[macro_id][0] = utime.ticks_us()
+                return
+
+        if playing_macros[macro_id][2] is not None:
+            delta = utime.ticks_diff(utime.ticks_us(), playing_macros[macro_id][0]) # compute time difference
+            # send item if current time is greater than current_item_time
+            if delta > playing_macros[macro_id][2][0]:
+                send_midi_message(*playing_macros[macro_id][2][1])
+                playing_macros[macro_id][2] = None
+            else:
+                return
+
+def play_active_macros():
+    for name in playing_macros.keys():
+        play_macro(name)
+
 def tick_midi_clock():
     global clock_start
     if clock_playing == True:
-        delta = time.ticks_diff(time.ticks_us(), clock_start) # compute time difference
+        delta = utime.ticks_diff(utime.ticks_us(), clock_start) # compute time difference
         if delta > clock_interval_us:
-            clock_start = time.ticks_us()
+            clock_start = utime.ticks_us()
             send_clock_message(MIDI_COMMANDS["clock"])
 # main loop
 def core_loop():
@@ -268,6 +350,7 @@ def core_loop():
                     # print("executing end action, new action is false", current_action['id'])
                     end_action = None
                 current_action = None
+    play_active_macros()
 
 
 def run():
