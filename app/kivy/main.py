@@ -870,7 +870,7 @@ class KitchenSink(App):
         self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
         mat_def["included_pedals"] = [a["id"] for a in self.root.ids.selected_pedals_dl.items]
 
-        print(self.root.ids.selected_pedals_dl.items)
+        # print(self.root.ids.selected_pedals_dl.items)
 
     def select_mat(self, ctx):
         global mat_def
@@ -879,6 +879,10 @@ class KitchenSink(App):
         for cell_id, cell_content in mat_def["cells"].items():
             self.cell_buttons[cell_id].text = cell_content["text"]
         print("setting mat to", ctx["id"], "my_mats", my_mats)
+        # setup all the controls
+        self.root.ids.selected_pedals_dl.items = [{"text":a, "secondary_text":b, "action": KitchenSink.select_pedal, "id": b+":"+a} for b, a in [c.split(":") for c in mat_def["included_pedals"]]]
+        self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
+
         self.go_to_page("edit_mat", "Edit Board")
 
 
@@ -1005,6 +1009,7 @@ class KitchenSink(App):
         current_selected_cell = cell_id
         global included_standard_controls
         included_standard_controls = self.root.ids.selected_standard_controls_dl.items
+        self.next_standard_controls_disabled = not self.root.ids.selected_standard_controls_dl.items
         self.go_to_page("set_actions", "Set Action")
 
     def edit_menu(self, parent, cell_id):
@@ -1039,6 +1044,10 @@ class KitchenSink(App):
              'text': 'Send to Poly Expressive',
              'on_release' : lambda *x: self.send_to_poly()
              },
+            {'viewclass': 'MDMenuItem',
+             'text': 'Add Pedal',
+             'on_release' : lambda *x: self.go_to_page("choose_pedals", "Choose Pedals")
+             }
         ]
         MDDropdownMenu(items=menu_items, width_mult=4).open(parent)
 

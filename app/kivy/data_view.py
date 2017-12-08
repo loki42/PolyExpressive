@@ -3,6 +3,9 @@ from kivy.properties import ListProperty
 from kivy.properties import StringProperty
 from kivy.uix.gridlayout import GridLayout
 from kivymd.list import MDList
+from kivymd.list import ILeftBody, ILeftBodyTouch, IRightBodyTouch, BaseListItem
+from kivymd.button import MDIconButton
+
 
 Builder.load_file("data_view.kv")
 
@@ -17,7 +20,7 @@ class DataTileGrid(GridLayout):
        for item in self.items:
            w = Builder.template(self.item_template, **item)
            self.add_widget(w)
-           print("adding", item)
+           # print("adding", item)
 
 class DataList(MDList):
 
@@ -29,4 +32,15 @@ class DataList(MDList):
        self.clear_widgets()
        for item in self.items:
            w = Builder.template(self.item_template, **item)
+           if 'direction' in item:
+               if item["direction"] == "horizontal":
+                   icon = "swap-horizontal"
+               elif item["direction"] == "vertical":
+                   icon = "swap-vertical"
+               elif item["direction"] == "pressure":
+                   icon = "arrow-compress"
+               w.add_widget(IconLeftSampleWidget(icon=icon))
            self.add_widget(w)
+
+class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
+    pass

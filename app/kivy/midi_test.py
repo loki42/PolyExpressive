@@ -3,6 +3,7 @@ from __future__ import print_function
 from __future__ import division
 
 import json
+import main
 
 from kivy.app import App
 from kivy.lang import Builder
@@ -167,41 +168,43 @@ for i in range(8):
 default_curves = {"1": ["linear", [[0,0],[127,127]], True]}
 current_selected_cell = "0" ## current target for editing / bit dodgy
 
-advanced_controls = {
-"Chase Bliss:Brothers":{
-    "Gain A": {"type": "CC", "controller":14, "curve":"1"},
-    "Master": {"type": "CC", "controller":15, "curve":"1"},
-    "Gain B": {"type": "CC", "controller":16, "curve":"1"},
-    "Tone A": {"type": "CC", "controller":17, "curve":"1"},
-    "Mix / Stack": {"type": "CC", "controller":18, "curve":"1"},
-    "Tone B": {"type": "CC", "controller":19, "curve":"1"},
-    "Channel A Effect Select": {"type": "CC", "controller":21, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
-    "Channel Order": {"type": "CC", "controller":22, "enum":{"Parallel":1, "A > B":2, "B > A":3}},
-    "Channel B Effect Select": {"type": "CC", "controller":23, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
-    "Expression": {"type": "CC", "controller":100, "curve":"1"},
-    "Engage Last Preset": {"type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}},
-    "Bypass Switch": {"type": "CC", "controller":103, "enum":{"Both Enabled": 127, "Only A": 85, "Only B": 45, "Bypass":0}},
-    "Preset Select": {"type": "PC"}
-    }
-}
+advanced_controls = main.advanced_controls
+# {
+# "Chase Bliss:Brothers":{
+#     "Gain A": {"type": "CC", "controller":14, "curve":"1"},
+#     "Master": {"type": "CC", "controller":15, "curve":"1"},
+#     "Gain B": {"type": "CC", "controller":16, "curve":"1"},
+#     "Tone A": {"type": "CC", "controller":17, "curve":"1"},
+#     "Mix / Stack": {"type": "CC", "controller":18, "curve":"1"},
+#     "Tone B": {"type": "CC", "controller":19, "curve":"1"},
+#     "Channel A Effect Select": {"type": "CC", "controller":21, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
+#     "Channel Order": {"type": "CC", "controller":22, "enum":{"Parallel":1, "A > B":2, "B > A":3}},
+#     "Channel B Effect Select": {"type": "CC", "controller":23, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
+#     "Expression": {"type": "CC", "controller":100, "curve":"1"},
+#     "Engage Last Preset": {"type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}},
+#     "Bypass Switch": {"type": "CC", "controller":103, "enum":{"Both Enabled": 127, "Only A": 85, "Only B": 45, "Bypass":0}},
+#     "Preset Select": {"type": "PC"}
+#     }
+# }
 
-standard_controls = {"Chase Bliss:Brothers":{
-    "Gain A": ["Gain A", "on_foot_move", "1"],
-    "Master": ["Master", "on_foot_move", "1"],
-    "Gain B": ["Gain B", "on_foot_move", "1"],
-    "Tone A": ["Tone A", "on_foot_move", "1"],
-    "Mix / Stack": ["Mix / Stack", "on_foot_move", "1"],
-    "Tone B": ["Tone B", "on_foot_move", "1"],
-    "Channel A Boost": ["Channel A Effect Select", "on_foot_down", "Boost"],
-    "Channel A Drive": ["Channel A Effect Select", "on_foot_down", "Drive"],
-    "Channel A Fuzz": ["Channel A Effect Select", "on_foot_down", "Fuzz"],
-    "Order A > B": ["Channel Order", "on_foot_down", "A > B"],
-    "Order Parallel": ["Channel Order", "on_foot_down", "Parallel"],
-    "Order B > A": ["Channel Order", "on_foot_down", "B > A"],
-    "Channel B Boost": ["Channel B Effect Select", "on_foot_down", "Boost"],
-    "Channel B Drive": ["Channel B Effect Select", "on_foot_down", "Drive"],
-    "Channel B Fuzz": ["Channel B Effect Select", "on_foot_down", "Fuzz"]}
-    }
+standard_controls = main.standard_controls
+# {"Chase Bliss:Brothers":{
+#     "Gain A": ["Gain A", "on_foot_move", "1"],
+#     "Master": ["Master", "on_foot_move", "1"],
+#     "Gain B": ["Gain B", "on_foot_move", "1"],
+#     "Tone A": ["Tone A", "on_foot_move", "1"],
+#     "Mix / Stack": ["Mix / Stack", "on_foot_move", "1"],
+#     "Tone B": ["Tone B", "on_foot_move", "1"],
+#     "Channel A Boost": ["Channel A Effect Select", "on_foot_down", "Boost"],
+#     "Channel A Drive": ["Channel A Effect Select", "on_foot_down", "Drive"],
+#     "Channel A Fuzz": ["Channel A Effect Select", "on_foot_down", "Fuzz"],
+#     "Order A > B": ["Channel Order", "on_foot_down", "A > B"],
+#     "Order Parallel": ["Channel Order", "on_foot_down", "Parallel"],
+#     "Order B > A": ["Channel Order", "on_foot_down", "B > A"],
+#     "Channel B Boost": ["Channel B Effect Select", "on_foot_down", "Boost"],
+#     "Channel B Drive": ["Channel B Effect Select", "on_foot_down", "Drive"],
+#     "Channel B Fuzz": ["Channel B Effect Select", "on_foot_down", "Fuzz"]}
+#     }
 
 included_standard_controls = []
 
@@ -252,6 +255,7 @@ class KitchenSink(App):
         super(KitchenSink, self).__init__()
         global mat_def
         mat_def = my_mats["brothers all switches"] # XXX specify mat here
+        # mat_def = my_mats["macro kemper"] # XXX specify mat here
         self.inverted_mat = self.invert_mat()
         Clock.schedule_interval(self.get_from_queue, 0.001)
 
@@ -490,8 +494,20 @@ class KitchenSink(App):
     available_layouts = t_available_layouts
 
     selected_pedals = []
+    # available_pedals = main.available_pedals
+    
     available_pedals = [{"text":a, "secondary_text":b, "action": select_pedal, "id": b+":"+a} for a, b in pairwise(("H9", "Eventide",
-        "M9", "Line 6", "Brothers", "Chase Bliss"))]
+        "M9", "Line 6", "Brothers", "Chase Bliss", "DAW", "DAW",
+        "Vypyr Pro", "Peavey",
+        "Echolution 2 Deluxe", "Pigtronix",
+        "Helix", "Line 6",
+        "GM4", "Hughes and Kettner",
+        "Analog Drive", "Elektron",
+        "Profiler", "Kemper",
+        "Macro", "Macro"
+        ))]
+    # [{"text":a, "secondary_text":b, "action": select_pedal, "id": b+":"+a} for a, b in pairwise(("H9", "Eventide",
+    #     "M9", "Line 6", "Brothers", "Chase Bliss"))]
 
     selected_standard_controls = []
     available_standard_controls = []
