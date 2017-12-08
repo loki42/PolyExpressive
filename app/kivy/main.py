@@ -9,9 +9,11 @@ from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.properties import ObjectProperty
 from kivy.properties import BooleanProperty
+from kivy.properties import StringProperty
 from kivy.uix.image import Image
 from kivy.uix.colorpicker import ColorWheel
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.anchorlayout import AnchorLayout
 from kivy.network.urlrequest import UrlRequest
 
 from kivymd.bottomsheet import MDListBottomSheet, MDGridBottomSheet
@@ -68,6 +70,19 @@ main_widget_kv = '''
 #:import MDThemePicker kivymd.theme_picker.MDThemePicker
 #:import MDBottomNavigation kivymd.tabs.MDBottomNavigation
 #:import MDBottomNavigationItem kivymd.tabs.MDBottomNavigationItem
+<TwoLineButton>
+    BoxLayout:
+        pos: self.parent.pos
+        size: self.parent.size
+        orientation: 'vertical'
+        Label:
+            size_hint_x: None
+            width: 100
+            text: "  "
+        Label:
+            size_hint_x: None
+            width: 100
+            text: root.sub_text
 
 BoxLayout:
     orientation: 'vertical'
@@ -878,6 +893,8 @@ class KitchenSink(App):
         self.show_layout(self.root.ids["edit_mat_box"], mat_def["layout"])
         for cell_id, cell_content in mat_def["cells"].items():
             self.cell_buttons[cell_id].text = cell_content["text"]
+            current_keys = [split_standard_controls_key(a[0])[2] for a in cell_content["standard_controls"]]
+            self.cell_buttons[cell_id].sub_text = '\n'.join(current_keys)
         print("setting mat to", ctx["id"], "my_mats", my_mats)
         # setup all the controls
         self.root.ids.selected_pedals_dl.items = [{"text":a, "secondary_text":b, "action": KitchenSink.select_pedal, "id": b+":"+a} for b, a in [c.split(":") for c in mat_def["included_pedals"]]]
@@ -959,7 +976,10 @@ class KitchenSink(App):
         # global for current cell as can't work out a neat way
         # included_standard_controls is the UI items, need to transfer it to the actual items
         mat_def["cells"][current_selected_cell]["standard_controls"] = [(a["key"], a["direction"] if "direction" in a else None)  for a in included_standard_controls]
-        print("mat is", mat_def)
+
+        current_keys = [split_standard_controls_key(a[0])[2] for a in mat_def["cells"][current_selected_cell]["standard_controls"]]
+        self.cell_buttons[current_selected_cell].sub_text = '\n'.join(current_keys)
+        # print("mat is", mat_def)
         self.go_to_page("edit_mat", "Edit Board")
 
     def click_set_layout(self, ctx):
@@ -970,7 +990,7 @@ class KitchenSink(App):
         self.go_to_page("choose_pedals", "Choose Pedals")
 
     def set_up_action_page(self, cell_id):
-        print(mat_def)
+        # print(mat_def)
         self.available_standard_controls = []
         selected_standard_controls = []
         current_controls = mat_def["cells"][cell_id]["standard_controls"]
@@ -981,7 +1001,7 @@ class KitchenSink(App):
                     for control_name, control in standard_controls[pedal].items():
                         control_key = get_standard_controls_key(pedal, default_channels[pedal], control_name)
                         if control_key not in current_keys:
-                            print("control 0 is", control[0])
+                            # print("control 0 is", control[0])
                             # self.root.ids.available_standard_controls_dl.items.append({"text":control[0],
                             self.available_standard_controls.append({"text":control_name,
                                 "secondary_text":pedal,
@@ -1164,7 +1184,7 @@ class KitchenSink(App):
 
 
         mat_json = self.mat_to_poly_json(output_size="a3")
-        print(mat_json)
+        # print(mat_json)
         req = UrlRequest('http://192.168.4.1/update_action_list', on_success=bug_posted, on_failure=fail, on_error=fail, req_body=mat_json)
 
     def mat_to_poly_json(self, output_size="a3"):
@@ -1393,9 +1413,11 @@ class KitchenSink(App):
             r.orientation="horizontal"
             r.size_hint=(1, row[0])
             for col in row[1]:
-                print("col is", col, "cell id is", cell_id)
-                b = MDFlatButton(
+                # print("col is", col, "cell id is", cell_id)
+
+                b = TwoLineButton(
                         text= "test",
+                        sub_text = "line 2",
                         id=str(cell_id),
                         md_bg_color= get_color_from_hex(col[1]),
                         size_hint= (col[0], 1),
@@ -1478,6 +1500,8 @@ class KitchenSink(App):
 
 
 """
+class TwoLineButton(MDFlatButton):
+    sub_text = StringProperty('')
 
 # class AutonomousColorWheel(ColorWheel):
 #     sv_s = 1
