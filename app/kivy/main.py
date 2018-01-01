@@ -584,11 +584,16 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Expression Gain": ["Expression Gain", "on_foot_move", "1"],
     "Expression Mid": ["Expression Mid", "on_foot_move", "1"],
     "Toggle Enabled": ["Enable", "on_foot_down_toggle", "Enabled", "Enable", "Bypass"],
+    "0": ["Preset", "on_foot_down", 0],
     "1": ["Preset", "on_foot_down", 1],
     "2": ["Preset", "on_foot_down", 2],
     "3": ["Preset", "on_foot_down", 3],
     "4": ["Preset", "on_foot_down", 4],
-    "5": ["Preset", "on_foot_down", 5]
+    "5": ["Preset", "on_foot_down", 5],
+    "6": ["Preset", "on_foot_down", 6],
+    "7": ["Preset", "on_foot_down", 7],
+    "8": ["Preset", "on_foot_down", 8],
+    "9": ["Preset", "on_foot_down", 9]
     },
     "Kemper:Profiler":{
     "Wah": ["Wah", "on_foot_move", "1"],
@@ -1311,15 +1316,18 @@ class KitchenSink(App):
 
     def mat_to_pdf(self, output_size="a3"):
         from fpdf import FPDF
-        size_x = 469.0
-        size_y = 294.0
+        size_x = 420.0
+        size_y = 297.0
+        # size_x = 469.0
+        # size_y = 294.0
         # size_x = 420.0 # a3
         # size_y = 297.0
         pdf = FPDF('L', 'mm', (size_y, size_x))
         pdf.add_page()
         filepath = os.path.join(os.path.dirname(os.path.abspath(inspect.stack()[0][1])), "assets", "Esphimere Bold.otf")
         pdf.add_font('esphimere', '', filepath, uni=True)
-        pdf.set_font('esphimere', '', 46)
+        # pdf.set_font('esphimere', '', 46)
+        pdf.set_font('esphimere', '', 36)
         pdf.set_margins(0, 0, 0)
         pdf.set_auto_page_break(False, 0.0)
         pdf.set_text_color(255)
