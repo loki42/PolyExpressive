@@ -787,6 +787,12 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Start Macro 1": ["Start Macro", "on_foot_down", 1],
     "Stop Macro 1": ["Stop Macro", "on_foot_down", 1],
     "Toggle Macro 1": ["Start Macro", "on_foot_down_toggle", 1, "Stop Macro", 1],
+    "Start Recording Macro 2": ["Start Recording Macro", "on_foot_down", 2],
+    "Stop Recording Macro 2": ["Stop Recording Macro", "on_foot_down", 2],
+    "Toggle Macro 2 Recording": ["Start Recording Macro", "on_foot_down_toggle", 2, "Stop Recording Macro", 2],
+    "Start Macro 2": ["Start Macro", "on_foot_down", 2],
+    "Stop Macro 2": ["Stop Macro", "on_foot_down", 2],
+    "Toggle Macro 2": ["Start Macro", "on_foot_down_toggle", 2, "Stop Macro", 2],
     }
 }
 
@@ -861,11 +867,13 @@ class KitchenSink(App):
 # self.go_to_page("choose_pedals", "Choose Pedals")
 
     t_available_layouts = [{"title":"1", "thumbnail" : './assets/layout1.png', "layout_id":1},
-            {"title":"2", "thumbnail" : './assets/kitten-1049129_1280.jpg', "layout_id":2},
-            {"title":"3", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":3},
-            {"title":"4", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":4},
-            {"title":"5", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":5},
-            {"title":"6", "thumbnail" : './assets/robin-944887_1280.jpg', "layout_id":6}
+            {"title":"2", "thumbnail" : './assets/layout2.png', "layout_id":2},
+            {"title":"3", "thumbnail" : './assets/layout3.png', "layout_id":3},
+            {"title":"4", "thumbnail" : './assets/layout4.png', "layout_id":4},
+            {"title":"5", "thumbnail" : './assets/layout5.png', "layout_id":5},
+            {"title":"6", "thumbnail" : './assets/layout6.png', "layout_id":6},
+            {"title":"7", "thumbnail" : './assets/layout7.png', "layout_id":7},
+            {"title":"8", "thumbnail" : './assets/layout8.png', "layout_id":8}
             ]
 
     def go_to_page(self, page, title):
@@ -900,7 +908,7 @@ class KitchenSink(App):
             self.cell_buttons[cell_id].text = cell_content["text"]
             current_keys = [split_standard_controls_key(a[0])[2] for a in cell_content["standard_controls"]]
             self.cell_buttons[cell_id].sub_text = '\n'.join(current_keys)
-        print("setting mat to", ctx["id"], "my_mats", my_mats)
+        # print("setting mat to", ctx["id"], "my_mats", my_mats)
         # setup all the controls
         self.root.ids.selected_pedals_dl.items = [{"text":a, "secondary_text":b, "action": KitchenSink.select_pedal, "id": b+":"+a} for b, a in [c.split(":") for c in mat_def["included_pedals"]]]
         self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
@@ -913,7 +921,7 @@ class KitchenSink(App):
         self.select_control(ctx, direction=direction)
 
     def select_control(self, ctx, direction=None):
-        print("select control", ctx)
+        # print("select control", ctx)
         if ctx in self.root.ids.available_standard_controls_dl.items:
             # check if it's a on_foot_move, if so it needs a direction
 
@@ -975,7 +983,7 @@ class KitchenSink(App):
         global included_standard_controls
         included_standard_controls = self.root.ids.selected_standard_controls_dl.items
 
-        print(self.root.ids.selected_standard_controls_dl.items)
+        # print(self.root.ids.selected_standard_controls_dl.items)
 
     def set_standard_controls(self):
         # global for current cell as can't work out a neat way
@@ -988,7 +996,7 @@ class KitchenSink(App):
         self.go_to_page("edit_mat", "Edit Board")
 
     def click_set_layout(self, ctx):
-        print("set layout")
+        # print("set layout")
         # set layout
         mat_def["layout"] = ctx["layout_id"]
         self.show_layout(self.root.ids["edit_mat_box"], mat_def["layout"])
@@ -1316,10 +1324,10 @@ class KitchenSink(App):
 
     def mat_to_pdf(self, output_size="a3"):
         from fpdf import FPDF
-        size_x = 420.0
-        size_y = 297.0
-        # size_x = 469.0
-        # size_y = 294.0
+        # size_x = 420.0
+        # size_y = 297.0
+        size_x = 469.0
+        size_y = 294.0
         # size_x = 420.0 # a3
         # size_y = 297.0
         pdf = FPDF('L', 'mm', (size_y, size_x))
@@ -1398,7 +1406,8 @@ class KitchenSink(App):
                     colorscale("eedc2a", 1.2)]]]]
         self.layouts[3] = [[0.5, [[0.4, "ee4498"], [0.2, "49c3e9"],  [0.4, "f37021"]]],
                 [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]],
-                [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]]]
+                [0.25, [[0.2, colorscale("2c79be", 1.2)], [0.2, colorscale("e2412b", 1.2)], 
+                    [0.2, colorscale("894c9e", 1.2)], [0.2, colorscale("4cb853", 1.2)], [0.2, colorscale("eedc2a", 1.2)]]]]
         self.layouts[4] = [[0.5, [[0.33, "ee4498"], [0.33, "49c3e9"],  [0.33, "f37021"]]],
                 [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]],
                 [0.25, [[0.2, colorscale("2c79be", 1.2)], [0.2, colorscale("e2412b", 1.2)], 
@@ -1411,6 +1420,14 @@ class KitchenSink(App):
             [0.5, [[0.083, "ffffff"], [0.083, "222222"], [0.083, "ffffff"],[0.083, "222222"], 
             [0.083, "ffffff"],[0.083, "ffffff"],[0.083, "222222"],[0.083, "ffffff"],[0.083, "222222"], 
             [0.083, "ffffff"],[0.083, "222222"],[0.083, "ffffff"],[0.083, "ffffff"]]]]
+        self.layouts[7] = [[0.5, [[0.166, "ffffff"], [0.166, "222222"], [0.166, "ffffff"],[0.166, "222222"], 
+            [0.166, "ffffff"], [0.166, "ffffff"]]],
+            [0.5, [[0.166, "222222"],[0.166, "ffffff"],[0.166, "222222"], 
+            [0.166, "ffffff"],[0.166, "222222"],[0.166, "ffffff"]]]]
+        self.layouts[8] = [[0.5, [[0.3, "ee4498"], [0.2, "f9c1e9"], [0.2, "49c3e9"],  [0.3, "f37021"]]],
+                [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]],
+                [0.25, [[0.2, colorscale("2c79be", 1.2)], [0.2, colorscale("e2412b", 1.2)], 
+                    [0.2, colorscale("894c9e", 1.2)], [0.2, colorscale("4cb853", 1.2)], [0.2, colorscale("eedc2a", 1.2)]]]]
         target.clear_widgets()
         cell_id = 0
         self.cell_rows = []
@@ -1424,8 +1441,8 @@ class KitchenSink(App):
                 # print("col is", col, "cell id is", cell_id)
 
                 b = TwoLineButton(
-                        text= "test",
-                        sub_text = "line 2",
+                        text= "",
+                        sub_text = "",
                         id=str(cell_id),
                         md_bg_color= get_color_from_hex(col[1]),
                         size_hint= (col[0], 1),

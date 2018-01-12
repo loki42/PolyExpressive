@@ -86,8 +86,6 @@ def point_to_action(x, y, z):
     else:
         return (-1, False) # no actions defined for this region / error
 
-# update firmware
-#
 # update action list / mat
 def update_mat(new_action_list):
     # parse json file as the action list and mat def
@@ -368,6 +366,9 @@ def run():
 def http_get_action_list(httpClient, httpResponse) :
     httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(action_list))
 
+def http_get_vesion(httpClient, httpResponse) :
+    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(1))
+
 def http_update_action_list(httpClient, httpResponse) :
     # print("update action list")
     jdata  = httpClient.ReadRequestContent()
@@ -384,10 +385,25 @@ def http_update_action_list(httpClient, httpResponse) :
         content = str(e)
     httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(content))
 
+def http_update_firmware(httpClient, httpResponse) :
+    # read data in 1k chunks if this doesn't work
+    jdata  = httpClient.ReadRequestContent()
+    content = False
+    try:
+        with open('update_firmware.py', 'wb') as f:
+            f.write(jdata)
+        content = True
+        print("firmware update downloaded 1")
+    except Exception as e:
+        print("error in firmeware download", e)
+        content = str(e)
+    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(content))
 
 route_handlers = [
         ( "/get_action_list",      "GET",  http_get_action_list ),
-        ( "/update_action_list",      "POST", http_update_action_list )
+        ( "/get_version",      "GET",  http_get_version ),
+        ( "/update_action_list",      "POST", http_update_action_list ),
+        ( "/update_firmware",      "POST", http_update_firmware )
 ]
 
 srv = MicroWebSrv(routeHandlers=route_handlers)
