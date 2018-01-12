@@ -286,7 +286,7 @@ BoxLayout:
                     MDLabel:
                         font_style: 'Body1'
                         theme_text_color: 'Primary'
-                        text: "Show movies here :)"
+                        text: "Coming soon!"
                         halign: 'center'
 
 
@@ -322,6 +322,7 @@ default_channels = {
     "Hughes and Kettner:GM4":1,
     "Elektron:Analog Drive":1,
     "Kemper:Profiler":3,
+    "Eventide:H9":3,
     "Macro:Macro":1
     }
 
@@ -382,6 +383,31 @@ advanced_controls = {
     "Rotary Speed": {"type": "CC", "controller":33, "enum":{"Fast": 127, "Slow":0}},
     "Delay Infinity": {"type": "CC", "controller":34, "enum":{"On": 127, "Off":0}},
     "Delay Hold": {"type": "CC", "controller":35, "enum":{"On": 127, "Off":0}},
+    "Preset": {"type": "PC"}
+    },
+"Eventide:H9":{
+    "Parameter 1": {"type": "CC", "controller":22, "curve":"1"},
+    "Parameter 2": {"type": "CC", "controller":23, "curve":"1"},
+    "Parameter 3": {"type": "CC", "controller":24, "curve":"1"},
+    "Parameter 4": {"type": "CC", "controller":25, "curve":"1"},
+    "Parameter 5": {"type": "CC", "controller":26, "curve":"1"},
+    "Parameter 6": {"type": "CC", "controller":27, "curve":"1"},
+    "Parameter 7": {"type": "CC", "controller":28, "curve":"1"},
+    "Parameter 8": {"type": "CC", "controller":29, "curve":"1"},
+    "Parameter 9": {"type": "CC", "controller":30, "curve":"1"},
+    "Parameter 10": {"type": "CC", "controller":31, "curve":"1"},
+    "Increment Preset": {"type": "CC", "controller":8, "enum":{"On": 127, "Off":0}},
+    "Decrement Preset": {"type": "CC", "controller":9, "enum":{"On": 127, "Off":0}},
+    "Increment Load Preset": {"type": "CC", "controller":10, "enum":{"On": 127, "Off":0}},
+    "Decrement Load Preset": {"type": "CC", "controller":11, "enum":{"On": 127, "Off":0}},
+    "Tap Tempo": {"type": "CC", "controller":12, "enum":{"On": 127, "Off":0}},
+    "Middle Switch": {"type": "CC", "controller":13, "enum":{"On": 127, "Off":0}},
+    "Toggle Tuner": {"type": "CC", "controller":14, "enum":{"On": 127, "Off":0}},
+    "Bypass": {"type": "CC", "controller":15, "enum":{"On": 127, "Off":0}},
+    "Activate": {"type": "CC", "controller":16, "enum":{"On": 127, "Off":0}},
+    "Toggle Bypass": {"type": "CC", "controller":17, "enum":{"On": 127, "Off":0}},
+    "Left Footswitch": {"type": "CC", "controller":18, "enum":{"On": 127, "Off":0}},
+    "Expression": {"type": "CC", "controller":19, "curve":"1"},
     "Preset": {"type": "PC"}
     },
 "Line 6:M9":{
@@ -622,6 +648,35 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Delay Infinity": ["Delay Infinity", "on_foot_down_toggle", "On", "Delay Infinity", "Off"],
     "Delay Hold Down": ["Delay Hold", "on_foot_down", "On"],
     "Delay Hold Up": ["Delay Hold", "on_foot_up", "Off"],
+    "1": ["Preset", "on_foot_down", 1],
+    "2": ["Preset", "on_foot_down", 2],
+    "3": ["Preset", "on_foot_down", 3],
+    "4": ["Preset", "on_foot_down", 4],
+    "5": ["Preset", "on_foot_down", 5]
+    },
+    "Eventide:H9":{
+    "Parameter 1": ["Parameter 1", "on_foot_move", "1"],
+    "Parameter 2": ["Parameter 2", "on_foot_move", "1"],
+    "Parameter 3": ["Parameter 3", "on_foot_move", "1"],
+    "Parameter 4": ["Parameter 4", "on_foot_move", "1"],
+    "Parameter 5": ["Parameter 5", "on_foot_move", "1"],
+    "Parameter 6": ["Parameter 6", "on_foot_move", "1"],
+    "Parameter 7": ["Parameter 7", "on_foot_move", "1"],
+    "Parameter 8": ["Parameter 8", "on_foot_move", "1"],
+    "Parameter 9": ["Parameter 9", "on_foot_move", "1"],
+    "Parameter 10": ["Parameter 10", "on_foot_move", "1"],
+    "Expression": ["Expression", "on_foot_move", "1"],
+    "Increment Preset": ["Increment Preset", "on_foot_down", "On"],
+    "Decrement Preset": ["Decrement Preset", "on_foot_down", "On"],
+    "Increment Load Preset": ["Increment Load Preset", "on_foot_down", "On"],
+    "Decrement Load Preset": ["Decrement Load Preset", "on_foot_down", "On"],
+    "Tap Tempo": ["Tap Tempo", "on_foot_down", "On"],
+    "Middle Switch": ["Middle Switch", "on_foot_down", "On"],
+    "Toggle Tuner": ["Toggle Tuner", "on_foot_down", "On"],
+    "Bypass": ["Bypass", "on_foot_down", "On"],
+    "Activate": ["Activate", "on_foot_down", "On"],
+    "Toggle Bypass": ["Toggle Bypass", "on_foot_down", "On"],
+    "Left Footswitch": ["Left Footswitch", "on_foot_down", "On"],
     "1": ["Preset", "on_foot_down", 1],
     "2": ["Preset", "on_foot_down", 2],
     "3": ["Preset", "on_foot_down", 3],

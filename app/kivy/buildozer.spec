@@ -220,13 +220,14 @@ android.arch = armeabi-v7a
 [buildozer]
 
 # (int) Log level (0 = error only, 1 = info, 2 = debug (with command output))
-log_level = 1
+log_level = 2
 
 # (int) Display warning if buildozer is run as root (0 = False, 1 = True)
 warn_on_root = 1
 
 # (str) Path to build artifact storage, absolute or relative to spec file
 # build_dir = ./.buildozer
+build_did = /build/buildozer-poly
 
 # (str) Path to build output (i.e. .apk, .ipa) storage
 # bin_dir = ./bin
