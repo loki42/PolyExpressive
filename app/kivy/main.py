@@ -105,19 +105,19 @@ BoxLayout:
                 size: 4 * dp(48), dp(48)
                 pos_hint: {'center_x': 0.5, 'center_y': 0.6}
                 on_release: app.go_to_page("list_my_mats", "My Boards")
-            MDRaisedButton:
-                text: "Search Boards"
-                opposite_colors: True
-                size_hint: None, None
-                size: 4 * dp(48), dp(48)
-                pos_hint: {'center_x': 0.5, 'center_y': 0.4}
-                on_release: app.go_to_page("select_layout", "Select Layout")
+            # MDRaisedButton:
+            #     text: "Search Boards"
+            #     opposite_colors: True
+            #     size_hint: None, None
+            #     size: 4 * dp(48), dp(48)
+            #     pos_hint: {'center_x': 0.5, 'center_y': 0.4}
+            #     on_release: app.go_to_page("select_layout", "Select Layout")
             MDRaisedButton:
                 text: "New Board"
                 opposite_colors: True
                 size_hint: None, None
                 size: 4 * dp(48), dp(48)
-                pos_hint: {'center_x': 0.5, 'center_y': 0.2}
+                pos_hint: {'center_x': 0.5, 'center_y': 0.4}
                 on_release: app.go_to_page("select_layout", "Select Layout")
 
         Screen:
@@ -939,6 +939,8 @@ class KitchenSink(App):
         self.root.ids.toolbar.title = title
 
     def previous_page(self):
+        # TODO need to actually go back, for now go to home
+        self.go_to_page("home", "Poly Expressive")
         pass
 
     def select_pedal(self, ctx):
