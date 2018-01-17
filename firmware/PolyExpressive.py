@@ -366,7 +366,7 @@ def run():
 def http_get_action_list(httpClient, httpResponse) :
     httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(action_list))
 
-def http_get_vesion(httpClient, httpResponse) :
+def http_get_version(httpClient, httpResponse) :
     httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(1))
 
 def http_update_action_list(httpClient, httpResponse) :

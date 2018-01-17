@@ -941,7 +941,6 @@ class KitchenSink(App):
     def previous_page(self):
         # TODO need to actually go back, for now go to home
         self.go_to_page("home", "Poly Expressive")
-        pass
 
     def select_pedal(self, ctx):
         print("select pedal", ctx)
