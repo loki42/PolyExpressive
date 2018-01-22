@@ -210,7 +210,7 @@ BoxLayout:
                     theme_text_color: 'Primary'
                     text: "Selected"
                     halign: 'left'
-                DataList:
+                DataListTextField:
                     id: selected_pedals_dl
                     items: app.selected_pedals
                 MDLabel:
@@ -301,7 +301,7 @@ except IOError as e:
     print("saved mats don't exist")
 
 # pedal / channel pairs
-mat_def = {"cells":{}, "layout":1, "name":"unnamed", "included_pedals":[]}
+mat_def = {"cells":{}, "layout":1, "name":"unnamed", "included_pedals":[], "channel_map":{}}
 def default_cells(num_cells):
     for i in range(0, num_cells):
         if str(i) not in mat_def["cells"]:
@@ -678,6 +678,8 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Toggle Bypass": ["Toggle Bypass", "on_foot_down", "On"],
     "Left Footswitch": ["Left Footswitch", "on_foot_down", "On"],
     "1": ["Preset", "on_foot_down", 1],
+    "1 on up": ["Preset", "on_foot_up", 1],
+    "5 on up": ["Preset", "on_foot_up", 5],
     "2": ["Preset", "on_foot_down", 2],
     "3": ["Preset", "on_foot_down", 3],
     "4": ["Preset", "on_foot_down", 4],
@@ -875,6 +877,13 @@ def split_standard_controls_key(key):
 def get_standard_controls_key(maker_model, channel, control):
     return "|".join((maker_model, str(channel), control))
 
+def get_channel(maker_model, pedal_id)
+    k = maker_model+":"+pedal_id
+    if k in mat_def["channel_map"]:
+        return mat_def["channel_map"][maker_model+":"+pedal_id]
+    else:
+        return default_channels[maker_model]
+
 def pairwise(t):
     it = iter(t)
     return izip(it,it)
@@ -942,6 +951,9 @@ class KitchenSink(App):
         # TODO need to actually go back, for now go to home
         self.go_to_page("home", "Poly Expressive")
 
+    def change_channel(self, ctx):
+        print("change channel pedal", ctx.channel)
+
     def select_pedal(self, ctx):
         print("select pedal", ctx)
         if ctx in self.root.ids.available_pedals_dl.items:
@@ -966,7 +978,9 @@ class KitchenSink(App):
             self.cell_buttons[cell_id].sub_text = '\n'.join(current_keys)
         # print("setting mat to", ctx["id"], "my_mats", my_mats)
         # setup all the controls
-        self.root.ids.selected_pedals_dl.items = [{"text":a, "secondary_text":b, "action": KitchenSink.select_pedal, "id": b+":"+a} for b, a in [c.split(":") for c in mat_def["included_pedals"]]]
+        self.root.ids.selected_pedals_dl.items = [{"text":a, "secondary_text":b, "action": KitchenSink.select_pedal, "channel_change": KitchenSink.change_channel,
+            "channel":get_channel(b+":"+a, 1),
+            "id": b+":"+a} for b, a in [c.split(":") for c in mat_def["included_pedals"]]]
         self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
 
         self.go_to_page("edit_mat", "Edit Board")
@@ -1068,7 +1082,7 @@ class KitchenSink(App):
             for pedal in mat_def["included_pedals"]:
                 if pedal in standard_controls:
                     for control_name, control in standard_controls[pedal].items():
-                        control_key = get_standard_controls_key(pedal, default_channels[pedal], control_name)
+                        control_key = get_standard_controls_key(pedal, 1, control_name)
                         if control_key not in current_keys:
                             # print("control 0 is", control[0])
                             # self.root.ids.available_standard_controls_dl.items.append({"text":control[0],
@@ -1134,9 +1148,9 @@ class KitchenSink(App):
              'on_release' : lambda *x: self.send_to_poly()
              },
             {'viewclass': 'MDMenuItem',
-             'text': 'Add Pedal',
+             'text': 'Add Pedal / Change Channel',
              'on_release' : lambda *x: self.go_to_page("choose_pedals", "Choose Pedals")
-             }
+             },
         ]
         MDDropdownMenu(items=menu_items, width_mult=4).open(parent)
 
@@ -1145,7 +1159,7 @@ class KitchenSink(App):
     available_layouts = t_available_layouts
 
     selected_pedals = []
-    available_pedals = [{"text":a, "secondary_text":b, "action": select_pedal, "id": b+":"+a} for a, b in pairwise(("H9", "Eventide",
+    available_pedals = [{"text":a, "secondary_text":b, "action": select_pedal, "channel_change": change_channel, "channel":default_channels[b+":"+a], "id": b+":"+a} for a, b in pairwise(("H9", "Eventide",
         "M9", "Line 6", "Brothers", "Chase Bliss", "DAW", "DAW",
         "Vypyr Pro", "Peavey",
         "Echolution 2 Deluxe", "Pigtronix",
@@ -1272,7 +1286,8 @@ class KitchenSink(App):
             # "Channel A Boost": ["Channel A Effect Select", "on_foot_down", "Boost"],
             # "Tone B": {"type": "CC", "controller":19, "curve":"1"},
             # "Channel A Effect Select": {"type": "CC", "controller":21, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
-            maker_model, channel, standard_control = split_standard_controls_key(control)
+            maker_model, pedal_id, standard_control = split_standard_controls_key(control)
+            channel = get_channel(maker_model, pedal_id)
             s_c = get_standard_controls_from_key(control)
             action = s_c[1]
             out_block = {}

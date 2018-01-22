@@ -2,6 +2,7 @@
 #:import SmartTile kivymd.grid.SmartTile
 #:import TwoLineListItem kivymd.list.TwoLineListItem
 #:import TwoLineIconListItem kivymd.list.TwoLineIconListItem
+#:import TwoLineAvatarIconListItem kivymd.list.TwoLineAvatarIconListItem
 [DataTileGridItem@SmartTileWithLabel]:
     mipmap: True
     source: ctx.thumbnail
@@ -11,3 +12,14 @@
     text: ctx.text
     secondary_text: ctx.secondary_text
     on_release: ctx.action(app, ctx) 
+[DataListItemSubAction@TwoLineAvatarIconListItem]:
+    text: ctx.text
+    secondary_text: ctx.secondary_text
+    on_release: ctx.action(app, ctx) 
+    IconRightSampleWidget:
+        text: str(ctx.channel)
+        on_text_validate: ctx.channel_change(app, ctx)
+        hint_text: "1-16"
+        helper_text: "Channel"
+        helper_text_mode: "persistent"
+
