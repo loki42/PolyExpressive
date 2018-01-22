@@ -877,10 +877,10 @@ def split_standard_controls_key(key):
 def get_standard_controls_key(maker_model, channel, control):
     return "|".join((maker_model, str(channel), control))
 
-def get_channel(maker_model, pedal_id)
-    k = maker_model+":"+pedal_id
-    if k in mat_def["channel_map"]:
-        return mat_def["channel_map"][maker_model+":"+pedal_id]
+def get_channel(maker_model, pedal_id):
+    k = maker_model+":"+str(pedal_id)
+    if "channel_map" in mat_def and k in mat_def["channel_map"]:
+        return mat_def["channel_map"][k]
     else:
         return default_channels[maker_model]
 
@@ -951,8 +951,12 @@ class KitchenSink(App):
         # TODO need to actually go back, for now go to home
         self.go_to_page("home", "Poly Expressive")
 
-    def change_channel(self, ctx):
-        print("change channel pedal", ctx.channel)
+    def change_channel(self, ctx, text_field):
+        # set the channel map to the new value
+        if "channel_map" not in mat_def:
+            mat_def["channel_map"] = {}
+        mat_def["channel_map"][ctx["id"]+":1"] = text_field.text
+        print("change channel pedal", text_field.text)
 
     def select_pedal(self, ctx):
         print("select pedal", ctx)

@@ -18,7 +18,7 @@
     on_release: ctx.action(app, ctx) 
     IconRightSampleWidget:
         text: str(ctx.channel)
-        on_text_validate: ctx.channel_change(app, ctx)
+        on_text_validate: ctx.channel_change(app, ctx, self)
         hint_text: "1-16"
         helper_text: "Channel"
         helper_text_mode: "persistent"
