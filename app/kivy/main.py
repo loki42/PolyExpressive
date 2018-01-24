@@ -253,7 +253,7 @@ BoxLayout:
                                 text: "Selected Controls"
                                 halign: 'left'
                                 size_hint: 1, 0.1
-                            DataList:
+                            DataListCheckBox:
                                 id: selected_standard_controls_dl
                                 items: app.selected_standard_controls
                                 size_hint: 1, 0.9
@@ -309,14 +309,17 @@ def default_cells(num_cells):
 
 default_cells(8)
 
-default_curves = {"1": ["linear", [[0,0],[127,127]], True]}
+default_curves = {"1": ["linear", [[0,0],[127,127]], True], "2": ["linear", [[127,127], [0,0]], True]}
 current_selected_cell = "0" ## current target for editing / bit dodgy
 
 default_channels = {
     "Chase Bliss:Brothers":2,
+    "Chase Bliss:Condor":5,
     "Line 6:M9":4,
     "DAW:DAW":6,
     "Pigtronix:Echolution 2 Deluxe":11,
+    "Empress:Echosystem":6,
+    "Empress:Tremolo2":1,
     "Peavey:Vypyr Pro":1,
     "Line 6:Helix":1,
     "Hughes and Kettner:GM4":1,
@@ -339,8 +342,24 @@ advanced_controls = {
     "Channel B Effect Select": {"type": "CC", "controller":23, "enum":{"Boost":3, "Drive":2, "Fuzz":1}},
     "Expression": {"type": "CC", "controller":100, "curve":"1"},
     "Engage Last Preset": {"type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}},
-    "Bypass Switch": {"type": "CC", "controller":103, "enum":{"Both Enabled": 127, "Only A": 85, "Only B": 45, "Bypass":0}},
+    "Bypass": {"type": "CC", "controller":103, "enum":{"Both Enabled": 127, "Only A": 85, "Only B": 45, "Bypass":0}},
     "Preset Select": {"type": "PC"}
+    },
+"Chase Bliss:Condor":{
+    "Gain": {"type": "CC", "controller":14, "curve":"1"},
+    "Freq": {"type": "CC", "controller":15, "curve":"1"},
+    "Volume": {"type": "CC", "controller":16, "curve":"1"},
+    "Bass": {"type": "CC", "controller":17, "curve":"1"},
+    "Mids": {"type": "CC", "controller":18, "curve":"1"},
+    "LPF": {"type": "CC", "controller":19, "curve":"1"},
+    "LPF force": {"type": "CC", "controller":19, "enum":{"On": 127, "Off":0}},
+    "Bass Q": {"type": "CC", "controller":21, "enum":{"Sharp":1, "Normal":2, "Large":3}},
+    "Mid Q": {"type": "CC", "controller":22, "enum":{"Sharp":1, "Normal":2, "Large":3}},
+    "Resonance": {"type": "CC", "controller":23, "enum":{"Normal":1, "Slight":2, "Resonant":3}},
+    "Expression": {"type": "CC", "controller":100, "curve":"1"},
+    "Engage Last Preset": {"type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}},
+    "Bypass": {"type": "CC", "controller":103, "enum":{"Enabled": 127, "Bypass":0}},
+    "Preset": {"type": "PC"}
     },
 "Elektron:Analog Drive":{
     "Gain": {"type": "CC", "controller":16, "curve":"1"},
@@ -448,6 +467,13 @@ advanced_controls = {
     "Resonance": {"type": "CC", "controller":24, "curve":"1"},
     "Presence": {"type": "CC", "controller":25, "curve":"1"},
     "Reverb": {"type": "CC", "controller":29, "curve":"1"},
+    "Volume": {"type": "CC", "controller":7, "curve":"1"},
+    "Gain": {"type": "CC", "controller":20, "curve":"1"},
+    "Delay Feedback": {"type": "CC", "controller":27, "curve":"1"},
+    "Delay Mix": {"type": "CC", "controller":28, "curve":"1"},
+    "Delay Toggle": {"type": "CC", "controller":53, "enum":{"On": 127, "Off":0}},
+    "Mod Toggle": {"type": "CC", "controller":54, "enum":{"On": 127, "Off":0}},
+    "Reverb Toggle": {"type": "CC", "controller":54, "enum":{"On": 127, "Off":0}},
     "Preset": {"type": "PC"}
     },
 "Pigtronix:Echolution 2 Deluxe":{
@@ -467,7 +493,47 @@ advanced_controls = {
         "Super Square": 8, "Super Saw": 9, "Super Random": 10}},
     "Filter Cutoff": {"type": "CC", "controller":74, "curve":"1"},
     "Second Tap Volume": {"type": "CC", "controller":76, "curve":"1"}, # TODO lots more to add
+    "Tap": {"type": "CC", "controller":25, "enum":{"Tap":1}},
     "Engage": {"type": "CC", "controller":27, "enum":{"Bypass":4, "On":3}},
+    "Preset Select": {"type": "PC"}
+    },
+"Empress:Echosystem":{
+    "Modes A": {"type": "CC", "controller":100, "enum":{"Digital":0, "Tape":8, "Analog":16,
+        "Multi":24, "Mod":32}},
+    "Delay Source A": {"type": "CC", "controller":101, "enum":{"Knob":0, "Local":1, "Global":2}},
+    "Delay Time A": {"type": "CC", "controller":102, "curve":"1"},
+    "Mix A": {"type": "CC", "controller":103, "curve":"1"},
+    "Volume A": {"type": "CC", "controller":104, "curve":"1"},
+    "Feedback A": {"type": "CC", "controller":105, "curve":"1"},
+    "Tone A": {"type": "CC", "controller":106, "curve":"1"},
+    "Thing 1 A": {"type": "CC", "controller":107, "curve":"1"},
+    "Thing 2 A": {"type": "CC", "controller":108, "curve":"1"},
+    "Modes B": {"type": "CC", "controller":109, "enum":{"Digital":0, "Tape":8, "Analog":16,
+        "Multi":24, "Mod":32}},
+    "Delay Source B": {"type": "CC", "controller":110, "enum":{"Knob":0, "Local":1, "Global":2}},
+    "Delay Time B": {"type": "CC", "controller":111, "curve":"1"},
+    "Mix B": {"type": "CC", "controller":112, "curve":"1"},
+    "Volume B": {"type": "CC", "controller":113, "curve":"1"},
+    "Feedback B": {"type": "CC", "controller":114, "curve":"1"},
+    "Tone B": {"type": "CC", "controller":115, "curve":"1"},
+    "Thing 1 B": {"type": "CC", "controller":116, "curve":"1"},
+    "Thing 2 B": {"type": "CC", "controller":117, "curve":"1"},
+    "Engage": {"type": "CC", "controller":60, "enum":{"Bypass":0, "On":127}}, # TODO few more to add
+    "Preset Select": {"type": "PC"}
+    },
+"Empress:Tremolo2":{
+    "Depth": {"type": "CC", "controller":20, "curve":"1"},
+    "Rate": {"type": "CC", "controller":21, "curve":"1"},
+    "Output": {"type": "CC", "controller":23, "curve":"1"},
+    "Rhythm": {"type": "CC", "controller":22, "enum":{"1":1, "2":2, "3":3}},
+    "Mode": {"type": "CC", "controller":24, "enum":{"Tap":1, "Knob":2, "Preset":3}},
+    "Waveform": {"type": "CC", "controller":25, "enum":{"Triange":1, "Tube":2, "Square":3}},
+    "Downbeat": {"type": "CC", "controller":26, "enum":{"1":1, "2":2, "3":3, "4":4}},
+    "Phase": {"type": "CC", "controller":27, "curve":"1"},
+    "Tap": {"type": "CC", "controller":35, "enum":{"On":127, "Off":0}},
+    "Engage": {"type": "CC", "controller":60, "enum":{"Bypass":0, "On":127}},
+    "Direct Control": {"type": "CC", "controller":40, "curve":"1"},
+    "Exit Direct": {"type": "CC", "controller":50, "enum":{"Exit":1}},
     "Preset Select": {"type": "PC"}
     },
 "Peavey:Vypyr Pro":{
@@ -599,6 +665,21 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Channel B Boost": ["Channel B Effect Select", "on_foot_down", "Boost"],
     "Channel B Drive": ["Channel B Effect Select", "on_foot_down", "Drive"],
     "Channel B Fuzz": ["Channel B Effect Select", "on_foot_down", "Fuzz"]
+    },
+"Chase Bliss:Condor":{
+    "Gain": ["Gain", "on_foot_move", "1"],
+    "Freq": ["Freq", "on_foot_move", "1"],
+    "Volume": ["Volume", "on_foot_move", "1"],
+    "Bass": ["Bass", "on_foot_move", "1"],
+    "Mids": ["Mids", "on_foot_move", "1"],
+    "LPF": ["LPF", "on_foot_move", "1"],
+    "Expression": ["Expression", "on_foot_move", "1"],
+    "Toggle Enabled": ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"],
+    "Enable Down": ["Bypass", "on_foot_down", "Enabled"],
+    "Bypass Up": ["Bypass", "on_foot_up", "Bypass"],
+    "LPF on up": ["LPF force", "on_foot_up", "On"],
+    "LPF off up": ["LPF force", "on_foot_up", "Off"],
+    "1": ["Preset", "on_foot_down", 1],
     },
     "Elektron:Analog Drive":{
     "Gain": ["Gain", "on_foot_move", "1"],
@@ -784,11 +865,21 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Resonance": ["Resonance", "on_foot_move", "1"],
     "Presence": ["Presence", "on_foot_move", "1"],
     "Reverb": ["Reverb", "on_foot_move", "1"],
+    "Volume": ["Volume", "on_foot_move", "1"],
+    "Gain": ["Gain", "on_foot_move", "1"],
+    "Delay Feedback": ["Delay Feedback", "on_foot_move", "1"],
+    "Delay Mix": ["Delay Mix", "on_foot_move", "1"],
+    "Delay Toggle": ["Delay Toggle", "on_foot_down_toggle", "On", "Delay Toggle", "Off"],
+    "Mod Toggle": ["Mod Toggle", "on_foot_down_toggle", "On", "Mod Toggle", "Off"],
+    "Reverb Toggle": ["Reverb Toggle", "on_foot_down_toggle", "On", "Reverb Toggle", "Off"],
     "1": ["Preset", "on_foot_down", 1],
     "2": ["Preset", "on_foot_down", 2],
     "3": ["Preset", "on_foot_down", 3],
     "4": ["Preset", "on_foot_down", 4],
-    "5": ["Preset", "on_foot_down", 5]
+    "5": ["Preset", "on_foot_down", 5],
+    "6": ["Preset", "on_foot_down", 6],
+    "7": ["Preset", "on_foot_down", 7],
+    "8": ["Preset", "on_foot_down", 8]
     },
 "Pigtronix:Echolution 2 Deluxe":{
     "Exp Pedal Input": ["Exp Pedal Input", "on_foot_move", "1"],
@@ -799,8 +890,9 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Mod Depth": ["Mod Depth", "on_foot_move", "1"],
     "Time Short": ["Time", "on_foot_down", "Short"],
     "Time Long": ["Time", "on_foot_down", "Long"],
-    "Time Toggle": ["Time", "on_foot_down_toggle", "Short", "Time", "Long"],
-    "SFX Toggle": ["SFX", "on_foot_down_toggle", "Pong And Halo", "SFX", "Off"],
+    "Time Medium": ["Time", "on_foot_down", "Medium"],
+    "Time Toggle": ["Time", "on_foot_down_toggle", "Short", "Time", "Medium"],
+    "SFX Toggle": ["SFX", "on_foot_down_toggle", "Halo", "SFX", "Off"],
     "Sweep Toggle": ["Filter Type", "on_foot_down_toggle", "Sweep On", "Filter Type", "Sweep Off"],
     "Crush Toggle": ["Filter Type", "on_foot_down_toggle", "Crush On", "Filter Type", "Crush Off"],
     "Crush Toggle": ["Filter Type", "on_foot_down_toggle", "Crush On", "Filter Type", "Crush Off"],
@@ -809,6 +901,41 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Triangle Square Toogle": ["LFO Mod Type", "on_foot_down_toggle", "Triangle", "LFO Mod Type", "Square"],
     "Filter Cutoff": ["Filter Cutoff", "on_foot_move", "1"],
     "Second Tap Volume": ["Second Tap Volume", "on_foot_move", "1"],
+    "Tap": ["Tap", "on_foot_down", "Tap"],
+    },
+"Empress:Echosystem":{
+    "A Tape": ["Modes A", "on_foot_down", "Tape"],
+    "A Digital": ["Modes A", "on_foot_down", "Digital"],
+    "A Analog": ["Modes A", "on_foot_down", "Analog"],
+    "A Multi": ["Modes A", "on_foot_down", "Multi"],
+    "A Mod": ["Modes A", "on_foot_down", "Mod"],
+    "B Tape": ["Modes B", "on_foot_down", "Tape"],
+    "B Digital": ["Modes B", "on_foot_down", "Digital"],
+    "B Analog": ["Modes B", "on_foot_down", "Analog"],
+    "B Multi": ["Modes B", "on_foot_down", "Multi"],
+    "B Mod": ["Modes B", "on_foot_down", "Mod"],
+    "Delay Time A": ["Delay Time A", "on_foot_move", "1"],
+    "Mix A": ["Mix A", "on_foot_move", "1"],
+    "Volume A": ["Volume A", "on_foot_move", "1"],
+    "Feedback A": ["Feedback A", "on_foot_move", "1"],
+    "Tone A": ["Tone A", "on_foot_move", "1"],
+    "Thing 1 A": ["Thing 1 A", "on_foot_move", "1"],
+    "Thing 2 A": ["Thing 2 A", "on_foot_move", "1"],
+    "Delay Time B": ["Delay Time B", "on_foot_move", "1"],
+    "Mix B": ["Mix B", "on_foot_move", "1"],
+    "Volume B": ["Volume B", "on_foot_move", "1"],
+    "Feedback B": ["Feedback B", "on_foot_move", "1"],
+    "Tone B": ["Tone B", "on_foot_move", "1"],
+    "Thing 1 B": ["Thing 1 B", "on_foot_move", "1"],
+    "Thing 2 B": ["Thing 2 B", "on_foot_move", "1"],
+    "Toggle Enabled": ["Engage", "on_foot_down_toggle", "On", "Engage", "Bypass"],
+    },
+"Empress:Tremolo2":{
+    "Depth": ["Depth", "on_foot_move", "1"],
+    "Rate": ["Rate", "on_foot_move", "1"],
+    "Output": ["Output", "on_foot_move", "1"],
+    "Phase": ["Phase", "on_foot_move", "1"],
+    "Toggle Enabled": ["Engage", "on_foot_down_toggle", "On", "Engage", "Bypass"],
     },
 "Peavey:Vypyr Pro":{
     "SLOT1_P1": ["SLOT1_P1", "on_foot_move", "1"],
@@ -953,10 +1080,37 @@ class KitchenSink(App):
 
     def change_channel(self, ctx, text_field):
         # set the channel map to the new value
-        if "channel_map" not in mat_def:
-            mat_def["channel_map"] = {}
-        mat_def["channel_map"][ctx["id"]+":1"] = text_field.text
-        print("change channel pedal", text_field.text)
+        print("about to change channel pedal", text_field.text)
+        try:
+            new_channel = int(text_field.text)
+            if new_channel > 0 and new_channel < 17:
+                if "channel_map" not in mat_def:
+                    mat_def["channel_map"] = {}
+                mat_def["channel_map"][ctx["id"]+":1"] = text_field.text
+                print("change channel pedal", text_field.text)
+                text_field.error = False
+                text_field.color_mode = "primary"
+            else:
+                text_field.error = True
+                text_field.color_mode = "accent"
+        except ValueError:
+            text_field.error = True
+            text_field.color_mode = "accent"
+
+    def invert_curve(self, ctx, check_box):
+        # set the channel map to the new value
+        print("about to change curve", check_box.state)
+        new_channel = int(text_field.text)
+        if new_channel > 0 and new_channel < 17:
+            if "channel_map" not in mat_def:
+                mat_def["channel_map"] = {}
+            mat_def["channel_map"][ctx["id"]+":1"] = text_field.text
+            print("change channel pedal", text_field.text)
+            text_field.error = False
+            text_field.color_mode = "primary"
+        else:
+            text_field.error = True
+            text_field.color_mode = "accent"
 
     def select_pedal(self, ctx):
         print("select pedal", ctx)
@@ -1164,7 +1318,11 @@ class KitchenSink(App):
 
     selected_pedals = []
     available_pedals = [{"text":a, "secondary_text":b, "action": select_pedal, "channel_change": change_channel, "channel":default_channels[b+":"+a], "id": b+":"+a} for a, b in pairwise(("H9", "Eventide",
-        "M9", "Line 6", "Brothers", "Chase Bliss", "DAW", "DAW",
+        "M9", "Line 6", "Brothers", "Chase Bliss",
+        "Condor", "Chase Bliss",
+        "Echosystem", "Empress",
+        "Tremolo2", "Empress",
+        "DAW", "DAW",
         "Vypyr Pro", "Peavey",
         "Echolution 2 Deluxe", "Pigtronix",
         "Helix", "Line 6",
