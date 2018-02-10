@@ -309,7 +309,7 @@ def default_cells(num_cells):
 
 default_cells(8)
 
-default_curves = {"1": ["linear", [[0,0],[127,127]], True], "2": ["linear", [[127,127], [0,0]], True]}
+default_curves = {"1": ["linear", [[0,0],[127,127]], True], "2": ["linear", [[127,127], [0,0]], True], "3" : ["linear", [[0,0],[20,0],[127,40]], True]}
 current_selected_cell = "0" ## current target for editing / bit dodgy
 
 default_channels = {
@@ -351,7 +351,7 @@ advanced_controls = {
     "Volume": {"type": "CC", "controller":16, "curve":"1"},
     "Bass": {"type": "CC", "controller":17, "curve":"1"},
     "Mids": {"type": "CC", "controller":18, "curve":"1"},
-    "LPF": {"type": "CC", "controller":19, "curve":"1"},
+    "LPF": {"type": "CC", "controller":19, "curve":"3"},
     "LPF force": {"type": "CC", "controller":19, "enum":{"On": 127, "Off":0}},
     "Bass Q": {"type": "CC", "controller":21, "enum":{"Sharp":1, "Normal":2, "Large":3}},
     "Mid Q": {"type": "CC", "controller":22, "enum":{"Sharp":1, "Normal":2, "Large":3}},
@@ -531,7 +531,7 @@ advanced_controls = {
     "Downbeat": {"type": "CC", "controller":26, "enum":{"1":1, "2":2, "3":3, "4":4}},
     "Phase": {"type": "CC", "controller":27, "curve":"1"},
     "Tap": {"type": "CC", "controller":35, "enum":{"On":127, "Off":0}},
-    "Engage": {"type": "CC", "controller":60, "enum":{"Bypass":0, "On":127}},
+    "Engage": {"type": "CC", "controller":36, "enum":{"Bypass":0, "On":127}},
     "Direct Control": {"type": "CC", "controller":40, "curve":"1"},
     "Exit Direct": {"type": "CC", "controller":50, "enum":{"Exit":1}},
     "Preset Select": {"type": "PC"}
@@ -1469,7 +1469,8 @@ class KitchenSink(App):
                         if "controller" in a_c:
                             block["b2"] = a_c["controller"]
                         if "curve" in a_c:
-                            block["c"] = default_curves[value][1]
+                            print("default curves", value, repr(default_curves[a_c["curve"]][1]))
+                            block["c"] = default_curves[a_c["curve"]][1]
                         elif "enum" in a_c:
                             block["b3"] = a_c["enum"][value]
                         else:
