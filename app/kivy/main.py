@@ -974,7 +974,6 @@ standard_controls = {"Chase Bliss:Brothers":{
 "Meris:Ottobit Jr":{
     "Expression": ["Expression", "on_foot_move", "1"],
     "Toggle Bypass": ["Bypass", "on_foot_down_toggle", "On", "Bypass", "Bypass"],
-    "Bypass": ["Bypass", "on_foot_move", "1"],
     "Tempo": ["Tempo", "on_foot_move", "1"],
     "Sample Rate": ["Sample Rate", "on_foot_move", "1"],
     "Filter": ["Filter", "on_foot_move", "1"],
