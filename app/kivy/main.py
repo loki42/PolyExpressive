@@ -11,7 +11,7 @@ from kivy.properties import ObjectProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import StringProperty
 from kivy.uix.image import Image
-from kivy.uix.colorpicker import ColorWheel
+from kivy.graphics import Color
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.network.urlrequest import UrlRequest
@@ -21,7 +21,7 @@ from kivymd.button import MDIconButton
 from kivymd.date_picker import MDDatePicker
 from kivymd.dialog import MDDialog
 from kivymd.label import MDLabel
-from kivymd.list import ILeftBody, ILeftBodyTouch, IRightBodyTouch, BaseListItem
+from kivymd.list import MDList, ILeftBody, ILeftBodyTouch, IRightBodyTouch, BaseListItem, OneLineListItem
 from kivymd.material_resources import DEVICE_TYPE
 from kivymd.navigationdrawer import MDNavigationDrawer, NavigationDrawerHeaderBase
 from kivymd.selectioncontrols import MDCheckbox
@@ -32,7 +32,9 @@ from kivymd.menu import MDDropdownMenu
 from kivymd.textfields import MDTextField
 from kivymd.button import MDRaisedButton
 from kivymd.button import MDFlatButton
+from kivymd.slider import MDSlider
 from kivy.utils import get_color_from_hex
+from kivy.utils import get_hex_from_color
 
 import data_view
 
@@ -93,7 +95,7 @@ BoxLayout:
         background_palette: 'Primary'
         background_hue: '500'
         left_action_items: [['menu', lambda x: app.previous_page()]]
-        right_action_items: [['dots-vertical', lambda x: app.show_global_edit_menu(self)]]
+        right_action_items: []
     ScreenManager:
         id: scr_mngr
         Screen:
@@ -345,7 +347,7 @@ advanced_controls = {
     "Expression": {"type": "CC", "controller":100, "curve":"1"},
     "Engage Last Preset": {"type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}},
     "Bypass": {"type": "CC", "controller":103, "enum":{"Both Enabled": 127, "Only A": 85, "Only B": 45, "Bypass":0}},
-    "Preset Select": {"type": "PC"}
+    "Preset": {"type": "PC", "value":{"min":0, "max":122}}
     },
 "Chase Bliss:Condor":{
     "Gain": {"type": "CC", "controller":14, "curve":"1"},
@@ -361,7 +363,7 @@ advanced_controls = {
     "Expression": {"type": "CC", "controller":100, "curve":"1"},
     "Engage Last Preset": {"type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}},
     "Bypass": {"type": "CC", "controller":103, "enum":{"Enabled": 127, "Bypass":0}},
-    "Preset": {"type": "PC"}
+    "Preset": {"type": "PC", "value":{"min":0, "max":122}}
     },
 "Elektron:Analog Drive":{
     "Gain": {"type": "CC", "controller":16, "curve":"1"},
@@ -375,7 +377,7 @@ advanced_controls = {
     "Circuit Select": {"type": "CC", "controller":3, "enum":{"Clean Boost":1, "Mid Drive":16, "Dirty Drive":32,
         "Big Dist":48, "Focused Dist":64, "Harmonic Fuzz":80, "High Gain":96, "Thick Gain":112 }},
     "Enable": {"type": "CC", "controller":103, "enum":{"Enabled": 127, "Bypass":0}},
-    "Preset": {"type": "PC"}
+    "Preset": {"type": "PC", "value":{"min":0, "max":99}}
     },
 "Kemper:Profiler":{
     "Wah": {"type": "CC", "controller":1, "curve":"1"},
@@ -404,7 +406,7 @@ advanced_controls = {
     "Rotary Speed": {"type": "CC", "controller":33, "enum":{"Fast": 127, "Slow":0}},
     "Delay Infinity": {"type": "CC", "controller":34, "enum":{"On": 127, "Off":0}},
     "Delay Hold": {"type": "CC", "controller":35, "enum":{"On": 127, "Off":0}},
-    "Preset": {"type": "PC"}
+    "Preset": {"type": "PC", "value":{"min":0, "max":127}}
     },
 "Eventide:H9":{
     "Parameter 1": {"type": "CC", "controller":22, "curve":"1"},
@@ -429,7 +431,7 @@ advanced_controls = {
     "Toggle Bypass": {"type": "CC", "controller":17, "enum":{"On": 127, "Off":0}},
     "Left Footswitch": {"type": "CC", "controller":18, "enum":{"On": 127, "Off":0}},
     "Expression": {"type": "CC", "controller":19, "curve":"1"},
-    "Preset": {"type": "PC"}
+    "Preset": {"type": "PC", "value":{"min":0, "max":127}}
     },
 "Line 6:M9":{
     "Expression Pedal 1": {"type": "CC", "controller":1, "curve":"1"},
@@ -439,7 +441,8 @@ advanced_controls = {
     "FX Unit 2A": {"type": "CC", "controller":14, "enum":{"Bypass":0, "On":127}},
     "FX Unit 2B": {"type": "CC", "controller":15, "enum":{"Bypass":0, "On":127}},
     "FX Unit 3A": {"type": "CC", "controller":17, "enum":{"Bypass":0, "On":127}},
-    "FX Unit 3B": {"type": "CC", "controller":18, "enum":{"Bypass":0, "On":127}}
+    "FX Unit 3B": {"type": "CC", "controller":18, "enum":{"Bypass":0, "On":127}},
+    "Preset": {"type": "PC", "value":{"min":0, "max":127}}
     },
 "DAW:DAW":{
     "Macro 1": {"type": "CC", "controller":20, "curve":"1"},
@@ -452,13 +455,14 @@ advanced_controls = {
     "Macro 8": {"type": "CC", "controller":27, "curve":"1"},
     "Note On": {"type": "note_on", "curve":"1"},
     "Note Off": {"type": "note_off", "curve":"1"},
-    "Pads": {"type": "PC"}
+    "Preset": {"type": "PC", "value":{"min":0, "max":127}}
     },
 "Line 6:Helix":{
     "Macro 1": {"type": "CC", "controller":1, "curve":"1"},
     "Macro 2": {"type": "CC", "controller":2, "curve":"1"},
     "Macro 3": {"type": "CC", "controller":3, "curve":"1"},
-    "Pads": {"type": "PC"}
+    "Pads": {"type": "PC"},
+    "Preset": {"type": "PC", "value":{"min":0, "max":127}}
     },
 "Hughes and Kettner:GM4":{
     "Mod": {"type": "CC", "controller":1, "curve":"1"},
@@ -476,7 +480,7 @@ advanced_controls = {
     "Delay Toggle": {"type": "CC", "controller":53, "enum":{"On": 127, "Off":0}},
     "Mod Toggle": {"type": "CC", "controller":54, "enum":{"On": 127, "Off":0}},
     "Reverb Toggle": {"type": "CC", "controller":54, "enum":{"On": 127, "Off":0}},
-    "Preset": {"type": "PC"}
+    "Preset": {"type": "PC", "value":{"min":0, "max":127}}
     },
 "Pigtronix:Echolution 2 Deluxe":{
     "Exp Pedal Input": {"type": "CC", "controller":4, "curve":"1"},
@@ -497,7 +501,7 @@ advanced_controls = {
     "Second Tap Volume": {"type": "CC", "controller":76, "curve":"1"}, # TODO lots more to add
     "Tap": {"type": "CC", "controller":25, "enum":{"Tap":1}},
     "Engage": {"type": "CC", "controller":27, "enum":{"Bypass":4, "On":3}},
-    "Preset Select": {"type": "PC"}
+    "Preset": {"type": "PC", "value":{"min":0, "max":127}}
     },
 "Empress:Echosystem":{
     "Modes A": {"type": "CC", "controller":100, "enum":{"Digital":0, "Tape":8, "Analog":16,
@@ -521,7 +525,7 @@ advanced_controls = {
     "Thing 1 B": {"type": "CC", "controller":116, "curve":"1"},
     "Thing 2 B": {"type": "CC", "controller":117, "curve":"1"},
     "Engage": {"type": "CC", "controller":60, "enum":{"Bypass":0, "On":127}}, # TODO few more to add
-    "Preset Select": {"type": "PC"}
+    "Preset": {"type": "PC", "value":{"min":0, "max":127}}
     },
 "Empress:Tremolo2":{
     "Depth": {"type": "CC", "controller":20, "curve":"1"},
@@ -536,7 +540,7 @@ advanced_controls = {
     "Engage": {"type": "CC", "controller":36, "enum":{"Bypass":0, "On":127}},
     "Direct Control": {"type": "CC", "controller":40, "curve":"1"},
     "Exit Direct": {"type": "CC", "controller":50, "enum":{"Exit":1}},
-    "Preset Select": {"type": "PC"}
+    "Preset": {"type": "PC", "value":{"min":0, "max":127}}
     },
 "Empress:Phaser":{
     "Speed": {"type": "CC", "controller":20, "curve":"1"},
@@ -568,7 +572,7 @@ advanced_controls = {
     "Tap": {"type": "CC", "controller":28, "enum":{"Tap":127}},
     "Sequencer Type": {"type": "CC", "controller":29, "enum":{"Pitch":0, "Sample Rate":63, "Filter":127}},
     "Stutter Hold": {"type": "CC", "controller":31, "enum":{"Off":0, "On":127}},
-    "Preset Select": {"type": "PC"}
+    "Preset": {"type": "PC", "value":{"min":0, "max":15}}
     },
 "Peavey:Vypyr Pro":{
     "FB_LFT_ASSIGN_B": {"type": "CC", "controller":0x00, "curve":"1"},
@@ -683,70 +687,43 @@ advanced_controls = {
     }
 }
 
-standard_controls = {"Chase Bliss:Brothers":{
-    "Gain A": ["Gain A", "on_foot_move", "1"],
-    "Master": ["Master", "on_foot_move", "1"],
-    "Gain B": ["Gain B", "on_foot_move", "1"],
-    "Tone A": ["Tone A", "on_foot_move", "1"],
-    "Mix / Stack": ["Mix / Stack", "on_foot_move", "1"],
-    "Tone B": ["Tone B", "on_foot_move", "1"],
-    "Channel A Boost": ["Channel A Effect Select", "on_foot_down", "Boost"],
-    "Channel A Drive": ["Channel A Effect Select", "on_foot_down", "Drive"],
-    "Channel A Fuzz": ["Channel A Effect Select", "on_foot_down", "Fuzz"],
-    "Order A > B": ["Channel Order", "on_foot_down", "A > B"],
-    "Order Parallel": ["Channel Order", "on_foot_down", "Parallel"],
-    "Order B > A": ["Channel Order", "on_foot_down", "B > A"],
-    "Channel B Boost": ["Channel B Effect Select", "on_foot_down", "Boost"],
-    "Channel B Drive": ["Channel B Effect Select", "on_foot_down", "Drive"],
-    "Channel B Fuzz": ["Channel B Effect Select", "on_foot_down", "Fuzz"]
+# "Empress:Phaser":{
+#     "Speed": {"type": "CC", "controller":20, "curve":"1"},
+#     "Width": {"type": "CC", "controller":21, "curve":"1"},
+#     "Waveform": {"type": "CC", "controller":22, "enum":{"1":1, "2":2, "3":3, "4":4, "5":5, "6":6, "7":7, "8":8}},
+#     "Mode": {"type": "CC", "controller":23, "enum":{"Tap":1, "Knob":2, "Auto":3}},
+#     "Attack": {"type": "CC", "controller":24, "enum":{"Slow":1, "Medium":2, "Fast":3}},
+#     "Tap": {"type": "CC", "controller":35, "enum":{"On":127, "Off":0}},
+#     "Engage": {"type": "CC", "controller":36, "enum":{"Bypass":0, "On":127}},
+#     "Direct Control": {"type": "CC", "controller":40, "curve":"1"},
+#     "Exit Direct": {"type": "CC", "controller":50, "enum":{"Exit":1}}
+#     },
+    # "Preset": {"type": "PC", "value":{"min":0, "max":15}}
+
+# add all advanced controls that have curve specified
+# add all that enum ones
+# add ones that specify default toggle
+standard_controls = {}
+for pedal_name, controls in advanced_controls.items():
+    if pedal_name not in standard_controls:
+        standard_controls[pedal_name] = {}
+    for control_name, control_conf in controls.items():
+        if "curve" in control_conf:
+            standard_controls[pedal_name][control_name] = [control_name, "on_foot_move", control_conf["curve"]]
+        if "enum" in control_conf:
+            standard_controls[pedal_name][control_name] = [control_name, "on_foot_down_enum", control_conf["enum"].keys()]
+        if "value" in control_conf:
+            standard_controls[pedal_name][control_name] = [control_name, "on_foot_down_value", control_conf["value"]]
+
+
+standard_controls_update = {
+"Chase Bliss:Condor": {
+    "Toggle Enabled":  ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"]
     },
-"Chase Bliss:Condor":{
-    "Gain": ["Gain", "on_foot_move", "1"],
-    "Freq": ["Freq", "on_foot_move", "1"],
-    "Volume": ["Volume", "on_foot_move", "1"],
-    "Bass": ["Bass", "on_foot_move", "1"],
-    "Mids": ["Mids", "on_foot_move", "1"],
-    "LPF": ["LPF", "on_foot_move", "1"],
-    "Expression": ["Expression", "on_foot_move", "1"],
-    "Toggle Enabled": ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"],
-    "Enable Down": ["Bypass", "on_foot_down", "Enabled"],
-    "Bypass Up": ["Bypass", "on_foot_up", "Bypass"],
-    "LPF on up": ["LPF force", "on_foot_up", "On"],
-    "LPF off up": ["LPF force", "on_foot_up", "Off"],
-    "1": ["Preset", "on_foot_down", 1],
+"Elektron:Analog Drive":{
+    "Toggle Enabled" : ["Enable", "on_foot_down_toggle", "Enabled", "Enable", "Bypass"]
     },
-    "Elektron:Analog Drive":{
-    "Gain": ["Gain", "on_foot_move", "1"],
-    "Low": ["Low", "on_foot_move", "1"],
-    "Mid Freq": ["Mid Freq", "on_foot_move", "1"],
-    "Mid": ["Mid", "on_foot_move", "1"],
-    "High": ["High", "on_foot_move", "1"],
-    "Level": ["Level", "on_foot_move", "1"],
-    "Expression Gain": ["Expression Gain", "on_foot_move", "1"],
-    "Expression Mid": ["Expression Mid", "on_foot_move", "1"],
-    "Toggle Enabled": ["Enable", "on_foot_down_toggle", "Enabled", "Enable", "Bypass"],
-    "0": ["Preset", "on_foot_down", 0],
-    "1": ["Preset", "on_foot_down", 1],
-    "2": ["Preset", "on_foot_down", 2],
-    "3": ["Preset", "on_foot_down", 3],
-    "4": ["Preset", "on_foot_down", 4],
-    "5": ["Preset", "on_foot_down", 5],
-    "6": ["Preset", "on_foot_down", 6],
-    "7": ["Preset", "on_foot_down", 7],
-    "8": ["Preset", "on_foot_down", 8],
-    "9": ["Preset", "on_foot_down", 9]
-    },
-    "Kemper:Profiler":{
-    "Wah": ["Wah", "on_foot_move", "1"],
-    "Pitch": ["Pitch", "on_foot_move", "1"],
-    "Volume": ["Volume", "on_foot_move", "1"],
-    "Morph": ["Morph", "on_foot_move", "1"],
-    "Delay Mix": ["Delay Mix", "on_foot_move", "1"],
-    "Delay Feedback": ["Delay Feedback", "on_foot_move", "1"],
-    "Reverb Mix": ["Reverb Mix", "on_foot_move", "1"],
-    "Reverb Time": ["Reverb Time", "on_foot_move", "1"],
-    "Gain": ["Gain", "on_foot_move", "1"],
-    "Monitor Volume": ["Monitor Volume", "on_foot_move", "1"],
+"Kemper:Profiler":{
     "A Toggle": ["A Toggle", "on_foot_down_toggle", "On", "A Toggle", "Off"],
     "B Toggle": ["B Toggle", "on_foot_down_toggle", "On", "B Toggle", "Off"],
     "C Toggle": ["C Toggle", "on_foot_down_toggle", "On", "C Toggle", "Off"],
@@ -762,80 +739,9 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Rotary Speed": ["Rotary Speed", "on_foot_down_toggle", "Fast", "Rotary Speed", "Slow"],
     "Delay Infinity": ["Delay Infinity", "on_foot_down_toggle", "On", "Delay Infinity", "Off"],
     "Delay Hold Down": ["Delay Hold", "on_foot_down", "On"],
-    "Delay Hold Up": ["Delay Hold", "on_foot_up", "Off"],
-    "1": ["Preset", "on_foot_down", 1],
-    "2": ["Preset", "on_foot_down", 2],
-    "3": ["Preset", "on_foot_down", 3],
-    "4": ["Preset", "on_foot_down", 4],
-    "5": ["Preset", "on_foot_down", 5]
+    "Delay Hold Up": ["Delay Hold", "on_foot_up", "Off"]
     },
-    "Eventide:H9":{
-    "Parameter 1": ["Parameter 1", "on_foot_move", "1"],
-    "Parameter 2": ["Parameter 2", "on_foot_move", "1"],
-    "Parameter 3": ["Parameter 3", "on_foot_move", "1"],
-    "Parameter 4": ["Parameter 4", "on_foot_move", "1"],
-    "Parameter 5": ["Parameter 5", "on_foot_move", "1"],
-    "Parameter 6": ["Parameter 6", "on_foot_move", "1"],
-    "Parameter 7": ["Parameter 7", "on_foot_move", "1"],
-    "Parameter 8": ["Parameter 8", "on_foot_move", "1"],
-    "Parameter 9": ["Parameter 9", "on_foot_move", "1"],
-    "Parameter 10": ["Parameter 10", "on_foot_move", "1"],
-    "Expression": ["Expression", "on_foot_move", "1"],
-    "Increment Preset": ["Increment Preset", "on_foot_down", "On"],
-    "Decrement Preset": ["Decrement Preset", "on_foot_down", "On"],
-    "Increment Load Preset": ["Increment Load Preset", "on_foot_down", "On"],
-    "Decrement Load Preset": ["Decrement Load Preset", "on_foot_down", "On"],
-    "Tap Tempo": ["Tap Tempo", "on_foot_down", "On"],
-    "Middle Switch": ["Middle Switch", "on_foot_down", "On"],
-    "Toggle Tuner": ["Toggle Tuner", "on_foot_down", "On"],
-    "Bypass": ["Bypass", "on_foot_down", "On"],
-    "Activate": ["Activate", "on_foot_down", "On"],
-    "Toggle Bypass": ["Toggle Bypass", "on_foot_down", "On"],
-    "Left Footswitch": ["Left Footswitch", "on_foot_down", "On"],
-    "1": ["Preset", "on_foot_down", 1],
-    "1 on up": ["Preset", "on_foot_up", 1],
-    "5 on up": ["Preset", "on_foot_up", 5],
-    "2": ["Preset", "on_foot_down", 2],
-    "3": ["Preset", "on_foot_down", 3],
-    "4": ["Preset", "on_foot_down", 4],
-    "5": ["Preset", "on_foot_down", 5]
-    },
-"Line 6:M9":{
-    "Expression Pedal 1": ["Expression Pedal 1", "on_foot_move", "1"],
-    "Expression Pedal 2": ["Expression Pedal 2", "on_foot_move", "1"],
-    "FX Unit 1A On": ["FX Unit 1A", "on_foot_down", "On"],
-    "FX Unit 1B On": ["FX Unit 1B", "on_foot_down", "On"],
-    "FX Unit 2A On": ["FX Unit 2A", "on_foot_down", "On"],
-    "FX Unit 2B On": ["FX Unit 2B", "on_foot_down", "On"],
-    "FX Unit 3A On": ["FX Unit 3A", "on_foot_down", "On"],
-    "FX Unit 3B On": ["FX Unit 3B", "on_foot_down", "On"],
-    "FX Unit 1A Bypass": ["FX Unit 1A", "on_foot_down", "Bypass"],
-    "FX Unit 1B Bypass": ["FX Unit 1B", "on_foot_down", "Bypass"],
-    "FX Unit 2A Bypass": ["FX Unit 2A", "on_foot_down", "Bypass"],
-    "FX Unit 2B Bypass": ["FX Unit 2B", "on_foot_down", "Bypass"],
-    "FX Unit 3A Bypass": ["FX Unit 3A", "on_foot_down", "Bypass"],
-    "FX Unit 3B Bypass": ["FX Unit 3B", "on_foot_down", "Bypass"],
-    "FX Unit 1A Toggle": ["FX Unit 1A", "on_foot_down_toggle", "On", "FX Unit 1A", "Bypass"]
-        },
 "DAW:DAW":{
-    "Macro 1": ["Macro 1", "on_foot_move", "1"],
-    "Macro 2": ["Macro 2", "on_foot_move", "1"],
-    "Macro 3": ["Macro 3", "on_foot_move", "1"],
-    "Macro 4": ["Macro 4", "on_foot_move", "1"],
-    "Macro 5": ["Macro 5", "on_foot_move", "1"],
-    "Macro 6": ["Macro 6", "on_foot_move", "1"],
-    "Macro 7": ["Macro 7", "on_foot_move", "1"],
-    "Macro 8": ["Macro 8", "on_foot_move", "1"],
-    "Pad 1": ["Pads", "on_foot_down", 1],
-    "Pad 2": ["Pads", "on_foot_down", 2],
-    "Pad 3": ["Pads", "on_foot_down", 3],
-    "Pad 4": ["Pads", "on_foot_down", 4],
-    "Pad 5": ["Pads", "on_foot_down", 5],
-    "Pad 6": ["Pads", "on_foot_down", 6],
-    "Pad 7": ["Pads", "on_foot_down", 7],
-    "Pad 8": ["Pads", "on_foot_down", 8],
-    "Pad 9": ["Pads", "on_foot_down", 9],
-    "Pad 10": ["Pads", "on_foot_down", 10],
     "C4": ["Note On", "on_foot_down", 60],
     "C4 Off": ["Note Off", "on_foot_up", 60],
     "C4#": ["Note On", "on_foot_down", 61],
@@ -885,46 +791,12 @@ standard_controls = {"Chase Bliss:Brothers":{
     "B5": ["Note On", "on_foot_down", 83],
     "B5 Off": ["Note Off", "on_foot_up", 83]
         },
-"Line 6:Helix":{
-    "Macro 1": ["Macro 1", "on_foot_move", "1"],
-    "Macro 2": ["Macro 2", "on_foot_move", "1"],
-    "Macro 3": ["Macro 3", "on_foot_move", "1"],
-    },
 "Hughes and Kettner:GM4":{
-    "Mod": ["Mod", "on_foot_move", "1"],
-    "Delay": ["Delay Time", "on_foot_move", "1"],
-    "Bass":["Bass", "on_foot_move", "1"],
-    "Mid": ["Mid", "on_foot_move", "1"],
-    "Treble": ["Treble", "on_foot_move", "1"],
-    "Resonance": ["Resonance", "on_foot_move", "1"],
-    "Presence": ["Presence", "on_foot_move", "1"],
-    "Reverb": ["Reverb", "on_foot_move", "1"],
-    "Volume": ["Volume", "on_foot_move", "1"],
-    "Gain": ["Gain", "on_foot_move", "1"],
-    "Delay Feedback": ["Delay Feedback", "on_foot_move", "1"],
-    "Delay Mix": ["Delay Mix", "on_foot_move", "1"],
     "Delay Toggle": ["Delay Toggle", "on_foot_down_toggle", "On", "Delay Toggle", "Off"],
     "Mod Toggle": ["Mod Toggle", "on_foot_down_toggle", "On", "Mod Toggle", "Off"],
     "Reverb Toggle": ["Reverb Toggle", "on_foot_down_toggle", "On", "Reverb Toggle", "Off"],
-    "1": ["Preset", "on_foot_down", 1],
-    "2": ["Preset", "on_foot_down", 2],
-    "3": ["Preset", "on_foot_down", 3],
-    "4": ["Preset", "on_foot_down", 4],
-    "5": ["Preset", "on_foot_down", 5],
-    "6": ["Preset", "on_foot_down", 6],
-    "7": ["Preset", "on_foot_down", 7],
-    "8": ["Preset", "on_foot_down", 8]
     },
 "Pigtronix:Echolution 2 Deluxe":{
-    "Exp Pedal Input": ["Exp Pedal Input", "on_foot_move", "1"],
-    "Repeates": ["Repeates", "on_foot_move", "1"],
-    "Time Knob": ["Time Knob", "on_foot_move", "1"],
-    "Mix": ["Mix", "on_foot_move", "1"],
-    "LFO Speed": ["LFO Speed", "on_foot_move", "1"],
-    "Mod Depth": ["Mod Depth", "on_foot_move", "1"],
-    "Time Short": ["Time", "on_foot_down", "Short"],
-    "Time Long": ["Time", "on_foot_down", "Long"],
-    "Time Medium": ["Time", "on_foot_down", "Medium"],
     "Time Toggle": ["Time", "on_foot_down_toggle", "Short", "Time", "Medium"],
     "SFX Toggle": ["SFX", "on_foot_down_toggle", "Halo", "SFX", "Off"],
     "Sweep Toggle": ["Filter Type", "on_foot_down_toggle", "Sweep On", "Filter Type", "Sweep Off"],
@@ -933,101 +805,17 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Filter Toggle": ["Filter Type", "on_foot_down_toggle", "Lowpass On", "Filter Type", "Filter Off"],
     "Tape Toggle": ["Filter Type", "on_foot_down_toggle", "Tape On", "Filter Type", "Comb On"],
     "Triangle Square Toogle": ["LFO Mod Type", "on_foot_down_toggle", "Triangle", "LFO Mod Type", "Square"],
-    "Filter Cutoff": ["Filter Cutoff", "on_foot_move", "1"],
-    "Second Tap Volume": ["Second Tap Volume", "on_foot_move", "1"],
     "Tap": ["Tap", "on_foot_down", "Tap"],
     },
 "Empress:Echosystem":{
-    "A Tape": ["Modes A", "on_foot_down", "Tape"],
-    "A Digital": ["Modes A", "on_foot_down", "Digital"],
-    "A Analog": ["Modes A", "on_foot_down", "Analog"],
-    "A Multi": ["Modes A", "on_foot_down", "Multi"],
-    "A Mod": ["Modes A", "on_foot_down", "Mod"],
-    "B Tape": ["Modes B", "on_foot_down", "Tape"],
-    "B Digital": ["Modes B", "on_foot_down", "Digital"],
-    "B Analog": ["Modes B", "on_foot_down", "Analog"],
-    "B Multi": ["Modes B", "on_foot_down", "Multi"],
-    "B Mod": ["Modes B", "on_foot_down", "Mod"],
-    "Delay Time A": ["Delay Time A", "on_foot_move", "1"],
-    "Mix A": ["Mix A", "on_foot_move", "1"],
-    "Volume A": ["Volume A", "on_foot_move", "1"],
-    "Feedback A": ["Feedback A", "on_foot_move", "1"],
-    "Tone A": ["Tone A", "on_foot_move", "1"],
-    "Thing 1 A": ["Thing 1 A", "on_foot_move", "1"],
-    "Thing 2 A": ["Thing 2 A", "on_foot_move", "1"],
-    "Delay Time B": ["Delay Time B", "on_foot_move", "1"],
-    "Mix B": ["Mix B", "on_foot_move", "1"],
-    "Volume B": ["Volume B", "on_foot_move", "1"],
-    "Feedback B": ["Feedback B", "on_foot_move", "1"],
-    "Tone B": ["Tone B", "on_foot_move", "1"],
-    "Thing 1 B": ["Thing 1 B", "on_foot_move", "1"],
-    "Thing 2 B": ["Thing 2 B", "on_foot_move", "1"],
     "Toggle Enabled": ["Engage", "on_foot_down_toggle", "On", "Engage", "Bypass"],
     },
 "Empress:Tremolo2":{
-    "Depth": ["Depth", "on_foot_move", "1"],
-    "Rate": ["Rate", "on_foot_move", "1"],
-    "Output": ["Output", "on_foot_move", "1"],
-    "Phase": ["Phase", "on_foot_move", "1"],
     "Toggle Enabled": ["Engage", "on_foot_down_toggle", "On", "Engage", "Bypass"],
     },
 "Meris:Ottobit Jr":{
-    "Expression": ["Expression", "on_foot_move", "1"],
     "Toggle Bypass": ["Bypass", "on_foot_down_toggle", "On", "Bypass", "Bypass"],
-    "Tempo": ["Tempo", "on_foot_move", "1"],
-    "Sample Rate": ["Sample Rate", "on_foot_move", "1"],
-    "Filter": ["Filter", "on_foot_move", "1"],
-    "Bits": ["Bits", "on_foot_move", "1"],
-    "Stutter": ["Stutter", "on_foot_move", "1"],
-    "Sequencer": ["Sequencer", "on_foot_move", "1"],
-    "Sequencer Mult": ["Sequencer Multi", "on_foot_move", "1"],
-    "Step 1": ["Step 1", "on_foot_move", "1"],
-    "Step 2": ["Step 2", "on_foot_move", "1"],
-    "Step 3": ["Step 3", "on_foot_move", "1"],
-    "Step 4": ["Step 4", "on_foot_move", "1"],
-    "Step 5": ["Step 5", "on_foot_move", "1"],
-    "Step 6": ["Step 6", "on_foot_move", "1"],
-    # "Tap": {"type": "CC", "controller":28, "enum":{"Tap":127}},
-    # "Sequencer Type": {"type": "CC", "controller":29, "enum":{"Pitch":0, "Sample Rate":63, "Filter":127}},
-    "Hold Down": ["Stutter Hold", "on_foot_down", "On"],
-    "Hold Up": ["Stutter Hold", "on_foot_up", "Off"],
-    "1": ["Preset", "on_foot_down", 1],
-    "2": ["Preset", "on_foot_down", 2],
-    "3": ["Preset", "on_foot_down", 3],
-    "4": ["Preset", "on_foot_down", 4],
-    "5": ["Preset", "on_foot_down", 5],
-    "6": ["Preset", "on_foot_down", 6],
-    "7": ["Preset", "on_foot_down", 7],
-    "8": ["Preset", "on_foot_down", 8]
 },
-
-"Peavey:Vypyr Pro":{
-    "SLOT1_P1": ["SLOT1_P1", "on_foot_move", "1"],
-    "SLOT1_P2": ["SLOT1_P2", "on_foot_move", "1"],
-    "SLOT1_P3": ["SLOT1_P3", "on_foot_move", "1"],
-    "SLOT1_P4": ["SLOT1_P4", "on_foot_move", "1"],
-    "SLOT2_P1": ["SLOT2_P1", "on_foot_move", "1"],
-    "SLOT2_P2": ["SLOT2_P2", "on_foot_move", "1"],
-    "SLOT2_P3": ["SLOT2_P3", "on_foot_move", "1"],
-    "SLOT2_P4": ["SLOT2_P4", "on_foot_move", "1"],
-    "SLOT3_P1": ["SLOT3_P1", "on_foot_move", "1"],
-    "SLOT3_P2": ["SLOT3_P2", "on_foot_move", "1"],
-    "SLOT3_P3": ["SLOT3_P3", "on_foot_move", "1"],
-    "SLOT3_P4": ["SLOT3_P4", "on_foot_move", "1"],
-    "SLOT4_P1": ["SLOT4_P1", "on_foot_move", "1"],
-    "SLOT4_P2": ["SLOT4_P2", "on_foot_move", "1"],
-    "SLOT4_P3": ["SLOT4_P3", "on_foot_move", "1"],
-    "SLOT4_P4": ["SLOT4_P4", "on_foot_move", "1"],
-    "Delay Toggle": ["DELAY_BYPASS", "on_foot_down_toggle", "On", "DELAY_BYPASS", "Bypass"],
-    "DELAY_FDBK": ["DELAY_FDBK", "on_foot_move", "1"],
-    "DELAY_LVL": ["DELAY_LVL", "on_foot_move", "1"],
-    "DELAY_MOD": ["DELAY_MOD", "on_foot_move", "1"],
-    "TAP": ["TAP", "on_foot_down",  "Tap"],
-    "DELAY_TONE": ["DELAY_TONE", "on_foot_move", "1"],
-    "DELAY_TYPE Analog": ["DELAY_TYPE", "on_foot_down", "Analog"],
-    "DELAY_TYPE Modulation": ["DELAY_TYPE", "on_foot_down", "Modulation"],
-    "DELAY_TYPE Multi-tap": ["DELAY_TYPE", "on_foot_down", "Multi-tap"]
-    },
 "Macro:Macro":{
     "Start Recording Macro 1": ["Start Recording Macro", "on_foot_down", 1],
     "Stop Recording Macro 1": ["Stop Recording Macro", "on_foot_down", 1],
@@ -1043,6 +831,10 @@ standard_controls = {"Chase Bliss:Brothers":{
     "Toggle Macro 2": ["Start Macro", "on_foot_down_toggle", 2, "Stop Macro", 2],
     }
 }
+
+for k,v in standard_controls_update.items():
+    for k1,v1 in v.items():
+        standard_controls[k][k1] = v1
 
 included_standard_controls = []
 
@@ -1134,6 +926,11 @@ class KitchenSink(App):
     def go_to_page(self, page, title):
         self.root.ids.scr_mngr.current = page
         self.set_toolbar_title(title)
+        # set toolbar active, only edit has the right tool bar
+        if page == "edit_mat":
+            self.root.ids.toolbar.right_action_items = [['dots-vertical', lambda x: self.show_global_edit_menu(self.root.ids.toolbar)]]
+        else:
+            self.root.ids.toolbar.right_action_items = []
 
     def set_toolbar_title(self, title):
         self.root.ids.toolbar.title = title
@@ -1212,11 +1009,14 @@ class KitchenSink(App):
         self.dialog.dismiss()
         self.select_control(ctx, direction=direction)
 
-    def select_control(self, ctx, direction=None):
+    def set_control_value(self, ctx, value):
+        self.dialog.dismiss()
+        self.select_control(ctx, set_value=value)
+
+    def select_control(self, ctx, direction=None, set_value=None):
         # print("select control", ctx)
         if ctx in self.root.ids.available_standard_controls_dl.items:
             # check if it's a on_foot_move, if so it needs a direction
-
             if get_standard_controls_from_key(ctx["key"])[1] == "on_foot_move" and not direction:
                 content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None, size=(200, 200),
                                     padding= 48)
@@ -1258,16 +1058,68 @@ class KitchenSink(App):
                                        height=dp(300),
                                        auto_dismiss=False)
                 self.dialog.open()
+            # if it's an enum or value then pop up a selector
+            elif get_standard_controls_from_key(ctx["key"])[1] == "on_foot_down_enum" and not set_value:
+                content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None, size=(200, 200),
+                                    padding= 48)
+
+                control = get_standard_controls_from_key(ctx["key"])
+                par_list = MDList(
+                        size_hint= (None, None))
+                for val in control[2]:
+                    ver_button = OneLineListItem(
+                            text= val,
+                            on_release= lambda x,val=val: self.set_control_value(ctx, val))
+                    par_list.add_widget(ver_button)
+                    print("adding to list", val)
+                content.add_widget(par_list)
+                self.dialog = MDDialog(title="What value should this send",
+                                       content=content,
+                                       size_hint=(.80, None),
+                                       height=dp(300),
+                                       auto_dismiss=False)
+                self.dialog.open()
+            elif get_standard_controls_from_key(ctx["key"])[1] == "on_foot_down_value" and not set_value:
+                content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None, size=(200, 200),
+                                    padding= 48)
+
+                control = get_standard_controls_from_key(ctx["key"])
+
+                text_field = MDTextField(
+                        hint_text= "Minimum is " + str(control[2]["min"]) + " maximum " + str(control[2]["max"]),
+                        size_hint= (None, None))
+                content.add_widget(text_field)
+                pres_button = MDRaisedButton(
+                        text= "Set Value",
+                        opposite_colors= True,
+                        size_hint= (None, None),
+                        pos_hint= {'center_x': 0.5, 'center_y': 0.9},
+                        on_release= lambda *x: self.set_control_value(ctx, text_field.text))
+                content.add_widget(pres_button)
+                self.dialog = MDDialog(title="What value should this send",
+                                       content=content,
+                                       size_hint=(.80, None),
+                                       height=dp(300),
+                                       auto_dismiss=False)
+                self.dialog.open()
             else:
                 self.root.ids.available_standard_controls_dl.items.remove(ctx)
                 if direction:
                     ctx["direction"] = direction
+                if set_value:
+                    # ctx["value"] = set_value
+                    ctx["direction"] = set_value
                 self.root.ids.selected_standard_controls_dl.items.append(ctx)
                 self.root.ids.selected_standard_controls_dl.items = sorted(self.root.ids.selected_standard_controls_dl.items, key=lambda x: x["text"])
         elif ctx in self.root.ids.selected_standard_controls_dl.items:
             self.root.ids.selected_standard_controls_dl.items.remove(ctx)
             if "direction" in ctx:
                 ctx.pop("direction")
+            if "value" in ctx:
+                ctx.pop("value")
+            if ":" in ctx["text"]:
+                ctx["text"] = ctx["text"].split(':')[0]
+
             self.root.ids.available_standard_controls_dl.items.append(ctx)
             self.root.ids.available_standard_controls_dl.items = sorted(self.root.ids.available_standard_controls_dl.items, key=lambda x: x["text"])
 
@@ -1278,9 +1130,10 @@ class KitchenSink(App):
         # print(self.root.ids.selected_standard_controls_dl.items)
 
     def set_standard_controls(self):
+        
         # global for current cell as can't work out a neat way
         # included_standard_controls is the UI items, need to transfer it to the actual items
-        mat_def["cells"][current_selected_cell]["standard_controls"] = [(a["key"], a["direction"] if "direction" in a else None)  for a in included_standard_controls]
+        mat_def["cells"][current_selected_cell]["standard_controls"] = [(a["key"], a["direction"] if "direction" in a else a.get("value"))  for a in included_standard_controls]
 
         current_keys = [split_standard_controls_key(a[0])[2] for a in mat_def["cells"][current_selected_cell]["standard_controls"]]
         self.cell_buttons[current_selected_cell].sub_text = '\n'.join(current_keys)
@@ -1346,7 +1199,7 @@ class KitchenSink(App):
              },
             {'viewclass': 'MDMenuItem',
              'text': 'Set Square Color',
-             'on_release' : lambda *x: self.go_to_page("choose_pedals", "Choose Pedals")
+             'on_release' : lambda *x: self.show_set_color_dialog(cell_id)
              },
             {'viewclass': 'MDMenuItem',
              'text': 'Set Text',
@@ -1433,6 +1286,75 @@ class KitchenSink(App):
                                       action=set_text)
         self.dialog.open()
 
+    def show_set_color_dialog(self, cell_id):
+        # content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None)
+        #                     # padding: dp(48)
+        #                     # spacing: 10
+        content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None, size=(200, 200),
+                            padding= 48)
+        # contentVj = MDLabel(font_style='Body1',
+        #           theme_text_color='Secondary',
+        #           text="This is a dialog with a title and some text. "
+        #                "That's pretty awesome right!",
+        #           size_hint_y=None,
+        #           valign='top')
+        # content.hint_text="Choose direction for controller"
+        # content.helper_text="You can leave this blank if you want"
+        # content.helper_text_mode="on_focus"
+        # content.text = mat_def[cell_id]["text"]
+
+        slider_r = None
+        slider_g = None
+        slider_b = None
+        slider_a = None
+        def update_color(*arg):
+            c = (slider_r.value, slider_g.value, slider_b.value, slider_a.value)
+            print("updating color", c)
+            self.dialog.md_bg_color = c
+
+        slider_r = MDSlider(
+                min = 0,
+                max = 1,
+                on_touch_up= update_color)
+        content.add_widget(slider_r)
+        slider_g = MDSlider(
+                min = 0,
+                max = 1,
+                on_release= update_color)
+        content.add_widget(slider_g)
+        slider_b = MDSlider(
+                min = 0,
+                max = 1,
+                on_release= update_color)
+        content.add_widget(slider_b)
+        slider_a = MDSlider(
+                min = 0,
+                max = 1,
+                on_release= update_color)
+        content.add_widget(slider_a)
+
+        # pres_button = MDRaisedButton(
+        #         text= "Set Color",
+        #         opposite_colors= True,
+        #         size_hint= (None, None),
+        #         pos_hint= {'center_x': 0.5, 'center_y': 0.9},
+        #         on_release= lambda *x: self.set_color(ctx, "pressure"))
+        # content.add_widget(pres_button)
+        self.dialog = MDDialog(title="Set color",
+                               content=content,
+                               size_hint=(.95, None),
+                               height=dp(300),
+                               auto_dismiss=False)
+        def set_color(x):
+            c = (slider_r.value, slider_g.value, slider_b.value, slider_a.value)
+            mat_def["cells"][cell_id]["color"] = get_hex_from_color(c)
+            self.cell_buttons[cell_id].md_bg_color = c
+            self.dialog.dismiss()
+
+        self.dialog.add_action_button("Set color",
+                                      action=set_color)
+        self.dialog.open()
+
     def show_save_mat_dialog(self):
         content = MDTextField()
         content.hint_text="Enter name for this mat"
@@ -1457,29 +1379,6 @@ class KitchenSink(App):
                                       action=save_mat)
         self.dialog.open()
 
-    def show_set_color_dialog(self, cell_id):
-        # content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None)
-        #                     # padding: dp(48)
-        #                     # spacing: 10
-        content = MDTextField()
-        content.hint_text="Enter name for the area"
-        content.helper_text="You can leave this blank if you want"
-        content.helper_text_mode="on_focus"
-        self.dialog = MDDialog(title="Set area text",
-                               content=content,
-                               size_hint=(.95, None),
-                               height=dp(300),
-                               auto_dismiss=False)
-        def set_text(x):
-            mat_def["cells"][cell_id]["text"] = content.text
-            self.dialog.dismiss()
-
-        self.dialog.add_action_button("Set",
-                                      action=set_text)
-        self.dialog.open()
-
-
-
 
 
 # headers = {'Content-type': 'application/x-www-form-urlencoded',
@@ -1487,10 +1386,12 @@ class KitchenSink(App):
     def send_to_poly(self):
         def bug_posted(req, result):
             print('Our bug is posted!')
+            Snackbar(text="Successfully sent to Poly").show()
             print(result)
 
         def fail(req, result):
             print('Request failed')
+            Snackbar(text="Sending to Poly failed. Are you connected to the right WiFi network?").show()
             print(result)
 
 
@@ -1509,7 +1410,7 @@ class KitchenSink(App):
         # y_x_fac = size_y / float(display_size_x)
 
         MIDI_messages = { "note_off":0x80, "note_on":0x90, "PP":0xA0, "CC": 0xB0, "PC":0xC0, "CP":0xD0, "PB":0xE0}
-        def standard_controls_to_json(control):
+        def standard_controls_to_json(control, selected_val):
             # "Tone B": ["Tone B", "on_foot_move", "1"],
             # "Channel A Boost": ["Channel A Effect Select", "on_foot_down", "Boost"],
             # "Tone B": {"type": "CC", "controller":19, "curve":"1"},
@@ -1527,6 +1428,9 @@ class KitchenSink(App):
                     block["t"] = "m"
                     block["b1"] = MIDI_messages[a_c["type"]] | (int(channel)-1) # channel from 1-16 mapped to 0-15 here
                     if a_c["type"] in ["CP", "PC"]: # 2 byte messages
+                        print("cp/pc is", value, "b selected_v", selected_val)
+                        if selected_val is not None:
+                            block["b2"] = selected_val
                         block["b2"] = value
                     elif a_c["type"] in ["note_on", "note_off"]:
                         block["b2"] = value
@@ -1538,8 +1442,15 @@ class KitchenSink(App):
                             print("default curves", value, repr(default_curves[a_c["curve"]][1]))
                             block["c"] = default_curves[a_c["curve"]][1]
                         elif "enum" in a_c:
-                            block["b3"] = a_c["enum"][value]
+                            print("v is", value, "selected_v", selected_val)
+                            if selected_val is not None:
+                                block["b3"] = a_c["enum"][selected_val]
+                            else:
+                                block["b3"] = a_c["enum"][value]
                         else:
+                            print("v is", value, "b selected_v", selected_val)
+                            if selected_val is not None:
+                                block["b3"] = selected_val
                             block["b3"] = value
                 elif a_c["type"] == "start_recording_macro":
                     block["t"] = "m_r"
@@ -1570,7 +1481,7 @@ class KitchenSink(App):
         for cell_id, cell_content in mat_def["cells"].items():
             out_cell = {}
             for control, val in cell_content["standard_controls"]:
-                action, block = standard_controls_to_json(control)
+                action, block = standard_controls_to_json(control, val)
                 if action == "on_foot_move":
                     # sort by direction
                     if "c" not in out_cell:

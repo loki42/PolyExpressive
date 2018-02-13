@@ -35,14 +35,6 @@ class DataList(MDList):
        self.clear_widgets()
        for item in self.items:
            w = Builder.template(self.item_template, **item)
-           if 'direction' in item:
-               if item["direction"] == "horizontal":
-                   icon = "swap-horizontal"
-               elif item["direction"] == "vertical":
-                   icon = "swap-vertical"
-               elif item["direction"] == "pressure":
-                   icon = "arrow-compress"
-               w.add_widget(IconLeftSampleWidget(icon=icon))
            self.add_widget(w)
 
 class DataListTextField(MDList):
@@ -55,14 +47,6 @@ class DataListTextField(MDList):
        self.clear_widgets()
        for item in self.items:
            w = Builder.template(self.item_template, **item)
-           if 'direction' in item:
-               if item["direction"] == "horizontal":
-                   icon = "swap-horizontal"
-               elif item["direction"] == "vertical":
-                   icon = "swap-vertical"
-               elif item["direction"] == "pressure":
-                   icon = "arrow-compress"
-               w.add_widget(IconLeftSampleWidget(icon=icon))
            self.add_widget(w)
 
 #XXX messy cut and paste
@@ -75,15 +59,20 @@ class DataListCheckBox(MDList):
    def on_items(self, *args):
        self.clear_widgets()
        for item in self.items:
+           if ":" not in item["text"] and 'direction' in item and item['direction'] not in ["horizontal", "vertical", "pressure"]:
+               item["text"] = item["text"] + " : " + item["direction"]
            w = Builder.template(self.item_template, **item)
            if 'direction' in item:
+               print("data_view: direction is ", item["direction"])
+               icon = None
                if item["direction"] == "horizontal":
                    icon = "swap-horizontal"
                elif item["direction"] == "vertical":
                    icon = "swap-vertical"
                elif item["direction"] == "pressure":
                    icon = "arrow-compress"
-               w.add_widget(IconLeftSampleWidget(icon=icon))
+               if icon:
+                   w.add_widget(IconLeftSampleWidget(icon=icon))
            self.add_widget(w)
 
 class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
