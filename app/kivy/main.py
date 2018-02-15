@@ -1535,6 +1535,10 @@ class KitchenSink(App):
 
     def mat_to_pdf(self, output_size="a3"):
         from fpdf import FPDF
+        arrow_length = 2.5
+        arrow_margin = 10
+        arrow_font_size = 26
+        line_width = 0.8
         # size_x = 420.0
         # size_y = 297.0
         size_x = 469.0
@@ -1550,6 +1554,8 @@ class KitchenSink(App):
         pdf.set_margins(0, 0, 0)
         pdf.set_auto_page_break(False, 0.0)
         pdf.set_text_color(255)
+        pdf.set_draw_color(255)
+        pdf.set_line_width(line_width)
         # pdf.set_text_color(0)
 
 
@@ -1590,8 +1596,45 @@ class KitchenSink(App):
             # if text:
             #     pdf.text(out_x1+text_margin, out_y1+text_margin, text)
             pdf.set_xy(out_x1, out_y1)
+            pdf.set_font('esphimere', '', 36)
             pdf.multi_cell(out_x2-out_x1, out_y2-out_y1, text, border = 0,
                     align = 'C', fill = True)
+
+            # draw arrows if a continous value is mapped to a dimension
+            for control, val in cell_content["standard_controls"]:
+                maker_model, pedal_id, standard_control = split_standard_controls_key(control)
+                s_c = get_standard_controls_from_key(control)
+                action = s_c[1]
+                if action == "on_foot_move":
+                    # TODO name or val?
+                    if val == "vertical":
+                        end_x = out_x1 + arrow_margin
+                        end_y = out_y2 - arrow_margin
+                        start_x = out_x1 + arrow_margin
+                        start_y = out_y1 + arrow_margin
+                        pdf.line(start_x, start_y, end_x, end_y)
+                        # arrow
+                        pdf.line(end_x, end_y, end_x-(arrow_length/2), end_y-arrow_length)
+                        pdf.line(end_x, end_y, end_x+(arrow_length/2), end_y-arrow_length)
+                        pdf.rotate(90, start_x, start_y)# - ((end_y-start_y)/2.0))
+                        pdf.set_font('esphimere', '', arrow_font_size)
+                        # print("pdf: standard_control", standard_control)
+                        string_px = pdf.get_string_width(standard_control)/2.0
+                        pdf.text((start_x-((end_y-start_y)/2.0)-string_px), start_y+arrow_margin, standard_control)
+                        pdf.rotate(0)
+                    if val == "horizontal":
+                        end_x = out_x2 - arrow_margin
+                        end_y = out_y1 + arrow_margin
+                        start_x = out_x1 + arrow_margin
+                        start_y = out_y1 + arrow_margin
+                        pdf.line(start_x, start_y, end_x, end_y)
+                        # arrow
+                        pdf.line(end_x, end_y, end_x-arrow_length, end_y-(arrow_length/2))
+                        pdf.line(end_x, end_y, end_x-arrow_length, end_y+(arrow_length/2))
+                        pdf.set_font('esphimere', '', arrow_font_size)
+                        # print("pdf: standard_control", standard_control)
+                        string_px = pdf.get_string_width(standard_control)/2.0
+                        pdf.text((start_x+((end_x-start_x)/2.0)-string_px), start_y+arrow_margin, standard_control)
 
         pdf.output('tuto1.pdf', 'F')
 
