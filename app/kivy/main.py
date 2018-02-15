@@ -993,6 +993,10 @@ class KitchenSink(App):
         self.show_layout(self.root.ids["edit_mat_box"], mat_def["layout"])
         for cell_id, cell_content in mat_def["cells"].items():
             self.cell_buttons[cell_id].text = cell_content["text"]
+            if "color" in cell_content:
+                if "#" in cell_content["color"]:
+                    print("cell is", cell_content)
+                    self.cell_buttons[cell_id].md_bg_color = get_color_from_hex(cell_content["color"])
             current_keys = [split_standard_controls_key(a[0])[2] for a in cell_content["standard_controls"]]
             self.cell_buttons[cell_id].sub_text = '\n'.join(current_keys)
         # print("setting mat to", ctx["id"], "my_mats", my_mats)
@@ -1311,27 +1315,39 @@ class KitchenSink(App):
             c = (slider_r.value, slider_g.value, slider_b.value, slider_a.value)
             print("updating color", c)
             self.dialog.md_bg_color = c
+            self.dialog.primary_color = c
+            self.dialog._action_buttons[0].md_bg_color = c
 
         slider_r = MDSlider(
                 min = 0,
                 max = 1,
                 on_touch_up= update_color)
+        # slider_r.md_bg_color = (1,0,0,1)
+        # slider_r._track_color_active = (1,0,0,1)
+        slider_r._track_color_normal = (1,0,0,1)
+        slider_r.thumb_color_down = (1,0,0,1)
         content.add_widget(slider_r)
         slider_g = MDSlider(
                 min = 0,
                 max = 1,
                 on_release= update_color)
+        slider_g._track_color_normal = (0,1,0,1)
+        slider_g.thumb_color_down = (0,1,0,1)
         content.add_widget(slider_g)
         slider_b = MDSlider(
                 min = 0,
                 max = 1,
                 on_release= update_color)
+        slider_b._track_color_normal = (0,0,1,1)
+        slider_b.thumb_color_down = (0,0,1,1)
         content.add_widget(slider_b)
         slider_a = MDSlider(
                 min = 0,
                 max = 1,
                 on_release= update_color)
         content.add_widget(slider_a)
+        slider_a._track_color_normal = (0.5,0.5,0.5,1)
+        slider_a.thumb_color_down = (0.5,0.5,0.5,1)
 
         # pres_button = MDRaisedButton(
         #         text= "Set Color",
@@ -1619,8 +1635,8 @@ class KitchenSink(App):
                         pdf.rotate(90, start_x, start_y)# - ((end_y-start_y)/2.0))
                         pdf.set_font('esphimere', '', arrow_font_size)
                         # print("pdf: standard_control", standard_control)
-                        string_px = pdf.get_string_width(standard_control)/2.0
-                        pdf.text((start_x-((end_y-start_y)/2.0)-string_px), start_y+arrow_margin, standard_control)
+                        string_px = pdf.get_string_width(standard_control.upper())/2.0
+                        pdf.text((start_x-((end_y-start_y)/2.0)-string_px), start_y+arrow_margin, standard_control.upper())
                         pdf.rotate(0)
                     if val == "horizontal":
                         end_x = out_x2 - arrow_margin
@@ -1633,8 +1649,8 @@ class KitchenSink(App):
                         pdf.line(end_x, end_y, end_x-arrow_length, end_y+(arrow_length/2))
                         pdf.set_font('esphimere', '', arrow_font_size)
                         # print("pdf: standard_control", standard_control)
-                        string_px = pdf.get_string_width(standard_control)/2.0
-                        pdf.text((start_x+((end_x-start_x)/2.0)-string_px), start_y+arrow_margin, standard_control)
+                        string_px = pdf.get_string_width(standard_control.upper())/2.0
+                        pdf.text((start_x+((end_x-start_x)/2.0)-string_px), start_y+arrow_margin, standard_control.upper())
 
         pdf.output('tuto1.pdf', 'F')
 
