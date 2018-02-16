@@ -13,6 +13,7 @@ from kivy.properties import StringProperty
 from kivy.uix.image import Image
 from kivy.graphics import Color
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.network.urlrequest import UrlRequest
 
@@ -294,6 +295,12 @@ BoxLayout:
 
 '''
 # action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
+
+mat_sizes = {"A3":(420.0, 297.0), "ledger":(431.8, 279.4), "full":(469.0, 294.0)}
+        # size_x = 420.0 # a3
+        # size_y = 297.0
+        # size_x = 469.0
+        # size_y = 294.0
 
 my_mats = {}
 try:
@@ -995,7 +1002,7 @@ class KitchenSink(App):
             self.cell_buttons[cell_id].text = cell_content["text"]
             if "color" in cell_content:
                 if "#" in cell_content["color"]:
-                    print("cell is", cell_content)
+                    # print("cell is", cell_content)
                     self.cell_buttons[cell_id].md_bg_color = get_color_from_hex(cell_content["color"])
             current_keys = [split_standard_controls_key(a[0])[2] for a in cell_content["standard_controls"]]
             self.cell_buttons[cell_id].sub_text = '\n'.join(current_keys)
@@ -1230,7 +1237,12 @@ class KitchenSink(App):
              'text': 'Add Pedal / Change Channel',
              'on_release' : lambda *x: self.go_to_page("choose_pedals", "Choose Pedals")
              },
+            {'viewclass': 'MDMenuItem',
+             'text': 'Set board size',
+             'on_release' : lambda *x: self.set_mat_size_dialog()
+             },
         ]
+        Snackbar(text="Connect to the Poly WiFi to send to Poly").show()
         MDDropdownMenu(items=menu_items, width_mult=4).open(parent)
 
     for i,a in enumerate(t_available_layouts):
@@ -1373,7 +1385,7 @@ class KitchenSink(App):
 
     def show_save_mat_dialog(self):
         content = MDTextField()
-        content.hint_text="Enter name for this mat"
+        content.hint_text="Enter name for this board"
         content.helper_text="This can be a description or what ever helps"
         content.helper_text_mode="on_focus"
         content.text = mat_def["name"] if mat_def["name"] != "unnamed" else ""
@@ -1400,6 +1412,11 @@ class KitchenSink(App):
 # headers = {'Content-type': 'application/x-www-form-urlencoded',
 #           'Accept': 'text/plain'}
     def send_to_poly(self):
+
+        if 'size' not in mat_def:
+            self.set_mat_size_dialog(self.send_to_poly)
+            return
+
         def bug_posted(req, result):
             print('Our bug is posted!')
             Snackbar(text="Successfully sent to Poly").show()
@@ -1411,13 +1428,12 @@ class KitchenSink(App):
             print(result)
 
 
-        mat_json = self.mat_to_poly_json(output_size="a3")
+        mat_json = self.mat_to_poly_json()
         # print(mat_json)
         req = UrlRequest('http://192.168.4.1/update_action_list', on_success=bug_posted, on_failure=fail, on_error=fail, req_body=mat_json)
 
-    def mat_to_poly_json(self, output_size="a3"):
-        size_x = 420.0
-        size_y = 297.0
+    def mat_to_poly_json(self):
+        size_x, size_y = mat_sizes[mat_def["size"]]
         # if output_size == "a3":
         display_size_x, display_size_y = self.root.ids["edit_mat_box"].size
         x_fac = 1 / float(display_size_x)
@@ -1549,7 +1565,67 @@ class KitchenSink(App):
     def on_stop(self):
         pass
 
-    def mat_to_pdf(self, output_size="a3"):
+    def set_mat_size_dialog(self, next_action=None):
+        content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None, size=(200, 300),
+                            padding= 48)
+        margin_text = MDTextField(size_hint_y=0.4)
+        # a3, tabloid or fully cover sensor
+        # printer margin, if printer can't do borderless
+        margin_text.hint_text="Some printers can't do borderless, if you need a margin enter it here"
+        # accept mm or inches
+        margin_text.helper_text="This should be in milimeters"
+        margin_text.helper_text_mode="on_focus"
+        margin_text.text = mat_def["margin"] if "margin" in mat_def else ""
+        checkboxes = []
+        grid = GridLayout(cols=2)
+        for paper_size in "A3", "ledger", "full":
+            checkbox = MDCheckbox(group="paper_size", text=paper_size, id=paper_size, size_hint_x=0.2)
+            checkboxes.append(checkbox)
+            label = MDLabel(font_style='Body1',
+                      # theme_text_color='Secondary',
+                      text=paper_size,
+                      size_hint_x=0.2,
+                      size_hint_y=0.3,
+                      valign='top')
+            grid.add_widget(label)
+            grid.add_widget(checkbox)
+                # MDCheckbox:
+                #     id:            grp_chkbox_1
+                #     group:        'test'
+                #     size_hint:    None, None
+                #     size:        dp(48), dp(48)
+                #     pos_hint:    {'center_x': 0.25, 'center_y': 0.5}
+                # MDCheckbox:
+        content.add_widget(grid)
+        content.add_widget(margin_text)
+        self.dialog = MDDialog(title="Set board size",
+                               content=content,
+                               size_hint=(0.95, 0.8),
+                               height=dp(300),
+                               auto_dismiss=False)
+        def set_mat_size(x):
+            mat_def["margin"] = margin_text.text
+            selected_size = ''
+            for checkbox in checkboxes:
+                if checkbox.active:
+                    selected_size = checkbox.id
+                    print("setting paper size to", selected_size)
+            mat_def["size"] = selected_size or "ledger"
+            self.dialog.dismiss()
+            if next_action is not None:
+                next_action()
+
+        self.dialog.add_action_button("Set board size",
+                                      action=set_mat_size)
+        self.dialog.open()
+
+    def mat_to_pdf(self):
+        # if we don't have a size, return
+        if 'size' not in mat_def:
+            self.set_mat_size_dialog(self.mat_to_pdf)
+            return
+        # output_size="a3"
+        size_x, size_y = mat_sizes[mat_def["size"]]
         from fpdf import FPDF
         arrow_length = 2.5
         arrow_margin = 10
@@ -1557,8 +1633,6 @@ class KitchenSink(App):
         line_width = 0.8
         # size_x = 420.0
         # size_y = 297.0
-        size_x = 469.0
-        size_y = 294.0
         # size_x = 420.0 # a3
         # size_y = 297.0
         pdf = FPDF('L', 'mm', (size_y, size_x))
