@@ -209,33 +209,47 @@ BoxLayout:
         Screen:
             name: 'choose_pedals'
             BoxLayout:
-                orientation: 'vertical'
-                MDLabel:
-                    font_style: 'Subhead'
-                    theme_text_color: 'Primary'
-                    text: "Selected"
-                    halign: 'left'
-                DataListTextField:
-                    id: selected_pedals_dl
-                    items: app.selected_pedals
-                MDLabel:
-                    font_style: 'Subhead'
-                    theme_text_color: 'Primary'
-                    text: "Available"
-                    halign: 'left'
-                ScrollView:
-                    do_scroll_x: False
-                    DataList:
-                        id: available_pedals_dl
-                        items: app.available_pedals
-                MDFloatingActionButton:
-                    id:                    next_pedals_selected
-                    icon:                'check'
-                    opposite_colors:    True
-                    elevation_normal:    8
-                    pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
-                    disabled: app.next_pedals_disabled
-                    on_release: app.go_to_page("edit_mat", "Edit Board")
+                padding: dp(20), dp(4), dp(4), dp(20)
+                orientation: 'horizontal'
+                BoxLayout:
+                    padding: dp(20), dp(4), dp(4), dp(20)
+                    orientation: 'vertical'
+                    MDLabel:
+                        font_style: 'Subhead'
+                        theme_text_color: 'Primary'
+                        text: "Selected"
+                        halign: 'left'
+                        size_hint: 1, 0.1
+                    ScrollView:
+                        do_scroll_x: False
+                        size_hint: 1, 0.9
+                        DataListTextField:
+                            id: selected_pedals_dl
+                            items: app.selected_pedals
+                BoxLayout:
+                    padding: dp(20), dp(4), dp(4), dp(20)
+                    orientation: 'vertical'
+                    MDLabel:
+                        font_style: 'Subhead'
+                        theme_text_color: 'Primary'
+                        text: "Available Pedals"
+                        halign: 'left'
+                        size_hint: 1, 0.1
+                    ScrollView:
+                        do_scroll_x: False
+                        size_hint: 1, 0.9
+                        DataList:
+                            id: available_pedals_dl
+                            items: app.available_pedals
+                    MDFloatingActionButton:
+                        id:                    next_pedals_selected
+                        icon:                'check'
+                        opposite_colors:    True
+                        elevation_normal:    8
+                        pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
+                        disabled: app.next_pedals_disabled
+                        on_release: app.go_to_page("edit_mat", "Edit Board")
+                        # size_hint: 0.1, 0.2
 
         Screen:
             name: 'set_actions'
@@ -258,10 +272,12 @@ BoxLayout:
                                 text: "Selected Controls"
                                 halign: 'left'
                                 size_hint: 1, 0.1
-                            DataListCheckBox:
-                                id: selected_standard_controls_dl
-                                items: app.selected_standard_controls
+                            ScrollView:
+                                do_scroll_x: False
                                 size_hint: 1, 0.9
+                                DataListCheckBox:
+                                    id: selected_standard_controls_dl
+                                    items: app.selected_standard_controls
                         BoxLayout:
                             padding: dp(20), dp(4), dp(4), dp(20)
                             orientation: 'vertical'
@@ -298,7 +314,7 @@ BoxLayout:
 '''
 # action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
 
-mat_sizes = {"A3":(420.0, 297.0), "ledger":(431.8, 279.4), "full":(469.0, 294.0)}
+mat_sizes = {"A3":(420.0, 297.0), "A4":(297, 210), "ledger":(431.8, 279.4), "full":(469.0, 294.0)}
         # size_x = 420.0 # a3
         # size_y = 297.0
         # size_x = 469.0
@@ -602,7 +618,7 @@ class KitchenSink(App):
                     # ctx["value"] = set_value
                     ctx["direction"] = set_value
                 self.root.ids.selected_standard_controls_dl.items.append(ctx)
-                self.root.ids.selected_standard_controls_dl.items = sorted(self.root.ids.selected_standard_controls_dl.items, key=lambda x: x["text"])
+                self.root.ids.selected_standard_controls_dl.items = sorted(self.root.ids.selected_standard_controls_dl.items, key=lambda x: x["text"].lower())
         elif ctx in self.root.ids.selected_standard_controls_dl.items:
             self.root.ids.selected_standard_controls_dl.items.remove(ctx)
             if "direction" in ctx:
@@ -613,7 +629,7 @@ class KitchenSink(App):
                 ctx["text"] = ctx["text"].split(':')[0]
 
             self.root.ids.available_standard_controls_dl.items.append(ctx)
-            self.root.ids.available_standard_controls_dl.items = sorted(self.root.ids.available_standard_controls_dl.items, key=lambda x: x["text"])
+            self.root.ids.available_standard_controls_dl.items = sorted(self.root.ids.available_standard_controls_dl.items, key=lambda x: x["text"].lower())
 
         self.next_standard_controls_disabled = not self.root.ids.selected_standard_controls_dl.items
         global included_standard_controls
@@ -672,9 +688,9 @@ class KitchenSink(App):
                 selected_standard_controls.append(c)
 
             self.root.ids.selected_standard_controls_dl.items = selected_standard_controls
-            self.root.ids.selected_standard_controls_dl.items = sorted(self.root.ids.selected_standard_controls_dl.items, key=lambda x: x["text"])
+            self.root.ids.selected_standard_controls_dl.items = sorted(self.root.ids.selected_standard_controls_dl.items, key=lambda x: x["text"].lower())
             self.root.ids.available_standard_controls_dl.items = self.available_standard_controls
-            self.root.ids.available_standard_controls_dl.items = sorted(self.root.ids.available_standard_controls_dl.items, key=lambda x: x["text"])
+            self.root.ids.available_standard_controls_dl.items = sorted(self.root.ids.available_standard_controls_dl.items, key=lambda x: x["text"].lower())
         global current_selected_cell
         current_selected_cell = cell_id
         global included_standard_controls
@@ -731,28 +747,17 @@ class KitchenSink(App):
     available_layouts = t_available_layouts
 
     selected_pedals = []
-    available_pedals = [{"text":a, "secondary_text":b, "action": select_pedal, "channel_change": change_channel, "channel":default_channels[b+":"+a], "id": b+":"+a} for a, b in pairwise(("H9", "Eventide",
-        "M9", "Line 6", "Brothers", "Chase Bliss",
-        "Condor", "Chase Bliss",
-        "Echosystem", "Empress",
-        "Tremolo2", "Empress",
-        "Phaser", "Empress",
-        "Ottobit Jr", "Meris",
-        "DAW", "DAW",
-        "Vypyr Pro", "Peavey",
-        "Echolution 2 Deluxe", "Pigtronix",
-        "Helix", "Line 6",
-        "GM4", "Hughes and Kettner",
-        "Analog Drive", "Elektron",
-        "Profiler", "Kemper",
-        "Macro", "Macro"
-        ))]
+    pedal_name_maker = [a.split(":") for a in default_channels.keys()]
+    available_pedals = [{"text":a, "secondary_text":b, "action": select_pedal, "channel_change": change_channel,
+        "channel":default_channels[b+":"+a], "id": b+":"+a} for b, a in pedal_name_maker]
 
+    available_pedals = sorted(available_pedals, key=lambda x: x["secondary_text"].lower()+x["text"].lower())
 
     selected_standard_controls = []
     available_standard_controls = []
 
     my_mats_names = [{"text":a, "secondary_text":"", "action": select_mat, "id": a} for a in my_mats.keys()]
+    my_mats_names = sorted(my_mats_names, key=lambda x: x["text"].lower())
 
     def build(self):
         main_widget = Builder.load_string(main_widget_kv)
@@ -917,7 +922,6 @@ class KitchenSink(App):
 
     def mat_to_poly_json(self):
         size_x, size_y = mat_sizes[mat_def["size"]]
-        # if output_size == "a3":
         display_size_x, display_size_y = self.root.ids["edit_mat_box"].size
         x_fac = 1 / float(display_size_x)
         y_fac = 1 / float(display_size_y)
@@ -1061,7 +1065,7 @@ class KitchenSink(App):
         margin_text.text = mat_def["margin"] if "margin" in mat_def else ""
         checkboxes = []
         grid = GridLayout(cols=2)
-        for paper_size in "A3", "ledger", "full":
+        for paper_size in mat_sizes.keys():
             checkbox = MDCheckbox(group="paper_size", text=paper_size, id=paper_size, size_hint_x=0.2)
             checkboxes.append(checkbox)
             label = MDLabel(font_style='Body1',
@@ -1107,17 +1111,12 @@ class KitchenSink(App):
         if 'size' not in mat_def:
             self.set_mat_size_dialog(self.mat_to_pdf)
             return
-        # output_size="a3"
         size_x, size_y = mat_sizes[mat_def["size"]]
         from fpdf import FPDF
         arrow_length = 2.5
         arrow_margin = 10
         arrow_font_size = 26
         line_width = 0.8
-        # size_x = 420.0
-        # size_y = 297.0
-        # size_x = 420.0 # a3
-        # size_y = 297.0
         pdf = FPDF('L', 'mm', (size_y, size_x))
         pdf.add_page()
         filepath = os.path.join(os.path.dirname(os.path.abspath(inspect.stack()[0][1])), "assets", "Esphimere Bold.otf")
@@ -1132,7 +1131,6 @@ class KitchenSink(App):
         # pdf.set_text_color(0)
 
 
-        # if output_size == "a3":
         display_size_x, display_size_y = self.root.ids["edit_mat_box"].size
         x_fac = 1 / float(display_size_x)
         y_fac = 1 / float(display_size_y)

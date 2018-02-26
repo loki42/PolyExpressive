@@ -2,6 +2,12 @@
 default_channels = {
     "Chase Bliss:Brothers":2,
     "Chase Bliss:Condor":5,
+    "Chase Bliss:Gravitas":4,
+    "Chase Bliss:Spectre":3,
+    "Chase Bliss:Tonal Recall":2,
+    "Chase Bliss:Warped Vinyl 2":5,
+    "Chase Bliss:Warped Vinyl HiFi":6,
+    "Chase Bliss:Wombtone 2":6,
     "Line 6:M9":4,
     "DAW:DAW":6,
     "Pigtronix:Echolution 2 Deluxe":11,
@@ -48,6 +54,102 @@ advanced_controls = {
     "Expression": {"type": "CC", "controller":100, "curve":"1"},
     "Engage Last Preset": {"type": "CC", "controller":102, "enum":{"Last Saved Preset": 127, "Bypass": 0}},
     "Bypass": {"type": "CC", "controller":103, "enum":{"Enabled": 127, "Bypass":0}},
+    "Preset": {"type": "PC", "value":{"min":0, "max":122}}
+    },
+"Chase Bliss:Gravitas":{
+    "Drive": {"type": "CC", "controller":14, "curve":"1"},
+    "Volume": {"type": "CC", "controller":15, "curve":"1"},
+    "Tone": {"type": "CC", "controller":16, "curve":"1"},
+    "Rate": {"type": "CC", "controller":17, "curve":"1"},
+    "Depth": {"type": "CC", "controller":18, "curve":"1"},
+    "Sway": {"type": "CC", "controller":19, "curve":"1"},
+    "Ramp": {"type": "CC", "controller":20, "curve":"1"},
+    "Note Divisions": {"type": "CC", "controller":21, "enum":{"Whole":0, "Half":1, "Quarter Triplets":2, 
+        "Quater":3, "Eighth":4, "Sixteenth":5}},
+    "Clock Ignore": {"type": "CC", "controller":51, "enum":{"Ignore":0, "Listen":127}},
+    "Tap": {"type": "CC", "controller":93, "enum":{"Tap":127}},
+    "Expression": {"type": "CC", "controller":100, "curve":"1"},
+    "Bypass": {"type": "CC", "controller":102, "enum":{"Enabled": 127, "Bypass":0}},
+    "Preset": {"type": "PC", "value":{"min":0, "max":122}}
+    },
+"Chase Bliss:Spectre":{
+    "Mix": {"type": "CC", "controller":14, "curve":"1"},
+    "Zero": {"type": "CC", "controller":15, "curve":"1"},
+    "Regen": {"type": "CC", "controller":16, "curve":"1"},
+    "Rate": {"type": "CC", "controller":17, "curve":"1"},
+    "Width": {"type": "CC", "controller":18, "curve":"1"},
+    "Shift": {"type": "CC", "controller":19, "curve":"1"},
+    "Ramp": {"type": "CC", "controller":20, "curve":"1"},
+    "Note Divisions": {"type": "CC", "controller":21, "enum":{"Whole":0, "Half":1, "Quarter Triplets":2, 
+        "Quater":3, "Eighth":4, "Sixteenth":5}},
+    "Clock Ignore": {"type": "CC", "controller":51, "enum":{"Ignore":0, "Listen":127}},
+    "Tap": {"type": "CC", "controller":93, "enum":{"Tap":127}},
+    "Expression": {"type": "CC", "controller":100, "curve":"1"},
+    "Bypass": {"type": "CC", "controller":102, "enum":{"Enabled": 127, "Bypass":0}},
+    "Preset": {"type": "PC", "value":{"min":0, "max":122}}
+    },
+"Chase Bliss:Tonal Recall":{
+    "Tone": {"type": "CC", "controller":14, "curve":"1"},
+    "Mix": {"type": "CC", "controller":15, "curve":"1"},
+    "Rate": {"type": "CC", "controller":16, "curve":"1"},
+    "Time": {"type": "CC", "controller":17, "curve":"1"},
+    "Regen": {"type": "CC", "controller":18, "curve":"1"},
+    "Depth": {"type": "CC", "controller":19, "curve":"1"},
+    "Ramp": {"type": "CC", "controller":20, "curve":"1"},
+    "Note Divisions": {"type": "CC", "controller":21, "enum":{"Whole":0, "Half":1, "Quarter Triplets":2, 
+        "Quater":3, "Eighth":4, "Sixteenth":5}},
+    "Clock Ignore": {"type": "CC", "controller":51, "enum":{"Ignore":0, "Listen":127}},
+    "Tap": {"type": "CC", "controller":93, "enum":{"Tap":127}},
+    "Expression": {"type": "CC", "controller":100, "curve":"1"},
+    "Bypass": {"type": "CC", "controller":102, "enum":{"Enabled": 127, "Bypass":0}},
+    "Preset": {"type": "PC", "value":{"min":0, "max":122}}
+    },
+"Chase Bliss:Warped Vinyl 2":{
+    "Tone": {"type": "CC", "controller":14, "curve":"1"},
+    "Volume": {"type": "CC", "controller":15, "curve":"1"},
+    "Mix": {"type": "CC", "controller":16, "curve":"1"},
+    "RPM": {"type": "CC", "controller":17, "curve":"1"},
+    "Depth": {"type": "CC", "controller":18, "curve":"1"},
+    "Warp": {"type": "CC", "controller":19, "curve":"1"},
+    "Ramp": {"type": "CC", "controller":20, "curve":"1"},
+    "Note Divisions": {"type": "CC", "controller":21, "enum":{"Whole":0, "Half":1, "Quarter Triplets":2, 
+        "Quater":3, "Eighth":4, "Sixteenth":5}},
+    "Clock Ignore": {"type": "CC", "controller":51, "enum":{"Ignore":0, "Listen":127}},
+    "Tap": {"type": "CC", "controller":93, "enum":{"Tap":127}},
+    "Expression": {"type": "CC", "controller":100, "curve":"1"},
+    "Bypass": {"type": "CC", "controller":102, "enum":{"Enabled": 127, "Bypass":0}},
+    "Preset": {"type": "PC", "value":{"min":0, "max":122}}
+    },
+"Chase Bliss:Warped Vinyl HiFi":{
+    "Tone": {"type": "CC", "controller":14, "curve":"1"},
+    "Lag": {"type": "CC", "controller":15, "curve":"1"},
+    "Mix": {"type": "CC", "controller":16, "curve":"1"},
+    "RPM": {"type": "CC", "controller":17, "curve":"1"},
+    "Depth": {"type": "CC", "controller":18, "curve":"1"},
+    "Warp": {"type": "CC", "controller":19, "curve":"1"},
+    "Ramp": {"type": "CC", "controller":20, "curve":"1"},
+    "Note Divisions": {"type": "CC", "controller":21, "enum":{"Whole":0, "Half":1, "Quarter Triplets":2, 
+        "Quater":3, "Eighth":4, "Sixteenth":5}},
+    "Clock Ignore": {"type": "CC", "controller":51, "enum":{"Ignore":0, "Listen":127}},
+    "Tap": {"type": "CC", "controller":93, "enum":{"Tap":127}},
+    "Expression": {"type": "CC", "controller":100, "curve":"1"},
+    "Bypass": {"type": "CC", "controller":102, "enum":{"Enabled": 127, "Bypass":0}},
+    "Preset": {"type": "PC", "value":{"min":0, "max":122}}
+    },
+"Chase Bliss:Wombtone 2":{
+    "Feed": {"type": "CC", "controller":14, "curve":"1"},
+    "Volume": {"type": "CC", "controller":15, "curve":"1"},
+    "Mix": {"type": "CC", "controller":16, "curve":"1"},
+    "Rate": {"type": "CC", "controller":17, "curve":"1"},
+    "Depth": {"type": "CC", "controller":18, "curve":"1"},
+    "Form": {"type": "CC", "controller":19, "curve":"1"},
+    "Ramp": {"type": "CC", "controller":20, "curve":"1"},
+    "Note Divisions": {"type": "CC", "controller":21, "enum":{"Whole":0, "Half":1, "Quarter Triplets":2, 
+        "Quater":3, "Eighth":4, "Sixteenth":5}},
+    "Clock Ignore": {"type": "CC", "controller":51, "enum":{"Ignore":0, "Listen":127}},
+    "Tap": {"type": "CC", "controller":93, "enum":{"Tap":127}},
+    "Expression": {"type": "CC", "controller":100, "curve":"1"},
+    "Bypass": {"type": "CC", "controller":102, "enum":{"Enabled": 127, "Bypass":0}},
     "Preset": {"type": "PC", "value":{"min":0, "max":122}}
     },
 "Elektron:Analog Drive":{
@@ -403,6 +505,24 @@ for pedal_name, controls in advanced_controls.items():
 
 standard_controls_update = {
 "Chase Bliss:Condor": {
+    "Toggle Enabled":  ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"]
+    },
+"Chase Bliss:Gravitas": {
+    "Toggle Enabled":  ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"]
+    },
+"Chase Bliss:Spectre": {
+    "Toggle Enabled":  ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"]
+    },
+"Chase Bliss:Tonal Recall": {
+    "Toggle Enabled":  ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"]
+    },
+"Chase Bliss:Warped Vinyl 2": {
+    "Toggle Enabled":  ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"]
+    },
+"Chase Bliss:Warped Vinyl HiFi": {
+    "Toggle Enabled":  ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"]
+    },
+"Chase Bliss:Wombtone 2": {
     "Toggle Enabled":  ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"]
     },
 "Elektron:Analog Drive":{
