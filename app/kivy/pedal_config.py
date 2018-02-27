@@ -14,7 +14,9 @@ default_channels = {
     "Empress:Echosystem":6,
     "Empress:Tremolo2":1,
     "Empress:Phaser":8,
+    "Meris:Mercury 7":1,
     "Meris:Ottobit Jr":4,
+    "Meris:Polymoon":2,
     "Peavey:Vypyr Pro":1,
     "Line 6:Helix":1,
     "Hughes and Kettner:GM4":1,
@@ -340,9 +342,28 @@ advanced_controls = {
     "Direct Control": {"type": "CC", "controller":40, "curve":"1"},
     "Exit Direct": {"type": "CC", "controller":50, "enum":{"Exit":1}}
     },
+"Meris:Mercury 7":{
+    "Expression": {"type": "CC", "controller":4, "curve":"1"},
+    "Bypass": {"type": "CC", "controller":14, "enum":{"Bypass":0, "Enabled":127}},
+    "Space Decay": {"type": "CC", "controller":16, "curve":"1"},
+    "Modulate": {"type": "CC", "controller":17, "curve":"1"},
+    "Mix": {"type": "CC", "controller":18, "curve":"1"},
+    "Lo Freq": {"type": "CC", "controller":19, "curve":"1"},
+    "Pitch Vector": {"type": "CC", "controller":20, "curve":"1"},
+    "Hi Freq": {"type": "CC", "controller":21, "curve":"1"},
+    "Predelay": {"type": "CC", "controller":22, "curve":"1"},
+    "Mod Speed": {"type": "CC", "controller":23, "curve":"1"},
+    "Pitch Vector Mix": {"type": "CC", "controller":24, "curve":"1"},
+    "Density": {"type": "CC", "controller":25, "curve":"1"},
+    "Attack Time": {"type": "CC", "controller":26, "curve":"1"},
+    "Vibrato Depth": {"type": "CC", "controller":27, "curve":"1"},
+    "Swell": {"type": "CC", "controller":28, "enum":{"Off":0, "On":127}},
+    "Algorithm": {"type": "CC", "controller":29, "enum":{"Ultraplate":0, "Cathedral":127}},
+    "Preset": {"type": "PC", "value":{"min":0, "max":15}}
+    },
 "Meris:Ottobit Jr":{
     "Expression": {"type": "CC", "controller":4, "curve":"1"},
-    "Bypass": {"type": "CC", "controller":14, "enum":{"Bypass":0, "On":127}},
+    "Bypass": {"type": "CC", "controller":14, "enum":{"Bypass":0, "Enabled":127}},
     "Tempo": {"type": "CC", "controller":15, "curve":"1"},
     "Sample Rate": {"type": "CC", "controller":16, "curve":"1"},
     "Filter": {"type": "CC", "controller":17, "curve":"1"},
@@ -359,6 +380,28 @@ advanced_controls = {
     "Tap": {"type": "CC", "controller":28, "enum":{"Tap":127}},
     "Sequencer Type": {"type": "CC", "controller":29, "enum":{"Pitch":0, "Sample Rate":63, "Filter":127}},
     "Stutter Hold": {"type": "CC", "controller":31, "enum":{"Off":0, "On":127}},
+    "Preset": {"type": "PC", "value":{"min":0, "max":15}}
+    },
+"Meris:Polymoon":{
+    "Expression": {"type": "CC", "controller":4, "curve":"1"},
+    "Dotted 8th": {"type": "CC", "controller":9, "enum":{"Quarter Note":0, "Dotted 8th":127}},
+    "Bypass": {"type": "CC", "controller":14, "enum":{"Bypass":0, "Enabled":127}},
+    "Tempo": {"type": "CC", "controller":15, "curve":"1"},
+    "Time": {"type": "CC", "controller":16, "curve":"1"},
+    "Feedback": {"type": "CC", "controller":17, "curve":"1"},
+    "Mix": {"type": "CC", "controller":18, "curve":"1"},
+    "Multiply": {"type": "CC", "controller":19, "curve":"1"},
+    "Dimension": {"type": "CC", "controller":20, "curve":"1"},
+    "Dynamics": {"type": "CC", "controller":21, "curve":"1"},
+    "Early Modulations": {"type": "CC", "controller":22, "curve":"1"},
+    "Feedback Filter": {"type": "CC", "controller":23, "curve":"1"},
+    "Delay Level": {"type": "CC", "controller":24, "curve":"1"},
+    "Late Modulation": {"type": "CC", "controller":25, "curve":"1"},
+    "Flanger Mode": {"type": "CC", "controller":26, "curve":"1"},
+    "Flanger Speed": {"type": "CC", "controller":27, "curve":"1"},
+    "Tap": {"type": "CC", "controller":28, "enum":{"Tap":127}},
+    "Phaser Type": {"type": "CC", "controller":29, "enum":{"Off":0, "Slow":63, "Whole Note":95, "Quarter Note":127}},
+    "Half Speed": {"type": "CC", "controller":31, "enum":{"Full Speed":0, "Half Speed":127}},
     "Preset": {"type": "PC", "value":{"min":0, "max":15}}
     },
 "Peavey:Vypyr Pro":{
@@ -474,18 +517,6 @@ advanced_controls = {
     }
 }
 
-# "Empress:Phaser":{
-#     "Speed": {"type": "CC", "controller":20, "curve":"1"},
-#     "Width": {"type": "CC", "controller":21, "curve":"1"},
-#     "Waveform": {"type": "CC", "controller":22, "enum":{"1":1, "2":2, "3":3, "4":4, "5":5, "6":6, "7":7, "8":8}},
-#     "Mode": {"type": "CC", "controller":23, "enum":{"Tap":1, "Knob":2, "Auto":3}},
-#     "Attack": {"type": "CC", "controller":24, "enum":{"Slow":1, "Medium":2, "Fast":3}},
-#     "Tap": {"type": "CC", "controller":35, "enum":{"On":127, "Off":0}},
-#     "Engage": {"type": "CC", "controller":36, "enum":{"Bypass":0, "On":127}},
-#     "Direct Control": {"type": "CC", "controller":40, "curve":"1"},
-#     "Exit Direct": {"type": "CC", "controller":50, "enum":{"Exit":1}}
-#     },
-    # "Preset": {"type": "PC", "value":{"min":0, "max":15}}
 
 # add all advanced controls that have curve specified
 # add all that enum ones
@@ -618,8 +649,14 @@ standard_controls_update = {
 "Empress:Tremolo2":{
     "Toggle Enabled": ["Engage", "on_foot_down_toggle", "On", "Engage", "Bypass"],
     },
+"Meris:Mercury 7":{
+    "Toggle Bypass": ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"],
+},
 "Meris:Ottobit Jr":{
-    "Toggle Bypass": ["Bypass", "on_foot_down_toggle", "On", "Bypass", "Bypass"],
+    "Toggle Bypass": ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"],
+},
+"Meris:Polymoon":{
+    "Toggle Bypass": ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"],
 },
 "Macro:Macro":{
     "Start Recording Macro 1": ["Start Recording Macro", "on_foot_down", 1],

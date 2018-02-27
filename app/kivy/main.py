@@ -14,12 +14,10 @@ from kivy.uix.image import Image
 from kivy.graphics import Color
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.anchorlayout import AnchorLayout
 from kivy.network.urlrequest import UrlRequest
 
 from kivymd.bottomsheet import MDListBottomSheet, MDGridBottomSheet
 from kivymd.button import MDIconButton
-from kivymd.date_picker import MDDatePicker
 from kivymd.dialog import MDDialog
 from kivymd.label import MDLabel
 from kivymd.list import MDList, ILeftBody, ILeftBodyTouch, IRightBodyTouch, BaseListItem, OneLineListItem
@@ -28,12 +26,12 @@ from kivymd.navigationdrawer import MDNavigationDrawer, NavigationDrawerHeaderBa
 from kivymd.selectioncontrols import MDCheckbox
 from kivymd.snackbar import Snackbar
 from kivymd.theming import ThemeManager
-from kivymd.time_picker import MDTimePicker
 from kivymd.menu import MDDropdownMenu
 from kivymd.textfields import MDTextField
 from kivymd.button import MDRaisedButton
 from kivymd.button import MDFlatButton
 from kivymd.slider import MDSlider
+from kivymd.tabs import MDTab
 from kivy.utils import get_color_from_hex
 from kivy.utils import get_hex_from_color
 
@@ -58,9 +56,6 @@ main_widget_kv = '''
 #:import OneLineIconListItem kivymd.list.OneLineIconListItem
 #:import OneLineAvatarIconListItem kivymd.list.OneLineAvatarIconListItem
 #:import MDTextField kivymd.textfields.MDTextField
-#:import MDSpinner kivymd.spinner.MDSpinner
-#:import MDCard kivymd.card.MDCard
-#:import MDSeparator kivymd.card.MDSeparator
 #:import MDDropdownMenu kivymd.menu.MDDropdownMenu
 #:import get_color_from_hex kivy.utils.get_color_from_hex
 #:import colors kivymd.color_definitions.colors
@@ -68,13 +63,6 @@ main_widget_kv = '''
 #:import MDSlider kivymd.slider.MDSlider
 #:import MDTabbedPanel kivymd.tabs.MDTabbedPanel
 #:import MDTab kivymd.tabs.MDTab
-#:import MDProgressBar kivymd.progressbar.MDProgressBar
-#:import MDAccordion kivymd.accordion.MDAccordion
-#:import MDAccordionItem kivymd.accordion.MDAccordionItem
-#:import MDAccordionSubItem kivymd.accordion.MDAccordionSubItem
-#:import MDThemePicker kivymd.theme_picker.MDThemePicker
-#:import MDBottomNavigation kivymd.tabs.MDBottomNavigation
-#:import MDBottomNavigationItem kivymd.tabs.MDBottomNavigationItem
 <TwoLineButton>
     BoxLayout:
         pos: self.parent.pos
