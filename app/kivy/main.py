@@ -2,7 +2,7 @@
 from __future__ import print_function
 from __future__ import division
 
-import json, os, inspect
+import json, os, sys
 
 from kivy.app import App
 from kivy.lang import Builder
@@ -34,6 +34,9 @@ from kivymd.slider import MDSlider
 from kivymd.tabs import MDTab
 from kivy.utils import get_color_from_hex
 from kivy.utils import get_hex_from_color
+
+import webbrowser
+from fpdf import FPDF
 
 import data_view
 
@@ -235,7 +238,7 @@ BoxLayout:
                         opposite_colors:    True
                         elevation_normal:    8
                         pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
-                        disabled: app.next_pedals_disabled
+                        # disabled: app.next_pedals_disabled
                         on_release: app.go_to_page("edit_mat", "Edit Board")
                         # size_hint: 0.1, 0.2
 
@@ -287,7 +290,7 @@ BoxLayout:
                                 opposite_colors:    True
                                 elevation_normal:    8
                                 pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
-                                disabled: app.next_standard_controls_disabled
+                                # disabled: app.next_standard_controls_disabled
                                 on_release: app.set_standard_controls()
                 MDTab:
                     name: 'Advanced'
@@ -302,18 +305,14 @@ BoxLayout:
 '''
 # action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
 
+my_mats = {}
+
 mat_sizes = {"A3":(420.0, 297.0), "A4":(297, 210), "ledger":(431.8, 279.4), "full":(469.0, 294.0)}
         # size_x = 420.0 # a3
         # size_y = 297.0
         # size_x = 469.0
         # size_y = 294.0
 
-my_mats = {}
-try:
-    with open('my_mats.json') as f:
-        my_mats = json.load(f)
-except IOError as e:
-    print("saved mats don't exist")
 
 # pedal / channel pairs
 mat_def = {"cells":{}, "layout":1, "name":"unnamed", "included_pedals":[], "channel_map":{}}
@@ -395,7 +394,7 @@ def colorscale(hexstr, scalefactor):
 def menu_release(x):
     print("release menu", x)
 
-class KitchenSink(App):
+class PolyExpressiveSetup(App):
     theme_cls = ThemeManager()
     title = "Poly Expressive"
     next_pedals_disabled = BooleanProperty(True)
@@ -414,6 +413,9 @@ class KitchenSink(App):
             {"title":"7", "thumbnail" : './assets/layout7.png', "layout_id":7},
             {"title":"8", "thumbnail" : './assets/layout8.png', "layout_id":8}
             ]
+
+
+    my_mats_names = []
 
     def go_to_page(self, page, title):
         self.root.ids.scr_mngr.current = page
@@ -493,7 +495,7 @@ class KitchenSink(App):
             self.cell_buttons[cell_id].sub_text = '\n'.join(current_keys)
         # print("setting mat to", ctx["id"], "my_mats", my_mats)
         # setup all the controls
-        self.root.ids.selected_pedals_dl.items = [{"text":a, "secondary_text":b, "action": KitchenSink.select_pedal, "channel_change": KitchenSink.change_channel,
+        self.root.ids.selected_pedals_dl.items = [{"text":a, "secondary_text":b, "action": PolyExpressiveSetup.select_pedal, "channel_change": PolyExpressiveSetup.change_channel,
             "channel":get_channel(b+":"+a, 1),
             "id": b+":"+a} for b, a in [c.split(":") for c in mat_def["included_pedals"]]]
         self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
@@ -660,7 +662,7 @@ class KitchenSink(App):
                             self.available_standard_controls.append({"text":control_name,
                                 "secondary_text":pedal,
                                 "pedal_id":pedal,
-                                "action": KitchenSink.select_control,
+                                "action": PolyExpressiveSetup.select_control,
                                 "key": control_key })
 
             for key, val in current_controls:
@@ -669,7 +671,7 @@ class KitchenSink(App):
                 c = {"text":control,
                     "secondary_text":maker_model,
                     "pedal_id":maker_model,
-                    "action": KitchenSink.select_control,
+                    "action": PolyExpressiveSetup.select_control,
                     "key": key }
                 if val:
                     c["direction"] = val
@@ -744,10 +746,19 @@ class KitchenSink(App):
     selected_standard_controls = []
     available_standard_controls = []
 
-    my_mats_names = [{"text":a, "secondary_text":"", "action": select_mat, "id": a} for a in my_mats.keys()]
-    my_mats_names = sorted(my_mats_names, key=lambda x: x["text"].lower())
 
     def build(self):
+        global my_mats
+        try:
+            filepath = os.path.join(self.user_data_dir, "my_mats.json")
+            with open(filepath) as f:
+                my_mats = json.load(f)
+        except IOError as e:
+            print("saved mats don't exist")
+
+        self.my_mats_names = [{"text":a, "secondary_text":"", "action": PolyExpressiveSetup.select_mat, "id": a} for a in my_mats.keys()]
+        self.my_mats_names = sorted(self.my_mats_names, key=lambda x: x["text"].lower())
+
         main_widget = Builder.load_string(main_widget_kv)
         # self.theme_cls.theme_style = 'Dark'
 
@@ -873,7 +884,8 @@ class KitchenSink(App):
             mat_def["name"] = content.text
             # TODO check if existing with this name and ask
             my_mats[content.text] = mat_def
-            with open("my_mats.json", "w") as f:
+            filepath = os.path.join(self.user_data_dir, "my_mats.json")
+            with open(filepath, "w") as f:
                 json.dump(my_mats, f)
             self.dialog.dismiss()
 
@@ -903,8 +915,9 @@ class KitchenSink(App):
 
 
         mat_json = self.mat_to_poly_json()
-        with open('send_to_poly.json', 'w') as f:
-            f.write(mat_json)
+        # XXX debug store
+        # with open('send_to_poly.json', 'w') as f:
+        #     f.write(mat_json)
         print(mat_json)
         req = UrlRequest('http://192.168.4.1/update_action_list', on_success=bug_posted, on_failure=fail, on_error=fail, req_body=mat_json)
 
@@ -1100,17 +1113,26 @@ class KitchenSink(App):
             self.set_mat_size_dialog(self.mat_to_pdf)
             return
         size_x, size_y = mat_sizes[mat_def["size"]]
-        from fpdf import FPDF
         arrow_length = 2.5
         arrow_margin = 10
         arrow_font_size = 26
         line_width = 0.8
         pdf = FPDF('L', 'mm', (size_y, size_x))
         pdf.add_page()
-        filepath = os.path.join(os.path.dirname(os.path.abspath(inspect.stack()[0][1])), "assets", "Esphimere Bold.otf")
+        frozen = 'not'
+        bundle_dir = ''
+        if getattr(sys, 'frozen', False):
+                # we are running in a bundle
+                frozen = 'ever so'
+                bundle_dir = sys._MEIPASS
+        else:
+                # we are running in a normal Python environment
+                bundle_dir = os.path.dirname(os.path.abspath(__file__))
+        filepath = os.path.join(bundle_dir, "assets", "Esphimere Bold.otf")
+        print("file path is \n\n### \n\n", filepath)
         pdf.add_font('esphimere', '', filepath, uni=True)
         # pdf.set_font('esphimere', '', 46)
-        pdf.set_font('esphimere', '', 36)
+        pdf.set_font('esphimere', '', arrow_font_size)
         pdf.set_margins(0, 0, 0)
         pdf.set_auto_page_break(False, 0.0)
         pdf.set_text_color(255)
@@ -1156,7 +1178,7 @@ class KitchenSink(App):
             # if text:
             #     pdf.text(out_x1+text_margin, out_y1+text_margin, text)
             pdf.set_xy(out_x1, out_y1)
-            pdf.set_font('esphimere', '', 36)
+            pdf.set_font('esphimere', '', arrow_font_size)
             pdf.multi_cell(out_x2-out_x1, out_y2-out_y1, text, border = 0,
                     align = 'C', fill = True)
 
@@ -1196,7 +1218,11 @@ class KitchenSink(App):
                         string_px = pdf.get_string_width(standard_control.upper())/2.0
                         pdf.text((start_x+((end_x-start_x)/2.0)-string_px), start_y+arrow_margin, standard_control.upper())
 
-        pdf.output('tuto1.pdf', 'F')
+        print("\n\n#####\n\n", self.user_data_dir)
+        filepath = os.path.join(self.user_data_dir, "temp_poly.pdf")
+        print("print location", filepath)
+        pdf.output(filepath, 'F')
+        webbrowser.open("file://"+filepath)
 
 
 # class BoardLayoutContainer(BoxLayout):
@@ -1352,5 +1378,6 @@ class TwoLineButton(MDFlatButton):
 #         super(AutonomousColorWheel, self).on__hsv(instance, value)
 #         print(self.rgba)     #Or any method you want to trigger
 
+
 if __name__ == '__main__':
-    KitchenSink().run()
+    PolyExpressiveSetup().run()

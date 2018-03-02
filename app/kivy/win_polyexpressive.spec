@@ -30,7 +30,7 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=True , icon='assets\\poly.ico')
+          console=False , icon='assets\\poly.ico')
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
