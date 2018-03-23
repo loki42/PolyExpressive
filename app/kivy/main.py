@@ -411,7 +411,8 @@ class PolyExpressiveSetup(App):
             {"title":"5", "thumbnail" : './assets/layout5.png', "layout_id":5},
             {"title":"6", "thumbnail" : './assets/layout6.png', "layout_id":6},
             {"title":"7", "thumbnail" : './assets/layout7.png', "layout_id":7},
-            {"title":"8", "thumbnail" : './assets/layout8.png', "layout_id":8}
+            {"title":"8", "thumbnail" : './assets/layout8.png', "layout_id":8},
+            {"title":"9", "thumbnail" : './assets/layout8.png', "layout_id":9}
             ]
 
 
@@ -1268,6 +1269,16 @@ class PolyExpressiveSetup(App):
                 [0.25, [[0.2, "2c79be"], [0.2, "e2412b"], [0.2, "894c9e"], [0.2, "4cb853"], [0.2, "eedc2a"]]],
                 [0.25, [[0.2, colorscale("2c79be", 1.2)], [0.2, colorscale("e2412b", 1.2)], 
                     [0.2, colorscale("894c9e", 1.2)], [0.2, colorscale("4cb853", 1.2)], [0.2, colorscale("eedc2a", 1.2)]]]]
+        self.layouts[9] = [[0.75, [[0.11111, colorscale("eedc2a", 0.8)], [0.11111, colorscale("2c79be", 0.8)], 
+            [0.11111, colorscale("e2412b", 0.8)],
+                    [0.11111, colorscale("894c9e", 0.8)], [0.11111, colorscale("4cb853", 0.8)],
+                    [0.11111, colorscale("eedc2a", 0.8)], [0.11111, colorscale("894c9e", 0.8)],
+                    [0.11111, colorscale("4cb853", 0.8)], [0.11111, colorscale("894c9e", 0.8)]]],
+                [0.25, [[0.11111, colorscale("2c79be", 1.2)], [0.11111, colorscale("e2412b", 1.2)], 
+                    [0.11111, colorscale("894c9e", 1.2)], [0.11111, colorscale("4cb853", 1.2)],
+                    [0.11111, colorscale("eedc2a", 1.2)], [0.11111, colorscale("894c9e", 1.2)],
+                    [0.11111, colorscale("4cb853", 1.2)], [0.11111, colorscale("894c9e", 1.2)],
+                    [0.11111, colorscale("eedc2a", 1.2)]]]]
         target.clear_widgets()
         cell_id = 0
         self.cell_rows = []

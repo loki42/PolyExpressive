@@ -1,18 +1,20 @@
 #
 # send MIDI to UART
-from microWebSrv import MicroWebSrv
-import gc
-gc.collect()
-
 from machine import UART
 from machine import Timer
 import I2CTouch
 import ujson as json
 import utime
+
+# import bluetooth_midi
 ### web stuff
+from microWebSrv import MicroWebSrv
+import gc
+gc.collect()
 
 
-uart = UART(1, 31250, tx=4)                         # init with given baudrate
+# uart = UART(1, 31250, tx=4)                         # init with given baudrate
+uart = UART(1, rx=17, tx=4)  # loboris                       # init with given baudrate
 uart.init(31250, bits=8, parity=None, stop=1) # init with given parameters
 # pull these to global panel file so they can be shared
 panel_x = 469 # factors 1, 7, 67
@@ -61,10 +63,12 @@ MIDI_COMMANDS = {
 def send_midi_message(command, data1, data2=None):
     if data2 is not None:
         uart.write(bytes((command, data1, data2)))
+        # bluetooth_midi.send_ble_midi(command, data1, data2)
         if current_macro is not None:
             record_macro(",".join((str(command), str(data1), str(data2))))
     else:
         uart.write(bytes((command, data1)))
+        # bluetooth_midi.send_ble_midi(command, data1)
         if current_macro is not None:
             record_macro(",".join((str(command), str(data1))))
 
@@ -367,7 +371,7 @@ def http_get_action_list(httpClient, httpResponse) :
     httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(action_list))
 
 def http_get_version(httpClient, httpResponse) :
-    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(1))
+    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(3))
 
 def http_update_action_list(httpClient, httpResponse) :
     # print("update action list")
@@ -387,13 +391,15 @@ def http_update_action_list(httpClient, httpResponse) :
 
 def http_update_firmware(httpClient, httpResponse) :
     # read data in 1k chunks if this doesn't work
-    jdata  = httpClient.ReadRequestContent()
+    # jdata  = httpClient.ReadRequestContent()
     content = False
+    print("starting firmware update")
     try:
-        with open('update_firmware.py', 'wb') as f:
-            f.write(jdata)
-        content = True
+        import ota
+        print("addr ", httpClient._addr)
+        ota.start(server=httpClient._addr[0], port=9080, file="/ESP32/MicroPython.bin", md5=True)
         print("firmware update downloaded 1")
+        content = True
     except Exception as e:
         print("error in firmeware download", e)
         content = str(e)
@@ -403,7 +409,7 @@ route_handlers = [
         ( "/get_action_list",      "GET",  http_get_action_list ),
         ( "/get_version",      "GET",  http_get_version ),
         ( "/update_action_list",      "POST", http_update_action_list ),
-        ( "/update_firmware",      "POST", http_update_firmware )
+        ( "/update_firmware",      "GET", http_update_firmware )
 ]
 
 srv = MicroWebSrv(routeHandlers=route_handlers)

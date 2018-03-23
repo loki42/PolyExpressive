@@ -1,11 +1,8 @@
 
 from    json        import dumps
 from    os          import stat
-from    _thread     import start_new_thread
-from    time        import sleep_ms
 from    binascii    import b2a_base64
-import  socket
-import  gc
+import  socket, gc, _thread, time
 
 
 class MicroWebSrv :
@@ -37,13 +34,17 @@ class MicroWebSrv :
         return None
 
     def _tryStartThread(func, args=()) :
-        for x in range(10) :
+        old_size = _thread.stack_size()
+        _ = _thread.stack_size(6*1024)
+        for x in range(4) :
             try :
                 gc.collect()
-                start_new_thread(func, args)
-                return True
+                th = _thread.start_new_thread("MicroWebServer", func, args)
+                _thread.stack_size(old_size)
+                return th
             except :
-                pass
+                time.sleep_ms(100)
+        _thread.stack_size(old_size)
         return False
 
 
@@ -74,19 +75,37 @@ class MicroWebSrv :
         self._webPath       = webPath
         self._notFoundUrl   = None
         self._started       = False
+        self.thID           = None
+        self.isThreaded     = False
 
     def _serverProcess(self) :
         self._started = True
+        self._state = "Running"
         while True :
             try :
-                client, cliAddr = self._server.accept()
+                client, cliAddr = self._server.accepted()
+                if client == None:
+                    if self.isThreaded:
+                        notify = _thread.getnotification()
+                        if notify == _thread.EXIT:
+                            break
+                        elif notify == _thread.SUSPEND:
+                            self._state = "Suspended"
+                            while _thread.wait() != _thread.RESUME:
+                                pass
+                            self._state = "Running"
+                    # gc.collect()
+                    time.sleep_ms(2)
+                    continue
             except :
                 break
             self._client(self, client, cliAddr)
         self._started = False
 
+
     def Start(self, threaded=True) :
         if not self._started :
+            gc.collect()
             self._server = socket.socket( socket.AF_INET,
                                           socket.SOCK_STREAM,
                                           socket.IPPROTO_TCP )
@@ -95,8 +114,13 @@ class MicroWebSrv :
                                      1 )
             self._server.bind(self._srvAddr)
             self._server.listen(1)
+            self.isThreaded = threaded
+            # using non-blocking socket
+            self._server.settimeout(0.5)
             if threaded :
-                MicroWebSrv._tryStartThread(self._serverProcess)
+                th = MicroWebSrv._tryStartThread(self._serverProcess)
+                if th:
+                    self.thID = th
             else :
                 self._serverProcess()
 
