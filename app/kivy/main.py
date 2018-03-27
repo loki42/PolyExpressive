@@ -15,6 +15,7 @@ from kivy.graphics import Color
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.network.urlrequest import UrlRequest
+from kivy.uix.colorpicker import ColorPicker
 
 from kivymd.bottomsheet import MDListBottomSheet, MDGridBottomSheet
 from kivymd.button import MDIconButton
@@ -30,6 +31,7 @@ from kivymd.menu import MDDropdownMenu
 from kivymd.textfields import MDTextField
 from kivymd.button import MDRaisedButton
 from kivymd.button import MDFlatButton
+from kivymd.button import MDOutlineButton
 from kivymd.slider import MDSlider
 from kivymd.tabs import MDTab
 from kivy.utils import get_color_from_hex
@@ -300,6 +302,64 @@ BoxLayout:
                         theme_text_color: 'Primary'
                         text: "Coming soon!"
                         halign: 'center'
+        Screen:
+            name: 'set_appearance'
+            GridLayout:
+                cols:2
+                padding: dp(20), dp(40), dp(40), dp(20)
+                spacing: dp(4), dp(4)
+                MDRaisedButton:
+                    text: "Background Color"
+                    opposite_colors: True
+                    size_hint: 0.1, 0.1
+                    on_release: app.show_set_color_dialog("background")
+                MDFlatButton:
+                    text: "test"
+                    id: background_color_label
+                    color: 0.3,0.3,1.0,1,0
+                    size_hint: 0.2, 0.9
+                MDRaisedButton:
+                    text: "Outline Color"
+                    opposite_colors: True
+                    size_hint: 0.1, 0.1
+                    on_release: app.show_set_color_dialog("outline")
+                MDFlatButton:
+                    text: "test"
+                    id: outline_color_label
+                    color: 0.3,0.3,1.0,1,0
+                    size_hint: 0.2, 0.9
+                    on_release: app.show_set_color_dialog("outline")
+                MDRaisedButton
+                    text: "Text Color"
+                    opposite_colors: True
+                    size_hint: 0.1, 0.1
+                    on_release: app.show_set_color_dialog("text")
+                MDFlatButton:
+                    text: "test"
+                    id: text_color_label
+                    color: 0.3,0.3,1.0,1,0
+                    size_hint: 0.2, 0.9
+                    on_release: app.show_set_color_dialog("text")
+                MDLabel:
+                    font_style: 'Body1'
+                    theme_text_color: 'Primary'
+                    text: "Outline Width"
+                    halign: 'left'
+                MDSlider:
+                    min:0
+                    max:10
+                    id: outline_width_slider
+                    on_touch_up: app.set_outline_width()
+
+                MDFloatingActionButton:
+                    icon:                'check'
+                    opposite_colors:    True
+                    elevation_normal:    8
+                    pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
+                    # disabled: app.next_pedals_disabled
+                    on_release: app.go_to_page("edit_mat", "Edit Board")
+                    # size_hint: 0.1, 0.2
+
 
 
 '''
@@ -307,7 +367,7 @@ BoxLayout:
 
 my_mats = {}
 
-mat_sizes = {"A3":(420.0, 297.0), "A4":(297, 210), "ledger":(431.8, 279.4), "full":(469.0, 294.0)}
+mat_sizes = {"A3":(420.0, 297.0), "A4":(297, 210), "ledger":(431.8, 279.4), "full":(469.0, 294.0), "SRA3":(450,320)}
         # size_x = 420.0 # a3
         # size_y = 297.0
         # size_x = 469.0
@@ -492,6 +552,16 @@ class PolyExpressiveSetup(App):
                 if "#" in cell_content["color"]:
                     # print("cell is", cell_content)
                     self.cell_buttons[cell_id].md_bg_color = get_color_from_hex(cell_content["color"])
+            if "text_color" in cell_content:
+                if "#" in cell_content["text_color"]:
+                    # print("cell is", cell_content)
+                    self.cell_buttons[cell_id].text_color = get_color_from_hex(cell_content["text_color"])
+            if "outline_color" in cell_content:
+                if "#" in cell_content["outline_color"]:
+                    # print("cell is", cell_content)
+                    self.cell_buttons[cell_id].outline_color = get_color_from_hex(cell_content["outline_color"])
+            if "outline_width" in cell_content:
+                    self.cell_buttons[cell_id].outline_width = cell_content["outline_width"]
             current_keys = [split_standard_controls_key(a[0])[2] for a in cell_content["standard_controls"]]
             self.cell_buttons[cell_id].sub_text = '\n'.join(current_keys)
         # print("setting mat to", ctx["id"], "my_mats", my_mats)
@@ -689,6 +759,11 @@ class PolyExpressiveSetup(App):
         self.next_standard_controls_disabled = not self.root.ids.selected_standard_controls_dl.items
         self.go_to_page("set_actions", "Set Action")
 
+    def set_up_appearance_page(self, cell_id):
+        global current_selected_cell
+        current_selected_cell = cell_id
+        self.go_to_page("set_appearance", "Set Square Appearance")
+
     def edit_menu(self, parent, cell_id):
         print("pos is", parent.pos, "size is", parent.size)
         menu_items = [
@@ -697,8 +772,8 @@ class PolyExpressiveSetup(App):
              'on_release' : lambda *x: self.set_up_action_page(cell_id)
              },
             {'viewclass': 'MDMenuItem',
-             'text': 'Set Square Color',
-             'on_release' : lambda *x: self.show_set_color_dialog(cell_id)
+             'text': 'Set Square Appearance',
+             'on_release' : lambda *x: self.set_up_appearance_page(cell_id)
              },
             {'viewclass': 'MDMenuItem',
              'text': 'Set Text',
@@ -788,86 +863,44 @@ class PolyExpressiveSetup(App):
                                       action=set_text)
         self.dialog.open()
 
-    def show_set_color_dialog(self, cell_id):
+    def show_set_color_dialog(self, target):
         # content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None)
         #                     # padding: dp(48)
         #                     # spacing: 10
-        content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None, size=(200, 200),
+        cell_id = current_selected_cell
+        content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None,
+                size=(400, 350),
                             padding= 48)
-        # contentVj = MDLabel(font_style='Body1',
-        #           theme_text_color='Secondary',
-        #           text="This is a dialog with a title and some text. "
-        #                "That's pretty awesome right!",
-        #           size_hint_y=None,
-        #           valign='top')
-        # content.hint_text="Choose direction for controller"
-        # content.helper_text="You can leave this blank if you want"
-        # content.helper_text_mode="on_focus"
-        # content.text = mat_def[cell_id]["text"]
 
-        slider_r = None
-        slider_g = None
-        slider_b = None
-        slider_a = None
-        def update_color(*arg):
-            c = (slider_r.value, slider_g.value, slider_b.value, slider_a.value)
-            print("updating color", c)
-            self.dialog.md_bg_color = c
-            self.dialog.primary_color = c
-            self.dialog._action_buttons[0].md_bg_color = c
-
-        slider_r = MDSlider(
-                min = 0,
-                max = 1,
-                on_touch_up= update_color)
-        # slider_r.md_bg_color = (1,0,0,1)
-        # slider_r._track_color_active = (1,0,0,1)
-        slider_r._track_color_normal = (1,0,0,1)
-        slider_r.thumb_color_down = (1,0,0,1)
-        content.add_widget(slider_r)
-        slider_g = MDSlider(
-                min = 0,
-                max = 1,
-                on_release= update_color)
-        slider_g._track_color_normal = (0,1,0,1)
-        slider_g.thumb_color_down = (0,1,0,1)
-        content.add_widget(slider_g)
-        slider_b = MDSlider(
-                min = 0,
-                max = 1,
-                on_release= update_color)
-        slider_b._track_color_normal = (0,0,1,1)
-        slider_b.thumb_color_down = (0,0,1,1)
-        content.add_widget(slider_b)
-        slider_a = MDSlider(
-                min = 0,
-                max = 1,
-                on_release= update_color)
-        content.add_widget(slider_a)
-        slider_a._track_color_normal = (0.5,0.5,0.5,1)
-        slider_a.thumb_color_down = (0.5,0.5,0.5,1)
-
-        # pres_button = MDRaisedButton(
-        #         text= "Set Color",
-        #         opposite_colors= True,
-        #         size_hint= (None, None),
-        #         pos_hint= {'center_x': 0.5, 'center_y': 0.9},
-        #         on_release= lambda *x: self.set_color(ctx, "pressure"))
-        # content.add_widget(pres_button)
+        clr_picker = ColorPicker()
+        content.add_widget(clr_picker)
         self.dialog = MDDialog(title="Set color",
                                content=content,
                                size_hint=(.95, None),
-                               height=dp(300),
+                               height=dp(500),
                                auto_dismiss=False)
         def set_color(x):
-            c = (slider_r.value, slider_g.value, slider_b.value, slider_a.value)
-            mat_def["cells"][cell_id]["color"] = get_hex_from_color(c)
-            self.cell_buttons[cell_id].md_bg_color = c
+            c = clr_picker.color
+            if target == "background":
+                mat_def["cells"][cell_id]["color"] = get_hex_from_color(c)
+                self.cell_buttons[cell_id].md_bg_color = c
+            elif target == "outline":
+                mat_def["cells"][cell_id]["outline_color"] = get_hex_from_color(c)
+                self.cell_buttons[cell_id].outline_color = c
+            else:
+                mat_def["cells"][cell_id]["text_color"] = get_hex_from_color(c)
+                self.cell_buttons[cell_id].text_color = c
             self.dialog.dismiss()
 
         self.dialog.add_action_button("Set color",
                                       action=set_color)
         self.dialog.open()
+
+    def set_outline_width(self):
+        cell_id = current_selected_cell
+        mat_def["cells"][cell_id]["outline_width"] = self.root.ids.outline_width_slider.value
+        self.cell_buttons[cell_id].outline_width = self.root.ids.outline_width_slider.value
+
 
     def show_save_mat_dialog(self):
         content = MDTextField()
@@ -1169,6 +1202,13 @@ class PolyExpressiveSetup(App):
             color = self.cell_buttons[cell_id].md_bg_color
             color = [a * 255 for a in color[0:-1]]
             pdf.set_fill_color(*color)
+            color = self.cell_buttons[cell_id].text_color
+            color = [a * 255 for a in color[0:-1]]
+            pdf.set_text_color(*color)
+            color = self.cell_buttons[cell_id].outline_color
+            color = [a * 255 for a in color[0:-1]]
+            pdf.set_draw_color(*color)
+            outline_width = self.cell_buttons[cell_id].outline_width
             # pdf.set_draw_color(0)
             # pdf.set_line_width(1.0)
 
@@ -1178,10 +1218,18 @@ class PolyExpressiveSetup(App):
             # pdf.rect(out_x1, out_y1, out_x2-out_x1, out_y2-out_y1, "F")
             # if text:
             #     pdf.text(out_x1+text_margin, out_y1+text_margin, text)
-            pdf.set_xy(out_x1, out_y1)
+            draw_outline = 0
+            if outline_width > 0:
+                draw_outline = 1
+                outline_width = outline_width * y_fac * size_y
+            else:
+                outline_width = 0
+            pdf.set_xy(out_x1+(outline_width/2), out_y1+(outline_width/2))
             pdf.set_font('esphimere', '', arrow_font_size)
-            pdf.multi_cell(out_x2-out_x1, out_y2-out_y1, text, border = 0,
+            pdf.set_line_width(outline_width)
+            pdf.multi_cell(out_x2-out_x1-(outline_width), out_y2-out_y1-(outline_width), text, border = draw_outline,
                     align = 'C', fill = True)
+            pdf.set_line_width(line_width)
 
             # draw arrows if a continous value is mapped to a dimension
             for control, val in cell_content["standard_controls"]:
@@ -1296,6 +1344,8 @@ class PolyExpressiveSetup(App):
                         sub_text = "",
                         id=str(cell_id),
                         md_bg_color= get_color_from_hex(col[1]),
+                        text_color = (1,1,1,1),
+                        theme_text_color='Custom',
                         size_hint= (col[0], 1),
                         on_release= lambda x, cell_id=cell_id: self.edit_menu(b, str(cell_id)))
                 b.md_bg_color= get_color_from_hex(col[1])
@@ -1376,7 +1426,7 @@ class PolyExpressiveSetup(App):
 
 
 """
-class TwoLineButton(MDFlatButton):
+class TwoLineButton(MDOutlineButton):
     sub_text = StringProperty('')
 
 # class AutonomousColorWheel(ColorWheel):
