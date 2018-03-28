@@ -304,53 +304,43 @@ BoxLayout:
                         halign: 'center'
         Screen:
             name: 'set_appearance'
-            GridLayout:
-                cols:2
-                padding: dp(20), dp(40), dp(40), dp(20)
-                spacing: dp(4), dp(4)
-                MDRaisedButton:
-                    text: "Background Color"
-                    opposite_colors: True
-                    size_hint: 0.1, 0.1
-                    on_release: app.show_set_color_dialog("background")
-                MDFlatButton:
-                    text: "test"
-                    id: background_color_label
-                    color: 0.3,0.3,1.0,1,0
-                    size_hint: 0.2, 0.9
-                MDRaisedButton:
-                    text: "Outline Color"
-                    opposite_colors: True
-                    size_hint: 0.1, 0.1
-                    on_release: app.show_set_color_dialog("outline")
-                MDFlatButton:
-                    text: "test"
-                    id: outline_color_label
-                    color: 0.3,0.3,1.0,1,0
-                    size_hint: 0.2, 0.9
-                    on_release: app.show_set_color_dialog("outline")
-                MDRaisedButton
-                    text: "Text Color"
-                    opposite_colors: True
-                    size_hint: 0.1, 0.1
-                    on_release: app.show_set_color_dialog("text")
-                MDFlatButton:
-                    text: "test"
-                    id: text_color_label
-                    color: 0.3,0.3,1.0,1,0
-                    size_hint: 0.2, 0.9
-                    on_release: app.show_set_color_dialog("text")
-                MDLabel:
-                    font_style: 'Body1'
-                    theme_text_color: 'Primary'
-                    text: "Outline Width"
-                    halign: 'left'
-                MDSlider:
-                    min:0
-                    max:10
-                    id: outline_width_slider
-                    on_touch_up: app.set_outline_width()
-
+            BoxLayout:
+                padding: dp(20), dp(4), dp(4), dp(20)
+                orientation: 'vertical'
+                spacing: dp(4)
+                BoxLayout:
+                    padding: dp(20), dp(4), dp(4), dp(20)
+                    orientation: 'horizontal'
+                    spacing: dp(20)
+                    MDRaisedButton:
+                        text: "background color"
+                        opposite_colors: True
+                        size_hint: 0.3, 0.3
+                        on_release: app.show_set_color_dialog("background")
+                    MDRaisedButton:
+                        text: "outline color"
+                        opposite_colors: True
+                        size_hint: 0.3, 0.3
+                        on_release: app.show_set_color_dialog("outline")
+                    MDRaisedButton
+                        text: "text color"
+                        opposite_colors: True
+                        size_hint: 0.3, 0.3
+                        on_release: app.show_set_color_dialog("text")
+                BoxLayout:
+                    padding: dp(20), dp(4), dp(4), dp(20)
+                    orientation: 'horizontal'
+                    spacing: dp(4)
+                    MDLabel:
+                        font_style: 'Body1'
+                        theme_text_color: 'Primary'
+                        text: "Outline Width"
+                        halign: 'left'
+                    MDSlider:
+                        min:0
+                        max:10
+                        id: outline_width_slider
+                        on_touch_up: app.set_outline_width()
                 MDFloatingActionButton:
                     icon:                'check'
                     opposite_colors:    True
@@ -359,7 +349,73 @@ BoxLayout:
                     # disabled: app.next_pedals_disabled
                     on_release: app.go_to_page("edit_mat", "Edit Board")
                     # size_hint: 0.1, 0.2
-
+        Screen:
+            name: 'set_global_appearance'
+            BoxLayout:
+                padding: dp(20), dp(4), dp(4), dp(20)
+                orientation: 'vertical'
+                spacing: dp(4)
+                MDLabel:
+                    font_style: 'Subhead'
+                    theme_text_color: 'Primary'
+                    text: "Here you can set the look of all the cells"
+                    halign: 'left'
+                    size_hint: 1, 0.1
+                BoxLayout:
+                    padding: dp(20), dp(4), dp(4), dp(20)
+                    orientation: 'horizontal'
+                    spacing: dp(20)
+                    MDRaisedButton:
+                        text: "background color"
+                        opposite_colors: True
+                        size_hint: 0.3, 0.3
+                        on_release: app.show_set_color_dialog("background", all_cells=True)
+                    MDRaisedButton:
+                        text: "outline color"
+                        opposite_colors: True
+                        size_hint: 0.3, 0.3
+                        on_release: app.show_set_color_dialog("outline", all_cells=True)
+                    MDRaisedButton
+                        text: "text color"
+                        opposite_colors: True
+                        size_hint: 0.3, 0.3
+                        on_release: app.show_set_color_dialog("text", all_cells=True)
+                BoxLayout:
+                    padding: dp(20), dp(4), dp(4), dp(20)
+                    orientation: 'horizontal'
+                    spacing: dp(4)
+                    MDLabel:
+                        font_style: 'Body1'
+                        theme_text_color: 'Primary'
+                        text: "outline width"
+                        halign: 'left'
+                    MDSlider:
+                        min:0
+                        max:10
+                        id: global_outline_width_slider
+                        on_touch_up: app.set_outline_width(all_cells=True)
+                BoxLayout:
+                    padding: dp(20), dp(4), dp(4), dp(20)
+                    orientation: 'horizontal'
+                    spacing: dp(4)
+                    MDLabel:
+                        font_style: 'Body1'
+                        theme_text_color: 'Primary'
+                        text: "Transparency"
+                        halign: 'left'
+                    MDSlider:
+                        min:0
+                        max:1
+                        id: global_transparency_slider
+                        on_touch_up: app.set_transparency(all_cells=True)
+                MDFloatingActionButton:
+                    icon:                'check'
+                    opposite_colors:    True
+                    elevation_normal:    8
+                    pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
+                    # disabled: app.next_pedals_disabled
+                    on_release: app.go_to_page("edit_mat", "edit board")
+                    # size_hint: 0.1, 0.2
 
 
 '''
@@ -764,6 +820,9 @@ class PolyExpressiveSetup(App):
         current_selected_cell = cell_id
         self.go_to_page("set_appearance", "Set Square Appearance")
 
+    def set_up_global_appearance_page(self):
+        self.go_to_page("set_global_appearance", "Set Layout Appearance")
+
     def edit_menu(self, parent, cell_id):
         print("pos is", parent.pos, "size is", parent.size)
         menu_items = [
@@ -803,6 +862,10 @@ class PolyExpressiveSetup(App):
             {'viewclass': 'MDMenuItem',
              'text': 'Set board size',
              'on_release' : lambda *x: self.set_mat_size_dialog()
+             },
+            {'viewclass': 'MDMenuItem',
+             'text': 'Set Global Appearance',
+             'on_release' : lambda *x: self.set_up_global_appearance_page()
              },
         ]
         Snackbar(text="Connect to the Poly WiFi to send to Poly").show()
@@ -863,7 +926,7 @@ class PolyExpressiveSetup(App):
                                       action=set_text)
         self.dialog.open()
 
-    def show_set_color_dialog(self, target):
+    def show_set_color_dialog(self, target, all_cells=False):
         # content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None)
         #                     # padding: dp(48)
         #                     # spacing: 10
@@ -882,25 +945,59 @@ class PolyExpressiveSetup(App):
         def set_color(x):
             c = clr_picker.color
             if target == "background":
-                mat_def["cells"][cell_id]["color"] = get_hex_from_color(c)
-                self.cell_buttons[cell_id].md_bg_color = c
+                if not all_cells:
+                    mat_def["cells"][cell_id]["color"] = get_hex_from_color(c)
+                    self.cell_buttons[cell_id].md_bg_color = c
+                else:
+                    # iterate over all cells
+                    for g_cell_id, cell_content in mat_def["cells"].items():
+                        mat_def["cells"][g_cell_id]["color"] = get_hex_from_color(c)
+                        self.cell_buttons[g_cell_id].md_bg_color = c
             elif target == "outline":
-                mat_def["cells"][cell_id]["outline_color"] = get_hex_from_color(c)
-                self.cell_buttons[cell_id].outline_color = c
+                if not all_cells:
+                    mat_def["cells"][cell_id]["outline_color"] = get_hex_from_color(c)
+                    self.cell_buttons[cell_id].outline_color = c
+                else:
+                    for g_cell_id, cell_content in mat_def["cells"].items():
+                        mat_def["cells"][g_cell_id]["outline_color"] = get_hex_from_color(c)
+                        self.cell_buttons[g_cell_id].outline_color = c
             else:
-                mat_def["cells"][cell_id]["text_color"] = get_hex_from_color(c)
-                self.cell_buttons[cell_id].text_color = c
+                if not all_cells:
+                    mat_def["cells"][cell_id]["text_color"] = get_hex_from_color(c)
+                    self.cell_buttons[cell_id].text_color = c
+                else:
+                    for g_cell_id, cell_content in mat_def["cells"].items():
+                        mat_def["cells"][g_cell_id]["text_color"] = get_hex_from_color(c)
+                        self.cell_buttons[g_cell_id].text_color = c
             self.dialog.dismiss()
 
         self.dialog.add_action_button("Set color",
                                       action=set_color)
         self.dialog.open()
 
-    def set_outline_width(self):
-        cell_id = current_selected_cell
-        mat_def["cells"][cell_id]["outline_width"] = self.root.ids.outline_width_slider.value
-        self.cell_buttons[cell_id].outline_width = self.root.ids.outline_width_slider.value
+    def set_outline_width(self, all_cells=False):
+        if not all_cells:
+            cell_id = current_selected_cell
+            mat_def["cells"][cell_id]["outline_width"] = self.root.ids.outline_width_slider.value
+            self.cell_buttons[cell_id].outline_width = self.root.ids.outline_width_slider.value
+        else:
+            for cell_id, cell_content in mat_def["cells"].items():
+                mat_def["cells"][cell_id]["outline_width"] = self.root.ids.global_outline_width_slider.value
+                self.cell_buttons[cell_id].outline_width = self.root.ids.global_outline_width_slider.value
 
+    def set_transparency(self, all_cells=False):
+        if not all_cells:
+            cell_id = current_selected_cell
+            c = self.cell_buttons[cell_id].md_bg_color
+            c[3] = self.root.ids.global_transparency_slider.value
+            mat_def["cells"][cell_id]["color"] = get_hex_from_color(c)
+            self.cell_buttons[cell_id].md_bg_color = c
+        else:
+            for cell_id, cell_content in mat_def["cells"].items():
+                c = self.cell_buttons[cell_id].md_bg_color
+                c[3] = self.root.ids.global_transparency_slider.value
+                mat_def["cells"][cell_id]["color"] = get_hex_from_color(c)
+                self.cell_buttons[cell_id].md_bg_color = c
 
     def show_save_mat_dialog(self):
         content = MDTextField()
@@ -1343,12 +1440,19 @@ class PolyExpressiveSetup(App):
                         text= "",
                         sub_text = "",
                         id=str(cell_id),
+                        # md_bg_color = (get_color_from_hex(col[1])[0],
+                        #     get_color_from_hex(col[1])[0], get_color_from_hex(col[1])[0], 1.0),
+                        # md_bg_color = (0.3, 0.3, 0.3, 0.3),
                         md_bg_color= get_color_from_hex(col[1]),
                         text_color = (1,1,1,1),
                         theme_text_color='Custom',
                         size_hint= (col[0], 1),
                         on_release= lambda x, cell_id=cell_id: self.edit_menu(b, str(cell_id)))
                 b.md_bg_color= get_color_from_hex(col[1])
+                # b.md_bg_color = (get_color_from_hex(col[1])[0],
+                #     get_color_from_hex(col[1])[0], get_color_from_hex(col[1])[0], 1.0)
+                b.outline_color = (0,0,0,1)
+                b.outline_width = 1.1
                 b.id=str(cell_id)
                 b.size_hint= (col[0], 1)
                 r.add_widget(b)

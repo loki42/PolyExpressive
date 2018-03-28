@@ -23,7 +23,8 @@ default_channels = {
     "Elektron:Analog Drive":1,
     "Kemper:Profiler":3,
     "Eventide:H9":3,
-    "Macro:Macro":1
+    "Macro:Macro":1,
+    "Strymon:Timeline":1
     }
 
 advanced_controls = {
@@ -514,9 +515,115 @@ advanced_controls = {
     "Stop Recording Macro": {"type": "stop_recording_macro"},
     "Start Macro": {"type": "start_macro"},
     "Stop Macro": {"type": "stop_macro"}
+    },
+"Strymon:Timeline":{
+    "Type encoder": {"type": "CC", "controller":19, "enum":{"dTape": 0, "dBucket":1, "Digital":2, "Dual":3,
+            "Pattern":4, "Swell":5, "Trem":6, "Filter":7, "Lo-Fi":8, "Ice":9, "Duck":10, "Reverse":11}}, # not sure this is right
+    "Time": {"type": "CC", "controller":3, "curve":"1"},
+    "Repeats": {"type": "CC", "controller":9, "curve":"1"},
+    "Mix": {"type": "CC", "controller":14, "curve":"1"},
+    "Filter": {"type": "CC", "controller":15, "curve":"1"},
+    "Grit": {"type": "CC", "controller":16, "curve":"1"},
+    "Speed": {"type": "CC", "controller":17, "curve":"1"},
+    "Depth": {"type": "CC", "controller":18, "curve":"1"},
+    "Tap Division": {"type": "CC", "controller":21, "enum":{"Quarter": 0, "Dotted 8th":1, "Eighth":2, "Triplets":3, "16th":4}},
+    "Boost": {"type": "CC", "controller":23, "curve":"1"},
+    "Persist Off/On": {"type": "CC", "controller":22, "enum":{"On": 1, "Off":0}},
+    "Smear": {"type": "CC", "controller":38, "curve":"1"},
+    "High Pass": {"type": "CC", "controller":47, "curve":"1"},
+    "Expression Off/On": {"type": "CC", "controller":60, "enum":{"On": 1, "Off":0}},
+    "dTAPE - Tape Speed": {"type": "CC", "controller":58, "enum":{"Fast": 1, "Normal":0}},
+    "dTAPE - Low End": {"type": "CC", "controller":59, "curve":"1"},
+    "dBUCKET - Range": {"type": "CC", "controller":45, "enum":{"Single": 1, "Double":0}},
+    "DIGITAL - Repeat Dynamics": {"type": "CC", "controller":56, "enum":{"On": 1, "Off":0}},
+    "DUAL - Time 2": {"type": "CC", "controller":32, "curve":"1"},
+    "DUAL - Repeats 2": {"type": "CC", "controller":34, "curve":"1"},
+    "DUAL - Mix 2": {"type": "CC", "controller":33, "curve":"1"},
+    "DUAL - Config": {"type": "CC", "controller":36, "enum":{"Parallel": 1, "Series":0}},
+    "PATTERN - Pattern": {"type": "CC", "controller":39, "curve":"1"},
+    "SWELL - Rise Time": {"type": "CC", "controller":44, "curve":"1"},
+    "TREM - Speed": {"type": "CC", "controller":61, "curve":"1"},
+    "TREM - Depth": {"type": "CC", "controller":57, "curve":"1"},
+    "TREM - LFO": {"type": "CC", "controller":29, "curve":"1"},
+    "FILTER - Q": {"type": "CC", "controller":40, "curve":"1"},
+    "FILTER - LFO": {"type": "CC", "controller":28, "curve":"1"},
+    "FILTER - Depth": {"type": "CC", "controller":41, "curve":"1"},
+    "FILTER - Speed": {"type": "CC", "controller":42, "curve":"1"},
+    "FILTER - Location": {"type": "CC", "controller":43, "enum":{"Post": 1, "Pre":0}},
+    "LO-Fi - Mix": {"type": "CC", "controller":51, "curve":"1"},
+    "LO-Fi - Vinyl": {"type": "CC", "controller":52, "curve":"1"},
+    "LO-Fi - Sample Rate": {"type": "CC", "controller":49, "curve":"1"},
+    "LO-Fi - Bit Depth": {"type": "CC", "controller":50, "curve":"1"},
+    "LO-Fi - Filter": {"type": "CC", "controller":53, "curve":"1"},
+    "ICE - Interval": {"type": "CC", "controller":30, "curve":"1"},
+    "ICE - Slice": {"type": "CC", "controller":46, "enum":{"Short":0, "Medium": 1, "Long":2}},
+    "ICE - Blend": {"type": "CC", "controller":25, "curve":"1"},
+    "DUCK - Sensitivity": {"type": "CC", "controller":37, "curve":"1"},
+    "DUCK - Release": {"type": "CC", "controller":55, "curve":"1"},
+    "DUCK - Feedback": {"type": "CC", "controller":54, "enum":{"Gate": 1, "Normal":0}},
+    "Record": {"type": "CC", "controller":87, "enum":{"Record":1}},
+    "Play": {"type": "CC", "controller":86, "enum":{"Play":1}},
+    "Stop": {"type": "CC", "controller":85, "enum":{"Stop":1}},
+    "Reverse (toggle)": {"type": "CC", "controller":94, "enum":{"Reverse (toggle)":1}},
+    "Full/Half Speeed (toggle)": {"type": "CC", "controller":95, "enum":{"Full/Half Speeed (toggle)":1}},
+    "Pre/Post (toggle)": {"type": "CC", "controller":96, "enum":{"Pre/Post (toggle)":1}},
+    "Undo (to initial loop)": {"type": "CC", "controller":89, "enum":{"Undo (to initial loop)":1}},
+    "Redo": {"type": "CC", "controller":90, "enum":{"Redo":1}},
+    "Looper Level": {"type": "CC", "controller":98, "curve":"1"},
+    "A footswitch": {"type": "CC", "controller":80, "enum":{"On": 127, "Off":0}},
+    "B footswitch": {"type": "CC", "controller":82, "enum":{"On": 127, "Off":0}},
+    "TAP footswitch": {"type": "CC", "controller":81, "enum":{"On": 127, "Off":0}},
+    "Remote TAP": {"type": "CC", "controller":93, "enum":{"Remote TAP":1}},
+    "Expression Pedal": {"type": "CC", "controller":100, "curve":"1"},
+    "Bypass": {"type": "CC", "controller":102, "enum":{"Enabled": 1, "Bypass":0}},
+    "Phase Reset": {"type": "CC", "controller":125, "enum":{"Phase Reset":1}},
+    "MIDI Patch Bank": {"type": "CC", "controller":0, "enum":{"1": 1, "0":0}},
     }
 }
 
+# Tap Division|21|0-4
+# Boost|23|0-60
+# Persist Off/On|22|0-1
+# Smear|38|0-18
+# High Pass|47|0-20
+# Expression Off/On|60|0-1
+# dTAPE - Tape Speed|58|0-1
+# dTAPE - Low End|59|0-20
+# dBUCKET - Range|45|0-1
+# DIGITAL - Repeat Dynamics|56|0-1
+# DUAL - Time 2|32|0-26
+# DUAL - Repeats 2|34|0-18
+# DUAL - Mix 2|33|0-18
+# DUAL - Config|36|0-1
+# PATTERN - Pattern|39|0-15
+# SWELL - Rise Time|44|0-27
+# TREM - Speed|61|0-34
+# TREM - Depth|57|0-18
+# TREM - LFO|29|0-4
+# FILTER - Q|40|0-11
+# FILTER - LFO|28|0-10
+# FILTER - Depth|41|0-18
+# FILTER - Speed|42|0-34
+# FILTER - Location|43|0-1
+# LO-Fi - Mix|51|0-20
+# LO-Fi - Vinyl|52|0-18
+# LO-Fi - Sample Rate|49|0-20
+# LO-Fi - Bit Depth|50|0-20
+# LO-Fi - Filter|53|0-8
+# ICE - Interval|30|0-29
+# ICE - Slice|46|0-2
+# ICE - Blend|25|0-20
+# DUCK - Sensitivity|37|0-17
+# DUCK - Release|55|0-20
+# DUCK - Feedback|54|0-1
+# Record|87|any
+# Play|86|any
+# Stop|85|any
+# Reverse (toggle)|94|any
+# Full/Half Speeed (toggle)|95|any
+# Pre/Post (toggle)|96|any
+# Undo (to initial loop)|89|any
+# Redo|90|any
 
 # add all advanced controls that have curve specified
 # add all that enum ones
@@ -656,6 +763,9 @@ standard_controls_update = {
     "Toggle Bypass": ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"],
 },
 "Meris:Polymoon":{
+    "Toggle Bypass": ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"],
+},
+"Strymon:Timeline":{
     "Toggle Bypass": ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"],
 },
 "Macro:Macro":{
