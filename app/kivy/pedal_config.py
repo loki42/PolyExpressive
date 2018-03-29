@@ -24,7 +24,8 @@ default_channels = {
     "Kemper:Profiler":3,
     "Eventide:H9":3,
     "Macro:Macro":1,
-    "Strymon:Timeline":1
+    "Strymon:Timeline":1,
+    "Source Audio:Ventris":1
     }
 
 advanced_controls = {
@@ -578,9 +579,119 @@ advanced_controls = {
     "Bypass": {"type": "CC", "controller":102, "enum":{"Enabled": 1, "Bypass":0}},
     "Phase Reset": {"type": "CC", "controller":125, "enum":{"Phase Reset":1}},
     "MIDI Patch Bank": {"type": "CC", "controller":0, "enum":{"1": 1, "0":0}},
-    }
+    "Preset": {"type": "PC", "value":{"min":0, "max":100}}
+    },
+"Source Audio:Ventris":{
+    "Reverb Engine A": {"type": "CC", "controller":1, "enum":{
+        "Room":0,
+        "Hall":1,
+        "E-Dome":2,
+        "True Spring":3,
+        "Plate":4,
+        "Lo-Fi":5,
+        "Modverb":6,
+        "Shimmer":7,
+        "Echoverb":8,
+        "Swell":9,
+        "Offspring":10,
+        "Reverse":11,
+        "Outboard Spring":12,
+        "Metal Box":13}},
+    "Time A": {"type": "CC", "controller":2, "curve":"1"},
+    "Mix A": {"type": "CC", "controller":3, "curve":"1"},
+    "Pre-Delay A": {"type": "CC", "controller":4, "curve":"1"},
+    "Treble A": {"type": "CC", "controller":5, "curve":"1"},
+    "Output A": {"type": "CC", "controller":6, "curve":"1"},
+    "Bass A": {"type": "CC", "controller":7, "curve":"1"},
+    "Diffusion A": {"type": "CC", "controller":8, "curve":"1"},
+    "Modulation Depth A": {"type": "CC", "controller":9, "curve":"1"},
+    "Modulation Rate A": {"type": "CC", "controller":10, "curve":"1"},
+    "Pre-Delay Feedback A": {"type": "CC", "controller":11, "curve":"1"},
+    "Pre-Delay Mod D": {"type": "CC", "controller":12, "curve":"1"},
+    # Size A                   |     13   0-max (engine dependent)  Examples: True Spring has 6 sizes, hall has 5, Echoverb has 1
+    #                                                                   See Desktop Editor for size option list
+    "Input Low Cut A": {"type": "CC", "controller":14,   "enum":{
+        "Offspring":0,
+        "20Hz":1,
+        "100Hz":2,
+        "125Hz":3,
+        "150Hz":4,
+        "200Hz":5,
+        "250Hz":6,
+        "Default Setting":7}},
+    "Engine Param 1 A": {"type": "CC", "controller":15, "curve":"1"},
+    "Engine Param 2 A": {"type": "CC", "controller":16, "curve":"1"},
+    "Engine Param 3 A": {"type": "CC", "controller":17, "curve":"1"},
+    "Engine Param 4 A": {"type": "CC", "controller":18, "curve":"1"},
+    "Engine Param 5 A": {"type": "CC", "controller":19, "curve":"1"},
+    "Engine Special Control A": {"type": "CC", "controller":20, "curve":"1"},
+    "Reverb Engine B": {"type": "CC", "controller":25,  "enum":{
+        "Room":0,
+        "Hall":1,
+        "E-Dome":2,
+        "True Spring":3,
+        "Plate":4,
+        "Lo-Fi":5,
+        "Modverb":6,
+        "Shimmer":7,
+        "Echoverb":8,
+        "Swell":9,
+        "Offspring":10,
+        "Reverse":11,
+        "Outboard Spring":12,
+        "Metal Box":13}},
+    "Time B": {"type": "CC", "controller":26, "curve":"1"},
+    "Mix B": {"type": "CC", "controller":27, "curve":"1"},
+    "Pre-Delay B": {"type": "CC", "controller":28, "curve":"1"},
+    "Treble B": {"type": "CC", "controller":29, "curve":"1"},
+    "Output B": {"type": "CC", "controller":30, "curve":"1"},
+    "Bass B": {"type": "CC", "controller":31, "curve":"1"},
+    "Diffusion B": {"type": "CC", "controller":32, "curve":"1"},
+    "Modulation Depth B": {"type": "CC", "controller":33, "curve":"1"},
+    "Modulation Rate B": {"type": "CC", "controller":34, "curve":"1"},
+    "Pre-Delay Feedback B": {"type": "CC", "controller":35, "curve":"1"},
+    "Pre-Delay Mod Depth B": {"type": "CC", "controller":36, "curve":"1"},
+    # Size B                        37  0-max (engine dependent)  Examples: True Spring has 6 sizes, hall has 5, Echoverb has 1
+    #                                                                  See Desktop Editor for size option list
+    "Input Low Cut B": {"type": "CC", "controller":38,   "enum":{
+        "Offspring":0,
+        "20Hz":1,
+        "100Hz":2,
+        "125Hz":3,
+        "150Hz":4,
+        "200Hz":5,
+        "250Hz":6,
+        "Default Setting":7}},
+    "Engine Param 1 B": {"type": "CC", "controller":39, "curve":"1"},
+    "Engine Param 2 B": {"type": "CC", "controller":40, "curve":"1"},
+    "Engine Param 3 B": {"type": "CC", "controller":41, "curve":"1"},
+    "Engine Param 4 B": {"type": "CC", "controller":42, "curve":"1"},
+    "Engine Param 5 B": {"type": "CC", "controller":43, "curve":"1"},
+    "Engine Special Control B": {"type": "CC", "controller":44, "curve":"1"},
+    "Dual/Single Mode": {"type": "CC", "controller":50,   "enum":{
+        "Selects Reverb A":0,
+        "Selects Reverb B":1,
+        "Selects A&B Parallel":2,
+        "Selects A&B Cascade":3}},
+    "I/O Routing Option": {"type": "CC", "controller":53,   "enum":{ "Auto-detect":0,
+                                                                     "Mono in - Stereo Out":1,
+                                                                     "Stereo In - Stereo Out":2,
+                                                                     "Mono In - Mono Out - Dry out 2":3,
+                                                                     "Stereo In - Wet Sum to Mono":4,
+                                                                     "Dual Mono - Independent Stereo":5 ,
+                                                                    "Mono In - Independent Stereo Out":6,
+                                             "Pre-Processing External Loop":7}},
+    "Reverb Send": {"type": "CC", "controller":54, "curve":"1"},
+    "A/B Crossfade": {"type": "CC", "controller":55, "curve":"1"},
+    "Preset Decrement": {"type" : "CC", "controller":80, "enum":{"Preset Decrement":1}},
+            "Preset Increment": {"type" : "CC", "controller":82, "enum":{"Preset Incement":1}},
+            "Remote Tap Tempo": {"type" : "CC", "controller":93, "enum":{"Remote Tap Tempo":1}},
+    "Remote Expression": {"type": "CC", "controller":100, "curve":"1"},
+    "Bypass": {"type": "CC", "controller":101, "enum":{"Enabled": 127, "Bypass":0}},
+    "Toggle Bypass": {"type": "CC", "controller":101, "enum":{"Toggle": 1}}}
 }
-
+# Recall Preset - Bypass | 103  0-127  Recalls any preset in Bypass #TODO
+# Recall Preset - Engage | 104  0-127  Recalls any preset Engaged
 # Tap Division|21|0-4
 # Boost|23|0-60
 # Persist Off/On|22|0-1
