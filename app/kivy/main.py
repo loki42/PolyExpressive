@@ -38,7 +38,7 @@ from kivy.utils import get_color_from_hex
 from kivy.utils import get_hex_from_color
 
 import webbrowser
-from fpdf import FPDF
+import fpdf
 
 import data_view
 
@@ -1248,7 +1248,8 @@ class PolyExpressiveSetup(App):
         arrow_margin = 10
         arrow_font_size = 26
         line_width = 0.8
-        pdf = FPDF('L', 'mm', (size_y, size_x))
+        fpdf.set_global("FPDF_CACHE_MODE", 1)
+        pdf = fpdf.FPDF('L', 'mm', (size_y, size_x))
         pdf.add_page()
         frozen = 'not'
         bundle_dir = ''
