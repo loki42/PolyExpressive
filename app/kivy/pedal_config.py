@@ -862,10 +862,13 @@ standard_controls_update = {
     "Tap": ["Tap", "on_foot_down", "Tap"],
     },
 "Empress:Echosystem":{
-    "Toggle Enabled": ["Engage", "on_foot_down_toggle", "On", "Engage", "Bypass"],
+    "Toggle Bypass": ["Engage", "on_foot_down_toggle", "On", "Engage", "Bypass"],
     },
 "Empress:Tremolo2":{
-    "Toggle Enabled": ["Engage", "on_foot_down_toggle", "On", "Engage", "Bypass"],
+    "Toggle Bypass": ["Engage", "on_foot_down_toggle", "On", "Engage", "Bypass"],
+    },
+"Empress:Phaser":{
+    "Toggle Bypass": ["Engage", "on_foot_down_toggle", "On", "Engage", "Bypass"],
     },
 "Meris:Mercury 7":{
     "Toggle Bypass": ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"],

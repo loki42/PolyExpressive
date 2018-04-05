@@ -16,6 +16,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.network.urlrequest import UrlRequest
 from kivy.uix.colorpicker import ColorPicker
+from kivy.uix.scrollview import ScrollView
 
 from kivymd.bottomsheet import MDListBottomSheet, MDGridBottomSheet
 from kivymd.button import MDIconButton
@@ -685,9 +686,10 @@ class PolyExpressiveSetup(App):
                 self.dialog.open()
             # if it's an enum or value then pop up a selector
             elif get_standard_controls_from_key(ctx["key"])[1] == "on_foot_down_enum" and not set_value:
-                content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None, size=(200, 200),
-                                    padding= 48)
+                content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None, size=(300, 300),
+                                    padding= 24)
 
+                scroll = ScrollView(do_scroll_x = False)
                 control = get_standard_controls_from_key(ctx["key"])
                 par_list = MDList(
                         size_hint= (None, None))
@@ -697,11 +699,12 @@ class PolyExpressiveSetup(App):
                             on_release= lambda x,val=val: self.set_control_value(ctx, val))
                     par_list.add_widget(ver_button)
                     print("adding to list", val)
-                content.add_widget(par_list)
+                scroll.add_widget(par_list)
+                content.add_widget(scroll)
                 self.dialog = MDDialog(title="What value should this send",
                                        content=content,
                                        size_hint=(.80, None),
-                                       height=dp(300),
+                                       height=dp(400),
                                        auto_dismiss=False)
                 self.dialog.open()
             elif get_standard_controls_from_key(ctx["key"])[1] == "on_foot_down_value" and not set_value:
