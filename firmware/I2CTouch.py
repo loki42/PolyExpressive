@@ -142,8 +142,8 @@ def get_p():
 def get_point():
     # return x, y, z by processing z1 and z2
     # convert to mm
-    panel_x = 469 # active area of panel
-    panel_y = 294
+    panel_y = 469 # active area of panel
+    panel_x = 294 # this way around y is the long side
     status, in_x, in_y, in_z = get_p()
     if status:
         x = panel_x * ((4095 - in_x) / 4095)

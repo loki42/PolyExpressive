@@ -429,6 +429,7 @@ mat_sizes = {"A3":(420.0, 297.0), "A4":(297, 210), "ledger":(431.8, 279.4), "ful
         # size_y = 297.0
         # size_x = 469.0
         # size_y = 294.0
+        # 440 x 312
 
 
 # pedal / channel pairs
@@ -1056,7 +1057,7 @@ class PolyExpressiveSetup(App):
         req = UrlRequest('http://192.168.4.1/update_action_list', on_success=bug_posted, on_failure=fail, on_error=fail, req_body=mat_json)
 
     def mat_to_poly_json(self):
-        size_x, size_y = mat_sizes[mat_def["size"]]
+        size_y, size_x = mat_sizes[mat_def["size"]] 
         display_size_x, display_size_y = self.root.ids["edit_mat_box"].size
         x_fac = 1 / float(display_size_x)
         y_fac = 1 / float(display_size_y)
@@ -1134,8 +1135,10 @@ class PolyExpressiveSetup(App):
         out_mat = []
         for cell_id, cell_content in mat_def["cells"].items():
             out_cell = {}
+            has_controls = False
             for control, val in cell_content["standard_controls"]:
                 action, block = standard_controls_to_json(control, val)
+                has_controls = True
                 if action == "on_foot_move":
                     # sort by direction
                     if "c" not in out_cell:
@@ -1178,6 +1181,9 @@ class PolyExpressiveSetup(App):
             out_cell["x1"] = size_x - (y2 * y_fac * size_x)
             out_cell["y1"] = x1 * x_fac * size_y
             out_cell["x2"] = size_x - (y1 * y_fac * size_x)
+            if has_controls:
+                print("out x1 ", out_cell["x1"], " y1", out_cell["y1"],
+                " x2", out_cell["x2"], " y2", out_cell["y2"])
             out_mat.append(out_cell)
         return json.dumps(out_mat)
 
@@ -1333,6 +1339,8 @@ class PolyExpressiveSetup(App):
             pdf.set_line_width(line_width)
 
             # draw arrows if a continous value is mapped to a dimension
+            x_i  = 0
+            y_i  = 0
             for control, val in cell_content["standard_controls"]:
                 maker_model, pedal_id, standard_control = split_standard_controls_key(control)
                 s_c = get_standard_controls_from_key(control)
@@ -1340,33 +1348,37 @@ class PolyExpressiveSetup(App):
                 if action == "on_foot_move":
                     # TODO name or val?
                     if val == "vertical":
+                        y_i = y_i + 1
                         end_x = out_x1 + arrow_margin
                         end_y = out_y2 - arrow_margin
                         start_x = out_x1 + arrow_margin
                         start_y = out_y1 + arrow_margin
-                        pdf.line(start_x, start_y, end_x, end_y)
-                        # arrow
-                        pdf.line(end_x, end_y, end_x-(arrow_length/2), end_y-arrow_length)
-                        pdf.line(end_x, end_y, end_x+(arrow_length/2), end_y-arrow_length)
+                        if y_i == 1:
+                            pdf.line(start_x, start_y, end_x, end_y)
+                            # arrow
+                            pdf.line(end_x, end_y, end_x-(arrow_length/2), end_y-arrow_length)
+                            pdf.line(end_x, end_y, end_x+(arrow_length/2), end_y-arrow_length)
                         pdf.rotate(90, start_x, start_y)# - ((end_y-start_y)/2.0))
                         pdf.set_font('esphimere', '', arrow_font_size)
                         # print("pdf: standard_control", standard_control)
                         string_px = pdf.get_string_width(standard_control.upper())/2.0
-                        pdf.text((start_x-((end_y-start_y)/2.0)-string_px), start_y+arrow_margin, standard_control.upper())
+                        pdf.text((start_x-((end_y-start_y)/2.0)-string_px), start_y+(arrow_margin*y_i), standard_control.upper())
                         pdf.rotate(0)
                     if val == "horizontal":
+                        x_i = x_i + 1
                         end_x = out_x2 - arrow_margin
                         end_y = out_y1 + arrow_margin
                         start_x = out_x1 + arrow_margin
                         start_y = out_y1 + arrow_margin
-                        pdf.line(start_x, start_y, end_x, end_y)
-                        # arrow
-                        pdf.line(end_x, end_y, end_x-arrow_length, end_y-(arrow_length/2))
-                        pdf.line(end_x, end_y, end_x-arrow_length, end_y+(arrow_length/2))
+                        if x_i == 1:
+                            pdf.line(start_x, start_y, end_x, end_y)
+                            # arrow
+                            pdf.line(end_x, end_y, end_x-arrow_length, end_y-(arrow_length/2))
+                            pdf.line(end_x, end_y, end_x-arrow_length, end_y+(arrow_length/2))
                         pdf.set_font('esphimere', '', arrow_font_size)
                         # print("pdf: standard_control", standard_control)
                         string_px = pdf.get_string_width(standard_control.upper())/2.0
-                        pdf.text((start_x+((end_x-start_x)/2.0)-string_px), start_y+arrow_margin, standard_control.upper())
+                        pdf.text((start_x+((end_x-start_x)/2.0)-string_px), start_y+(arrow_margin*x_i), standard_control.upper())
 
         print("\n\n#####\n\n", self.user_data_dir)
         filepath = os.path.join(self.user_data_dir, "temp_poly.pdf")

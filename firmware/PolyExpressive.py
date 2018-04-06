@@ -16,12 +16,6 @@ gc.collect()
 # uart = UART(1, 31250, tx=4)                         # init with given baudrate
 uart = UART(1, rx=17, tx=4)  # loboris                       # init with given baudrate
 uart.init(31250, bits=8, parity=None, stop=1) # init with given parameters
-# pull these to global panel file so they can be shared
-panel_x = 469 # factors 1, 7, 67
-panel_y = 294 # factors 2, 3, 7, 7
-grid_x = 33.5 # 14
-grid_y = 42 # 7
-num_x = int(panel_x/grid_x)
 
 # action_list = []
 current_action = None
@@ -371,7 +365,7 @@ def http_get_action_list(httpClient, httpResponse) :
     httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(action_list))
 
 def http_get_version(httpClient, httpResponse) :
-    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(3))
+    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(5))
 
 def http_update_action_list(httpClient, httpResponse) :
     # print("update action list")
