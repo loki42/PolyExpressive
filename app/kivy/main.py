@@ -42,6 +42,7 @@ import webbrowser
 import fpdf
 
 import data_view
+import alpha_pdf
 
 from pedal_config import default_channels, advanced_controls, standard_controls
 
@@ -530,7 +531,8 @@ class PolyExpressiveSetup(App):
             {"title":"6", "thumbnail" : './assets/layout6.png', "layout_id":6},
             {"title":"7", "thumbnail" : './assets/layout7.png', "layout_id":7},
             {"title":"8", "thumbnail" : './assets/layout8.png', "layout_id":8},
-            {"title":"9", "thumbnail" : './assets/layout8.png', "layout_id":9}
+            {"title":"9", "thumbnail" : './assets/layout9.png', "layout_id":9},
+            {"title":"10", "thumbnail" : './assets/layout10.png', "layout_id":10}
             ]
 
 
@@ -1258,7 +1260,7 @@ class PolyExpressiveSetup(App):
         arrow_font_size = 26
         line_width = 0.8
         fpdf.set_global("FPDF_CACHE_MODE", 1)
-        pdf = fpdf.FPDF('L', 'mm', (size_y, size_x))
+        pdf = alpha_pdf.AlphaPDF('L', 'mm', (size_y, size_x))
         pdf.add_page()
         frozen = 'not'
         bundle_dir = ''
@@ -1307,9 +1309,11 @@ class PolyExpressiveSetup(App):
             out_x1 = (x1 * x_fac * size_x)
 
             color = self.cell_buttons[cell_id].md_bg_color
+            alpha = color[3]
             color = [a * 255 for a in color[0:-1]]
             pdf.set_fill_color(*color)
             color = self.cell_buttons[cell_id].text_color
+            text_alpha = color[3]
             color = [a * 255 for a in color[0:-1]]
             pdf.set_text_color(*color)
             color = self.cell_buttons[cell_id].outline_color
@@ -1334,9 +1338,16 @@ class PolyExpressiveSetup(App):
             pdf.set_xy(out_x1+(outline_width/2), out_y1+(outline_width/2))
             pdf.set_font('esphimere', '', arrow_font_size)
             pdf.set_line_width(outline_width)
-            pdf.multi_cell(out_x2-out_x1-(outline_width), out_y2-out_y1-(outline_width), text, border = draw_outline,
+            pdf.set_alpha(alpha)
+            # text will be transparent too, so draw text later. 
+            pdf.multi_cell(out_x2-out_x1-(outline_width), out_y2-out_y1-(outline_width), '', border = draw_outline,
                     align = 'C', fill = True)
+            pdf.set_xy(out_x1+(outline_width/2), out_y1+(outline_width/2))
+            pdf.set_alpha(text_alpha)
+            pdf.multi_cell(out_x2-out_x1-(outline_width), out_y2-out_y1-(outline_width), text, border = 0,
+                    align = 'C', fill = False)
             pdf.set_line_width(line_width)
+            pdf.set_alpha(1)
 
             # draw arrows if a continous value is mapped to a dimension
             x_i  = 0
@@ -1440,6 +1451,12 @@ class PolyExpressiveSetup(App):
                     [0.11111, colorscale("eedc2a", 1.2)], [0.11111, colorscale("894c9e", 1.2)],
                     [0.11111, colorscale("4cb853", 1.2)], [0.11111, colorscale("894c9e", 1.2)],
                     [0.11111, colorscale("eedc2a", 1.2)]]]]
+        self.layouts[10] = [[0.4, [[0.3, "ee4498"], [0.2, "f9c1e9"], [0.2, "49c3e9"],  [0.3, "f37021"]]],
+                [0.2, [[0.166, "2c79be"], [0.166, "e2412b"], [0.166, "894c9e"], [0.166, "4cb853"], [0.166, "eedc2a"], [0.166, "2c79be"]]],
+                [0.2, [[0.166, colorscale("2c79be", 1.2)], [0.166, colorscale("e2412b", 1.2)],
+                    [0.166, colorscale("894c9e", 1.2)], [0.166, colorscale("4cb853", 1.2)],
+                    [0.166, colorscale("eedc2a", 1.2)], [0.166, colorscale("2c79be", 1.2)]]],
+                [0.2, [[0.166, "2c79be"], [0.166, "e2412b"], [0.166, "894c9e"], [0.166, "4cb853"], [0.166, "eedc2a"], [0.166, "2c79be"]]]]
         target.clear_widgets()
         cell_id = 0
         self.cell_rows = []
