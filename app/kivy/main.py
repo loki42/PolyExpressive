@@ -14,6 +14,7 @@ from kivy.uix.image import Image
 from kivy.graphics import Color
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.floatlayout import FloatLayout
 from kivy.network.urlrequest import UrlRequest
 from kivy.uix.colorpicker import ColorPicker
 from kivy.uix.scrollview import ScrollView
@@ -43,6 +44,8 @@ import fpdf
 
 import data_view
 import alpha_pdf
+from file_chooser_thumb_view import FileChooserThumbView
+from file_browser import FileBrowser
 
 from pedal_config import default_channels, advanced_controls, standard_controls
 
@@ -83,6 +86,25 @@ main_widget_kv = '''
             size_hint_x: None
             width: 100
             text: root.sub_text
+
+<LoadDialog>:
+    # BoxLayout:
+    #     size: (450, 350)
+    #     pos: root.pos
+    #     orientation: "vertical"
+    #     # FileChooserListView:
+    #     #     id: filechooser
+    #     #     size: (450, 350)
+    #     #     size_hint_y: 1
+    BoxLayout:
+        size_hint_y: None
+        height: 30
+        MDRaisedButton:
+            text: "Cancel"
+            on_release: root.cancel()
+        MDRaisedButton:
+            text: "Load"
+            on_release: root.load(filechooser.path, filechooser.selection)
 
 BoxLayout:
     orientation: 'vertical'
@@ -146,6 +168,11 @@ BoxLayout:
                 orientation: 'vertical'
                 size_hint: 1, 1
                 id: edit_mat_box
+                canvas.before:
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                        source: app.background_path
                 BoxLayout:
                     orientation: 'horizontal'
                     size_hint: 1, 0.4
@@ -410,6 +437,20 @@ BoxLayout:
                         max:1
                         id: global_transparency_slider
                         on_touch_up: app.set_transparency(all_cells=True)
+                BoxLayout:
+                    padding: dp(20), dp(4), dp(4), dp(20)
+                    orientation: 'horizontal'
+                    spacing: dp(4)
+                    MDLabel:
+                        font_style: 'Body1'
+                        theme_text_color: 'Primary'
+                        text: "Image here"
+                        halign: 'left'
+                    MDRaisedButton:
+                        text: "Set Background Image"
+                        opposite_colors: True
+                        size_hint: 0.3, 0.3
+                        on_release: app.show_set_background_image()
                 MDFloatingActionButton:
                     icon:                'check'
                     opposite_colors:    True
@@ -535,6 +576,16 @@ class PolyExpressiveSetup(App):
             {"title":"10", "thumbnail" : './assets/layout10.png', "layout_id":10}
             ]
 
+    bundle_dir = ''
+    if getattr(sys, 'frozen', False):
+            # we are running in a bundle
+            frozen = 'ever so'
+            bundle_dir = sys._MEIPASS
+    else:
+            # we are running in a normal Python environment
+            bundle_dir = os.path.dirname(os.path.abspath(__file__))
+    background_path = StringProperty(os.path.join(bundle_dir, "assets", "print_background.jpg"))
+
 
     my_mats_names = []
 
@@ -629,6 +680,9 @@ class PolyExpressiveSetup(App):
         self.root.ids.selected_pedals_dl.items = [{"text":a, "secondary_text":b, "action": PolyExpressiveSetup.select_pedal, "channel_change": PolyExpressiveSetup.change_channel,
             "channel":get_channel(b+":"+a, 1),
             "id": b+":"+a} for b, a in [c.split(":") for c in mat_def["included_pedals"]]]
+        if "background_image" in mat_def:
+            self.set_background_image(mat_def["background_image"])
+
         self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
 
         self.go_to_page("edit_mat", "Edit Board")
@@ -1005,6 +1059,30 @@ class PolyExpressiveSetup(App):
                 mat_def["cells"][cell_id]["color"] = get_hex_from_color(c)
                 self.cell_buttons[cell_id].md_bg_color = c
 
+    def set_background_image(self, path):
+        mat_def["background_image"] = path
+        self.background_path = mat_def["background_image"]
+
+    def show_set_background_image(self):
+
+        chooser = FileBrowser(filters=["*.jpg", "*.png", "*.JPG", "*.PNG"])
+        # chooser = FileChooserThumbView(filters=["*.jpg", "*.png", "*.JPG", "*.PNG"])
+        def popup_set_background_image(x):
+            self.set_background_image(chooser.selection[0])
+            self.dialog.dismiss()
+
+        content = BoxLayout(spacing=1, orientation="vertical", size_hint_y=None,
+                size=(500, 400),
+                            padding= 4)
+        content.add_widget(chooser)
+        # content = LoadDialog(load=popup_set_background_image, cancel=dismiss_dialog)
+        self.dialog = MDDialog(title="Choose Background Image ", content=content,
+                           height=dp(500),
+                            size_hint=(0.9, 0.95))
+        self.dialog.add_action_button("Set",
+                                      action=popup_set_background_image)
+        self.dialog.open()
+
     def show_save_mat_dialog(self):
         content = MDTextField()
         content.hint_text="Enter name for this board"
@@ -1272,6 +1350,9 @@ class PolyExpressiveSetup(App):
                 # we are running in a normal Python environment
                 bundle_dir = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(bundle_dir, "assets", "Esphimere Bold.otf")
+        image_path = ''
+        if "background_image" in mat_def:
+            image_path = mat_def["background_image"]
         print("file path is \n\n### \n\n", filepath)
         pdf.add_font('esphimere', '', filepath, uni=True)
         # pdf.set_font('esphimere', '', 46)
@@ -1281,6 +1362,8 @@ class PolyExpressiveSetup(App):
         pdf.set_text_color(255)
         pdf.set_draw_color(255)
         pdf.set_line_width(line_width)
+        if "background_image" in mat_def:
+            pdf.image(image_path, 0, 0, size_x, size_y);
         # pdf.set_text_color(0)
 
 
@@ -1565,6 +1648,10 @@ class PolyExpressiveSetup(App):
 """
 class TwoLineButton(MDOutlineButton):
     sub_text = StringProperty('')
+
+class LoadDialog(FloatLayout):
+    load = ObjectProperty(None)
+    cancel = ObjectProperty(None)
 
 # class AutonomousColorWheel(ColorWheel):
 #     sv_s = 1
