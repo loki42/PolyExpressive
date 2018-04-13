@@ -437,20 +437,20 @@ BoxLayout:
                         max:1
                         id: global_transparency_slider
                         on_touch_up: app.set_transparency(all_cells=True)
-                BoxLayout:
-                    padding: dp(20), dp(4), dp(4), dp(20)
-                    orientation: 'horizontal'
-                    spacing: dp(4)
-                    MDLabel:
-                        font_style: 'Body1'
-                        theme_text_color: 'Primary'
-                        text: "Image here"
-                        halign: 'left'
-                    MDRaisedButton:
-                        text: "Set Background Image"
-                        opposite_colors: True
-                        size_hint: 0.3, 0.3
-                        on_release: app.show_set_background_image()
+                # BoxLayout:
+                #     padding: dp(20), dp(4), dp(4), dp(20)
+                #     orientation: 'horizontal'
+                #     spacing: dp(4)
+                #     MDLabel:
+                #         font_style: 'Body1'
+                #         theme_text_color: 'Primary'
+                #         text: "Image here"
+                #         halign: 'left'
+                MDRaisedButton:
+                    text: "Set Background Image"
+                    opposite_colors: True
+                    # size_hint: 0.3, 0.2
+                    on_release: app.show_set_background_image()
                 MDFloatingActionButton:
                     icon:                'check'
                     opposite_colors:    True
@@ -459,7 +459,13 @@ BoxLayout:
                     # disabled: app.next_pedals_disabled
                     on_release: app.go_to_page("edit_mat", "edit board")
                     # size_hint: 0.1, 0.2
-
+        Screen:
+            name: 'set_background_image_page'
+            FileBrowser:
+                filters: ["*.jpg", "*.png", "*.JPG", "*.PNG"]
+                on_success: app.set_background_image_redir(self.selection[0])
+                on_submit: app.set_background_image_redir(self.selection[0])
+                on_canceled: app.set_up_global_appearance_page()
 
 '''
 # action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
@@ -830,6 +836,9 @@ class PolyExpressiveSetup(App):
         # set layout
         mat_def["layout"] = ctx["layout_id"]
         self.show_layout(self.root.ids["edit_mat_box"], mat_def["layout"])
+        # set default background and transparency 
+        self.set_transparency(all_cells=True, alpha=0.7)
+        self.set_background_image(self.background_path)
         self.go_to_page("choose_pedals", "Choose Pedals")
 
     def set_up_action_page(self, cell_id):
@@ -1045,17 +1054,19 @@ class PolyExpressiveSetup(App):
                 mat_def["cells"][cell_id]["outline_width"] = self.root.ids.global_outline_width_slider.value
                 self.cell_buttons[cell_id].outline_width = self.root.ids.global_outline_width_slider.value
 
-    def set_transparency(self, all_cells=False):
+    def set_transparency(self, all_cells=False, alpha=None):
+        if alpha is None:
+            alpha = self.root.ids.global_transparency_slider.value
         if not all_cells:
             cell_id = current_selected_cell
             c = self.cell_buttons[cell_id].md_bg_color
-            c[3] = self.root.ids.global_transparency_slider.value
+            c[3] = alpha
             mat_def["cells"][cell_id]["color"] = get_hex_from_color(c)
             self.cell_buttons[cell_id].md_bg_color = c
         else:
             for cell_id, cell_content in mat_def["cells"].items():
                 c = self.cell_buttons[cell_id].md_bg_color
-                c[3] = self.root.ids.global_transparency_slider.value
+                c[3] = alpha
                 mat_def["cells"][cell_id]["color"] = get_hex_from_color(c)
                 self.cell_buttons[cell_id].md_bg_color = c
 
@@ -1063,25 +1074,12 @@ class PolyExpressiveSetup(App):
         mat_def["background_image"] = path
         self.background_path = mat_def["background_image"]
 
+    def set_background_image_redir(self, path):
+        self.set_background_image(path)
+        self.go_to_page("set_global_appearance", "Set Layout Appearance")
+
     def show_set_background_image(self):
-
-        chooser = FileBrowser(filters=["*.jpg", "*.png", "*.JPG", "*.PNG"])
-        # chooser = FileChooserThumbView(filters=["*.jpg", "*.png", "*.JPG", "*.PNG"])
-        def popup_set_background_image(x):
-            self.set_background_image(chooser.selection[0])
-            self.dialog.dismiss()
-
-        content = BoxLayout(spacing=1, orientation="vertical", size_hint_y=None,
-                size=(500, 400),
-                            padding= 4)
-        content.add_widget(chooser)
-        # content = LoadDialog(load=popup_set_background_image, cancel=dismiss_dialog)
-        self.dialog = MDDialog(title="Choose Background Image ", content=content,
-                           height=dp(500),
-                            size_hint=(0.9, 0.95))
-        self.dialog.add_action_button("Set",
-                                      action=popup_set_background_image)
-        self.dialog.open()
+        self.go_to_page("set_background_image_page", "Set Background Image")
 
     def show_save_mat_dialog(self):
         content = MDTextField()

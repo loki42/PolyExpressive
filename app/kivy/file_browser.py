@@ -485,17 +485,32 @@ class FileBrowser(BoxLayout):
 if __name__ == '__main__':
     import os
     from kivy.app import App
+    from kivymd.dialog import MDDialog
+    from kivymd.theming import ThemeManager
 
     class TestApp(App):
 
+        theme_cls = ThemeManager()
         def build(self):
             user_path = os.path.join(get_home_directory(), 'Documents')
             browser = FileBrowser(select_string='Select',
                                   favorites=[(user_path, 'Documents')])
-            browser.bind(on_success=self._fbrowser_success,
-                         on_canceled=self._fbrowser_canceled,
-                         on_submit=self._fbrowser_submit)
-            return browser
+            # content = BoxLayout(spacing=1, orientation="vertical", size_hint_y=None,
+            #         size=(500, 400),
+            #                     padding= 4)
+            # chooser = FileBrowser(filters=["*.jpg", "*.png", "*.JPG", "*.PNG"])
+            # chooser.bind(on_success=self._fbrowser_success,
+            #              on_canceled=self._fbrowser_canceled,
+            #              on_submit=self._fbrowser_submit)
+            # content.add_widget(chooser)
+            # dialog = MDDialog(title="Choose Background Image ", content=content,
+            #                height=500,
+            #                 size_hint=(0.9, 0.95))
+            # dialog.add_action_button("Set",
+            #                           action=popup_set_background_image)
+            # dialog.open()
+            # return dialog
+            return brower
 
         def _fbrowser_canceled(self, instance):
             print('cancelled, Close self.')
