@@ -3,6 +3,7 @@ from __future__ import print_function
 from __future__ import division
 
 import json, os, sys
+import copy
 
 from kivy.app import App
 from kivy.lang import Builder
@@ -560,6 +561,14 @@ def colorscale(hexstr, scalefactor):
 def menu_release(x):
     print("release menu", x)
 
+def split_pedal_id(pedal_id):
+    if pedal_id.count(":") == 2: # multiple of same pedal, last number is id
+        pedal = ':'.join(pedal_id.split(":")[0:2]) # trim off ID
+        id_part = pedal_id.split(":")[2] # id only
+        return (pedal, id_part)
+    else:
+        return (pedal_id, 1)
+
 class PolyExpressiveSetup(App):
     theme_cls = ThemeManager()
     title = "Poly Expressive"
@@ -619,7 +628,10 @@ class PolyExpressiveSetup(App):
             if new_channel > 0 and new_channel < 17:
                 if "channel_map" not in mat_def:
                     mat_def["channel_map"] = {}
-                mat_def["channel_map"][ctx["id"]+":1"] = text_field.text
+                if ctx["id"].count(":") == 2:
+                    mat_def["channel_map"][ctx["id"]] = text_field.text
+                else:
+                    mat_def["channel_map"][ctx["id"]+":1"] = text_field.text
                 print("change channel pedal", text_field.text)
                 text_field.error = False
                 text_field.color_mode = "primary"
@@ -645,19 +657,26 @@ class PolyExpressiveSetup(App):
             text_field.error = True
             text_field.color_mode = "accent"
 
-    def select_pedal(self, ctx):
-        print("select pedal", ctx)
-        if ctx in self.root.ids.available_pedals_dl.items:
-            self.root.ids.available_pedals_dl.items.remove(ctx)
-            self.root.ids.selected_pedals_dl.items.append(ctx)
-        elif ctx in self.root.ids.selected_pedals_dl.items:
+    def remove_pedal(self, ctx):
+        if ctx in self.root.ids.selected_pedals_dl.items:
             self.root.ids.selected_pedals_dl.items.remove(ctx)
-            self.root.ids.available_pedals_dl.items.append(ctx)
 
         self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
         mat_def["included_pedals"] = [a["id"] for a in self.root.ids.selected_pedals_dl.items]
 
-        # print(self.root.ids.selected_pedals_dl.items)
+    def select_pedal(self, in_ctx):
+        ctx = copy.deepcopy(in_ctx)
+        print("select pedal", ctx)
+        if ctx["id"] in [a["id"] for a in self.root.ids.selected_pedals_dl.items]:
+            # multiple of this pedal, count how many already exist
+            ids = [split_pedal_id(a)[0] for a in mat_def["included_pedals"]]
+            ctx["id"] = ctx["id"]+":"+str(ids.count(ctx["id"])+1)
+            print("id after modify", ctx["id"])
+        ctx["action"] = PolyExpressiveSetup.remove_pedal
+        self.root.ids.selected_pedals_dl.items.append(ctx)
+
+        self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
+        mat_def["included_pedals"] = [a["id"] for a in self.root.ids.selected_pedals_dl.items]
 
     def select_mat(self, ctx):
         global mat_def
@@ -683,9 +702,9 @@ class PolyExpressiveSetup(App):
             self.cell_buttons[cell_id].sub_text = '\n'.join(current_keys)
         # print("setting mat to", ctx["id"], "my_mats", my_mats)
         # setup all the controls
-        self.root.ids.selected_pedals_dl.items = [{"text":a, "secondary_text":b, "action": PolyExpressiveSetup.select_pedal, "channel_change": PolyExpressiveSetup.change_channel,
-            "channel":get_channel(b+":"+a, 1),
-            "id": b+":"+a} for b, a in [c.split(":") for c in mat_def["included_pedals"]]]
+        self.root.ids.selected_pedals_dl.items = [{"text":a, "secondary_text":b, "action": PolyExpressiveSetup.remove_pedal, "channel_change": PolyExpressiveSetup.change_channel,
+            "channel":get_channel(*split_pedal_id(b+":"+a)),
+            "id": b+":"+a} for b, a in [c.split(":", 1) for c in mat_def["included_pedals"]]]
         if "background_image" in mat_def:
             self.set_background_image(mat_def["background_image"])
 
@@ -849,21 +868,27 @@ class PolyExpressiveSetup(App):
         current_keys = [a[0] for a in current_controls]
         if mat_def["included_pedals"]:
             for pedal in mat_def["included_pedals"]:
+                pedal_id = pedal
+                # multiple of same pedal, last number is id
+                pedal, id_part = split_pedal_id(pedal_id)
                 if pedal in standard_controls:
                     for control_name, control in standard_controls[pedal].items():
-                        control_key = get_standard_controls_key(pedal, 1, control_name)
+                        control_key = get_standard_controls_key(pedal, id_part, control_name)
                         if control_key not in current_keys:
                             # print("control 0 is", control[0])
                             # self.root.ids.available_standard_controls_dl.items.append({"text":control[0],
                             self.available_standard_controls.append({"text":control_name,
-                                "secondary_text":pedal,
-                                "pedal_id":pedal,
+                                "secondary_text":pedal_id,
+                                "pedal_id":pedal_id,
                                 "action": PolyExpressiveSetup.select_control,
                                 "key": control_key })
 
             for key, val in current_controls:
-                maker_model, channel, control = split_standard_controls_key(key)
+                maker_model, pedal_id, control = split_standard_controls_key(key)
                 # self.root.ids.available_standard_controls_dl.items.append({"text":control[0],
+                if pedal_id != 1:
+                    # append because this is a multiple pedal
+                    maker_model = maker_model + ":" + pedal_id
                 c = {"text":control,
                     "secondary_text":maker_model,
                     "pedal_id":maker_model,
