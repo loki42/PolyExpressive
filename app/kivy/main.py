@@ -11,6 +11,7 @@ from kivy.metrics import dp
 from kivy.properties import ObjectProperty
 from kivy.properties import BooleanProperty
 from kivy.properties import StringProperty
+from kivy.properties import NumericProperty
 from kivy.uix.image import Image
 from kivy.graphics import Color
 from kivy.uix.boxlayout import BoxLayout
@@ -368,7 +369,7 @@ BoxLayout:
                         halign: 'left'
                     MDSlider:
                         min:0
-                        max:10
+                        max:3
                         id: outline_width_slider
                         on_touch_up: app.set_outline_width()
                 MDFloatingActionButton:
@@ -421,8 +422,9 @@ BoxLayout:
                         halign: 'left'
                     MDSlider:
                         min:0
-                        max:10
+                        max:3
                         id: global_outline_width_slider
+                        value: app.global_outline_width
                         on_touch_up: app.set_outline_width(all_cells=True)
                 BoxLayout:
                     padding: dp(20), dp(4), dp(4), dp(20)
@@ -437,6 +439,7 @@ BoxLayout:
                         min:0
                         max:1
                         id: global_transparency_slider
+                        value: app.global_transparency
                         on_touch_up: app.set_transparency(all_cells=True)
                 # BoxLayout:
                 #     padding: dp(20), dp(4), dp(4), dp(20)
@@ -467,7 +470,133 @@ BoxLayout:
                 on_success: app.set_background_image_redir(self.selection[0])
                 on_submit: app.set_background_image_redir(self.selection[0])
                 on_canceled: app.set_up_global_appearance_page()
-
+        # Screen:
+        #     name: 'add_custom_pedal'
+        #     BoxLayout:
+        #         padding: dp(20), dp(4), dp(4), dp(20)
+        #         orientation: 'vertical'
+        #         spacing: dp(4)
+        #         # MDLabel:
+        #         #     font_style: 'Subhead'
+        #         #     theme_text_color: 'Primary'
+        #         #     text: ""
+        #         #     halign: 'left'
+        #         #     size_hint: 1, 0.1
+        #         BoxLayout:
+        #             padding: dp(20), dp(4), dp(4), dp(20)
+        #             orientation: 'horizontal'
+        #             spacing: dp(20)
+        #             MDLabel:
+        #                 font_style: 'Body1'
+        #                 theme_text_color: 'Primary'
+        #                 text: "Pedal Brand"
+        #                 halign: 'left'
+        #             MDTextField:
+        #                 hint_text:"Enter brand for this pedal e.g. Chase Bliss"
+        #                 helper_text:"Chase Bliss"
+        #                 helper_text_mode:"on_focus"
+        #         BoxLayout:
+        #             padding: dp(20), dp(4), dp(4), dp(20)
+        #             orientation: 'horizontal'
+        #             spacing: dp(20)
+        #             MDLabel:
+        #                 font_style: 'Body1'
+        #                 theme_text_color: 'Primary'
+        #                 text: "Pedal Model"
+        #                 halign: 'left'
+        #             MDTextField:
+        #                 hint_text:"Enter the type of this pedal e.g. Ottobit"
+        #                 helper_text:"Ottobit"
+        #                 helper_text_mode:"on_focus"
+        #         BoxLayout:
+        #             padding: dp(20), dp(4), dp(4), dp(20)
+        #             orientation: 'horizontal'
+        #             spacing: dp(20)
+        #             MDLabel:
+        #                 font_style: 'Body1'
+        #                 theme_text_color: 'Primary'
+        #                 text: "Default MIDI Channel"
+        #                 halign: 'left'
+        #             MDTextField:
+        #                 hint_text:"1-16"
+        #                 helper_text:"1"
+        #                 helper_text_mode:"on_focus"
+        #         # ScrollView:
+        #             # do_scroll_x: False
+        #             # DataList:
+        #             #     id: add_action_list_dl
+        #             #     items: app.current_add_action_list
+        #         BoxLayout:
+        #             padding: dp(20), dp(4), dp(4), dp(20)
+        #             orientation: 'horizontal'
+        #             spacing: dp(20)
+        #             MDRaisedButton:
+        #                 text: "Add Action"
+        #                 opposite_colors: True
+        #                 size_hint: 0.3, 0.3
+        #                 on_release: app.go_to_page("add_custom_pedal_action", "Add Action")
+        #             # MDRaisedButton:
+        #             #     text: "Add Toggle Action"
+        #             #     opposite_colors: True
+        #             #     size_hint: 0.3, 0.3
+        #             #     on_release: app.add_toggle_action()
+        #             # MDRaisedButton
+        #             #     text: "Add Foot Up Action"
+        #             #     opposite_colors: True
+        #             #     size_hint: 0.3, 0.3
+        #             #     on_release: app.add_foot_up_action()
+        #         MDFloatingActionButton:
+        #             icon:                'check'
+        #             opposite_colors:    True
+        #             elevation_normal:    8
+        #             pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
+        #             # disabled: app.next_pedals_disabled
+        #             on_release: app.go_to_page("edit_mat", "edit board")
+        #             # size_hint: 0.1, 0.2
+        # Screen:
+        #     name: 'add_custom_pedal_action'
+        #         BoxLayout:
+        #             padding: dp(20), dp(4), dp(4), dp(20)
+        #             orientation: 'horizontal'
+        #             spacing: dp(20)
+        #             MDLabel:
+        #                 font_style: 'Body1'
+        #                 theme_text_color: 'Primary'
+        #                 text: "Action Name"
+        #                 halign: 'left'
+        #             MDTextField:
+        #                 hint_text:"1-16"
+        #                 helper_text:"1"
+        #                 helper_text_mode:"on_focus"
+        #         BoxLayout:
+        #             padding: dp(20), dp(4), dp(4), dp(20)
+        #             orientation: 'horizontal'
+        #             spacing: dp(20)
+        #             MDRaisedButton:
+        #                 text: "Full Range CC"
+        #                 opposite_colors: True
+        #                 size_hint: 0.3, 0.3
+        #                 on_release: app.add_action_type(t = "cc")
+        #             MDRaisedButton:
+        #                 text: "Specific Value CC"
+        #                 opposite_colors: True
+        #                 size_hint: 0.3, 0.3
+        #                 on_release: app.add_action_type(t = "enum")
+        #             MDRaisedButton
+        #                 text: "Program Change"
+        #                 opposite_colors: True
+        #                 size_hint: 0.3, 0.3
+        #                 on_release: app.add_action_type(t = "pc")
+        #             MDRaisedButton
+        #                 text: "Note On/Off"
+        #                 opposite_colors: True
+        #                 size_hint: 0.3, 0.3
+        #                 on_release: app.add_action_type(t = "note")
+        #             MDRaisedButton
+        #                 text: "Channel Pressure / Aftertouch"
+        #                 opposite_colors: True
+        #                 size_hint: 0.3, 0.3
+        #                 on_release: app.add_action_type(t = "cp")
 '''
 # action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
 
@@ -603,6 +732,9 @@ class PolyExpressiveSetup(App):
 
 
     my_mats_names = []
+    current_add_action_list = []
+    global_outline_width = NumericProperty(1.1)
+    global_transparency = NumericProperty(0.1)
 
     def go_to_page(self, page, title):
         self.root.ids.scr_mngr.current = page
@@ -707,6 +839,10 @@ class PolyExpressiveSetup(App):
             "id": b+":"+a} for b, a in [c.split(":", 1) for c in mat_def["included_pedals"]]]
         if "background_image" in mat_def:
             self.set_background_image(mat_def["background_image"])
+        if "global_transparency" in mat_def:
+            self.global_transparency = mat_def["global_transparency"]
+        if "global_outline_width" in mat_def:
+            self.global_outline_width = mat_def["global_outline_width"]
 
         self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
 
@@ -856,7 +992,9 @@ class PolyExpressiveSetup(App):
         mat_def["layout"] = ctx["layout_id"]
         self.show_layout(self.root.ids["edit_mat_box"], mat_def["layout"])
         # set default background and transparency 
-        self.set_transparency(all_cells=True, alpha=0.7)
+        mat_def["global_transparency"] = 0 # to trigger change
+        self.set_transparency(all_cells=True, alpha=0.1)
+        self.global_transparency = mat_def["global_transparency"]
         self.set_background_image(self.background_path)
         self.go_to_page("choose_pedals", "Choose Pedals")
 
@@ -960,6 +1098,10 @@ class PolyExpressiveSetup(App):
             {'viewclass': 'MDMenuItem',
              'text': 'Set Global Appearance',
              'on_release' : lambda *x: self.set_up_global_appearance_page()
+             },
+            {'viewclass': 'MDMenuItem',
+             'text': 'Add Custom Pedal / MIDI',
+             'on_release' : lambda *x: self.go_to_page("add_custom_pedal", "Add Custom Pedal / MIDI")
              },
         ]
         Snackbar(text="Connect to the Poly WiFi to send to Poly").show()
@@ -1075,6 +1217,9 @@ class PolyExpressiveSetup(App):
             mat_def["cells"][cell_id]["outline_width"] = self.root.ids.outline_width_slider.value
             self.cell_buttons[cell_id].outline_width = self.root.ids.outline_width_slider.value
         else:
+            if mat_def["global_outline_width"] == self.root.ids.global_outline_width_slider.value:
+                return
+            mat_def["global_outline_width"] = self.root.ids.global_outline_width_slider.value
             for cell_id, cell_content in mat_def["cells"].items():
                 mat_def["cells"][cell_id]["outline_width"] = self.root.ids.global_outline_width_slider.value
                 self.cell_buttons[cell_id].outline_width = self.root.ids.global_outline_width_slider.value
@@ -1089,6 +1234,9 @@ class PolyExpressiveSetup(App):
             mat_def["cells"][cell_id]["color"] = get_hex_from_color(c)
             self.cell_buttons[cell_id].md_bg_color = c
         else:
+            if mat_def["global_transparency"] == alpha:
+                return
+            mat_def["global_transparency"] = alpha
             for cell_id, cell_content in mat_def["cells"].items():
                 c = self.cell_buttons[cell_id].md_bg_color
                 c[3] = alpha
@@ -1294,6 +1442,9 @@ class PolyExpressiveSetup(App):
         return True
 
     def on_stop(self):
+        pass
+
+    def add_action_type(self, t):
         pass
 
     def set_mat_size_dialog(self, next_action=None):
@@ -1567,6 +1718,9 @@ class PolyExpressiveSetup(App):
         cell_id = 0
         self.cell_rows = []
         self.cell_buttons = {}
+        if "global_outline_width" not in mat_def:
+            mat_def["global_outline_width"] = 1.1 # default transparency
+        self.global_outline_width = mat_def["global_outline_width"]
 
         for row in self.layouts[layout_def_id]:
             r = BoxLayout(orientation="horizontal", size_hint=(1, row[0]))
@@ -1591,7 +1745,7 @@ class PolyExpressiveSetup(App):
                 # b.md_bg_color = (get_color_from_hex(col[1])[0],
                 #     get_color_from_hex(col[1])[0], get_color_from_hex(col[1])[0], 1.0)
                 b.outline_color = (0,0,0,1)
-                b.outline_width = 1.1
+                b.outline_width = mat_def["global_outline_width"]
                 b.id=str(cell_id)
                 b.size_hint= (col[0], 1)
                 r.add_widget(b)
