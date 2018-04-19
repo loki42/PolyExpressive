@@ -736,6 +736,24 @@ class PolyExpressiveSetup(App):
     global_outline_width = NumericProperty(1.1)
     global_transparency = NumericProperty(0.1)
 
+    def reset_mat(self):
+        self.global_outline_width = 1.1
+        self.global_transparency = 0.1
+        global mat_def
+        global current_selected_cell
+        global included_standard_controls
+        # global selected_pedals
+        mat_def = {"cells":{}, "layout":1, "name":"unnamed", "included_pedals":[], "channel_map":{}}
+        default_cells(8)
+        current_selected_cell = "0" ## current target for editing / bit dodgy
+        included_standard_controls = []
+        self.selected_pedals = []
+        # self.root.ids.selected_pedals_dl.items.clear()
+        while len(self.root.ids.selected_pedals_dl.items) > 0:
+            self.root.ids.selected_pedals_dl.items.pop(0)
+            # print(help(self.root.ids.selected_pedals_dl.items))
+
+
     def go_to_page(self, page, title):
         self.root.ids.scr_mngr.current = page
         self.set_toolbar_title(title)
@@ -988,6 +1006,9 @@ class PolyExpressiveSetup(App):
 
     def click_set_layout(self, ctx):
         # print("set layout")
+        # reset mat, in case an existing layout is loaded.
+        self.reset_mat()
+
         # set layout
         mat_def["layout"] = ctx["layout_id"]
         self.show_layout(self.root.ids["edit_mat_box"], mat_def["layout"])
@@ -1574,6 +1595,7 @@ class PolyExpressiveSetup(App):
             color = [a * 255 for a in color[0:-1]]
             pdf.set_text_color(*color)
             color = self.cell_buttons[cell_id].outline_color
+            outline_alpha = color[3]
             color = [a * 255 for a in color[0:-1]]
             pdf.set_draw_color(*color)
             outline_width = self.cell_buttons[cell_id].outline_width
@@ -1597,14 +1619,19 @@ class PolyExpressiveSetup(App):
             pdf.set_line_width(outline_width)
             pdf.set_alpha(alpha)
             # text will be transparent too, so draw text later. 
-            pdf.multi_cell(out_x2-out_x1-(outline_width), out_y2-out_y1-(outline_width), '', border = draw_outline,
+            pdf.multi_cell(out_x2-out_x1-(outline_width), out_y2-out_y1-(outline_width), '', border = 0,
                     align = 'C', fill = True)
             pdf.set_xy(out_x1+(outline_width/2), out_y1+(outline_width/2))
             pdf.set_alpha(text_alpha)
             pdf.multi_cell(out_x2-out_x1-(outline_width), out_y2-out_y1-(outline_width), text, border = 0,
                     align = 'C', fill = False)
-            pdf.set_line_width(line_width)
             pdf.set_alpha(1)
+            if draw_outline:
+                pdf.set_xy(out_x1+(outline_width/2), out_y1+(outline_width/2))
+                pdf.set_alpha(outline_alpha)
+                pdf.multi_cell(out_x2-out_x1-(outline_width), out_y2-out_y1-(outline_width), '', border = 1,
+                        align = 'C', fill = False)
+            pdf.set_line_width(line_width)
 
             # draw arrows if a continous value is mapped to a dimension
             x_i  = 0
@@ -1651,8 +1678,12 @@ class PolyExpressiveSetup(App):
         print("\n\n#####\n\n", self.user_data_dir)
         filepath = os.path.join(self.user_data_dir, "temp_poly.pdf")
         print("print location", filepath)
-        pdf.output(filepath, 'F')
-        webbrowser.open("file://"+filepath)
+        try:
+            pdf.output(filepath, 'F')
+            webbrowser.open("file://"+filepath)
+        except:
+            Snackbar(text="Exporting PDF failed, usually this happens if it's already open, please close the previous PDF.").show()
+
 
 
 # class BoardLayoutContainer(BoxLayout):
