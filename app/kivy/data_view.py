@@ -37,13 +37,20 @@ data = [
 kv = """
 #:import TwoLineIconListItem kivymd.list.TwoLineIconListItem
 #:import TwoLineAvatarIconListItem kivymd.list.TwoLineAvatarIconListItem
-<DataTileGridItem@SmartTileWithLabel>:
-    thumbnail: ""
-    title: ""
+
+# <DataTileGridItem@SmartTileWithLabel>:
+#     thumbnail: ""
+#     title: ""
+#     mipmap: True
+#     source: root.thumbnail
+#     text: root.title
+#     on_release: root.action(app, root) 
+[DataTileGridItem@SmartTileWithLabel]:
     mipmap: True
-    source: root.thumbnail
-    text: root.title
-    on_release: root.action(app, root) 
+    source: ctx.thumbnail
+    text: ctx.title
+    on_release: ctx.action(app, ctx) 
+
 <DataListItemCheckBox@TwoLineAvatarIconListItem>:
     text: root.text
     secondary_text: root.secondary_text
@@ -110,32 +117,6 @@ kv = """
             orientation: 'vertical'
             spacing: dp(2)
 
-<DataTileGrid>:
-    canvas:
-        Color:
-            rgba: 0.3, 0.3, 0.3, 1
-        Rectangle:
-            size: self.size
-            pos: self.pos
-    rv: rv
-    RecycleView:
-        id: rv
-        scroll_type: ['bars', 'content']
-        scroll_wheel_distance: dp(114)
-        bar_width: dp(10)
-        viewclass: root.view_class
-        RecycleGridLayout:
-            cols: 2
-            default_size: None, dp(56)
-            default_size_hint: 1, None
-            size_hint_y: None
-            # size_hint: 1, 1
-            height: self.minimum_height
-            spacing: dp(2)
-            # row_default_height: (self.width - self.cols*self.spacing[0])/self.cols
-            row_default_height: 20
-            row_force_default: True
-            orientation: 'vertical'
 """
 
 Builder.load_string(kv)
@@ -204,8 +185,23 @@ class DataListCheckBox(PolyList):
     view_class = StringProperty('DataListItemCheckBox')
 
 # XXX
-class DataTileGrid(PolyListParent, GridLayout):
-    view_class = StringProperty('DataTileGridItem')
+# class DataTileGrid(PolyListParent, GridLayout):
+#     view_class = StringProperty('DataTileGridItem')
+
+# Builder.load_file("data_view.kv")
+
+class DataTileGrid(GridLayout):
+
+   item_template = StringProperty('DataTileGridItem')
+
+   items = ListProperty([])
+
+   def on_items(self, *args):
+       self.clear_widgets()
+       for item in self.items:
+           w = Builder.template(self.item_template, **item)
+           self.add_widget(w)
+           # print("adding", item)
 
 class IconLeftSampleWidget(ILeftBodyTouch, MDIconButton):
     pass
@@ -215,6 +211,7 @@ class IconRightSampleWidget(IRightBodyTouch, MDTextField):
 
 class CheckBoxRight(IRightBodyTouch, MDCheckbox):
     pass
+
 
 class TestApp(App):
     from kivymd.theming import ThemeManager

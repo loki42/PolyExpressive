@@ -152,11 +152,17 @@ BoxLayout:
                 items: app.my_mats_names
         Screen:
             name: 'select_layout'
-            DataTileGrid:
-                size_hint: 1,1
-                padding: dp(4), dp(4)
-                spacing: dp(4)
-                items: app.available_layouts
+            ScrollView:
+                do_scroll_x: False
+                DataTileGrid:
+                    cols: 2
+                    row_default_height: (self.width - self.cols*self.spacing[0])/self.cols
+                    row_force_default: True
+                    size_hint_y: None
+                    height: self.minimum_height
+                    padding: dp(4), dp(4)
+                    spacing: dp(4)
+                    items: app.available_layouts
         Screen:
             name: 'edit_mat'
             BoxLayout:
