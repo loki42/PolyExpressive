@@ -147,24 +147,16 @@ BoxLayout:
 
         Screen:
             name: 'list_my_mats'
-            ScrollView:
-                do_scroll_x: False
-                DataList:
-                    id: my_mat_dl
-                    items: app.my_mats_names
+            DataList:
+                id: my_mat_dl
+                items: app.my_mats_names
         Screen:
             name: 'select_layout'
-            ScrollView:
-                do_scroll_x: False
-                DataTileGrid:
-                    cols: 2
-                    row_default_height: (self.width - self.cols*self.spacing[0])/self.cols
-                    row_force_default: True
-                    size_hint_y: None
-                    height: self.minimum_height
-                    padding: dp(4), dp(4)
-                    spacing: dp(4)
-                    items: app.available_layouts
+            DataTileGrid:
+                size_hint: 1,1
+                padding: dp(4), dp(4)
+                spacing: dp(4)
+                items: app.available_layouts
         Screen:
             name: 'edit_mat'
             BoxLayout:
@@ -245,12 +237,10 @@ BoxLayout:
                         text: "Selected"
                         halign: 'left'
                         size_hint: 1, 0.1
-                    ScrollView:
-                        do_scroll_x: False
+                    DataListTextField:
                         size_hint: 1, 0.9
-                        DataListTextField:
-                            id: selected_pedals_dl
-                            items: app.selected_pedals
+                        id: selected_pedals_dl
+                        items: app.selected_pedals
                 BoxLayout:
                     padding: dp(20), dp(4), dp(4), dp(20)
                     orientation: 'vertical'
@@ -260,12 +250,10 @@ BoxLayout:
                         text: "Available Pedals"
                         halign: 'left'
                         size_hint: 1, 0.1
-                    ScrollView:
-                        do_scroll_x: False
+                    DataList:
                         size_hint: 1, 0.9
-                        DataList:
-                            id: available_pedals_dl
-                            items: app.available_pedals
+                        id: available_pedals_dl
+                        items: app.available_pedals
                     MDFloatingActionButton:
                         id:                    next_pedals_selected
                         icon:                'check'
@@ -297,12 +285,10 @@ BoxLayout:
                                 text: "Selected Controls"
                                 halign: 'left'
                                 size_hint: 1, 0.1
-                            ScrollView:
-                                do_scroll_x: False
+                            DataListCheckBox:
                                 size_hint: 1, 0.9
-                                DataListCheckBox:
-                                    id: selected_standard_controls_dl
-                                    items: app.selected_standard_controls
+                                id: selected_standard_controls_dl
+                                items: app.selected_standard_controls
                         BoxLayout:
                             padding: dp(20), dp(4), dp(4), dp(20)
                             orientation: 'vertical'
@@ -312,12 +298,10 @@ BoxLayout:
                                 text: "Available Controls"
                                 halign: 'left'
                                 size_hint: 1, 0.1
-                            ScrollView:
-                                do_scroll_x: False
+                            DataList:
                                 size_hint: 1, 0.9
-                                DataList:
-                                    id: available_standard_controls_dl
-                                    items: app.available_standard_controls
+                                id: available_standard_controls_dl
+                                items: app.available_standard_controls
                             MDFloatingActionButton:
                                 id:                    controls_selected
                                 icon:                'check'
@@ -525,11 +509,9 @@ BoxLayout:
                         helper_text:"1"
                         helper_text_mode:"on_focus"
                         id: add_action_midi_channel
-                ScrollView:
-                    do_scroll_x: False
-                    DataList:
-                        id: add_action_list_dl
-                        items: app.current_add_action_list
+                DataList:
+                    id: add_action_list_dl
+                    items: app.current_add_action_list
                 BoxLayout:
                     padding: dp(20), dp(4), dp(4), dp(20)
                     orientation: 'horizontal'
@@ -637,11 +619,9 @@ BoxLayout:
                 padding: dp(20), dp(4), dp(4), dp(20)
                 orientation: 'horizontal'
                 spacing: dp(20)
-                ScrollView:
-                    do_scroll_x: False
-                    DataList:
-                        id: add_enum_dl
-                        items: app.current_add_enum
+                DataList:
+                    id: add_enum_dl
+                    items: app.current_add_enum
                 MDLabel:
                     font_style: 'Body1'
                     theme_text_color: 'Primary'
@@ -887,8 +867,9 @@ class PolyExpressiveSetup(App):
         # TODO need to actually go back, for now go to home
         self.go_to_page("home", "Poly Expressive")
 
-    def change_channel(self, ctx, text_field):
+    def change_channel(self, in_ctx, text_field):
         # set the channel map to the new value
+        ctx = self.root.ids.selected_pedals_dl.find(in_ctx.id)
         print("about to change channel pedal", text_field.text)
         try:
             new_channel = int(text_field.text)
@@ -924,15 +905,18 @@ class PolyExpressiveSetup(App):
             text_field.error = True
             text_field.color_mode = "accent"
 
-    def remove_pedal(self, ctx):
-        if ctx in self.root.ids.selected_pedals_dl.items:
-            self.root.ids.selected_pedals_dl.items.remove(ctx)
+    def remove_pedal(self, in_ctx):
+        if in_ctx:
+            ctx = self.root.ids.selected_pedals_dl.find(in_ctx.id)
+            if ctx in self.root.ids.selected_pedals_dl.items:
+                self.root.ids.selected_pedals_dl.items.remove(ctx)
 
         self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
         mat_def["included_pedals"] = [a["id"] for a in self.root.ids.selected_pedals_dl.items]
 
     def select_pedal(self, in_ctx):
-        ctx = copy.deepcopy(in_ctx)
+        print("input ctx", in_ctx.id)
+        ctx = copy.deepcopy(self.root.ids.available_pedals_dl.find(in_ctx.id))
         print("select pedal", ctx)
         if ctx["id"] in [a["id"] for a in self.root.ids.selected_pedals_dl.items]:
             # multiple of this pedal, count how many already exist
@@ -947,7 +931,7 @@ class PolyExpressiveSetup(App):
 
     def select_mat(self, ctx):
         global mat_def
-        mat_def = my_mats[ctx["id"]]
+        mat_def = my_mats[ctx.id]
         self.show_layout(self.root.ids["edit_mat_box"], mat_def["layout"])
         for cell_id, cell_content in mat_def["cells"].items():
             self.cell_buttons[cell_id].text = cell_content["text"]
@@ -992,8 +976,15 @@ class PolyExpressiveSetup(App):
         self.dialog.dismiss()
         self.select_control(ctx, set_value=value)
 
-    def select_control(self, ctx, direction=None, set_value=None):
+    def select_control(self, in_ctx, direction=None, set_value=None):
         # print("select control", ctx)
+        if type(in_ctx) is dict:
+            ctx = in_ctx
+        else:
+            ctx = self.root.ids.available_standard_controls_dl.find(in_ctx.key, "key")
+        if not ctx:
+            ctx = self.root.ids.selected_standard_controls_dl.find(in_ctx.key, "key")
+
         if ctx in self.root.ids.available_standard_controls_dl.items:
             # check if it's a on_foot_move, if so it needs a direction
             if get_standard_controls_from_key(ctx["key"])[1] == "on_foot_move" and not direction:
