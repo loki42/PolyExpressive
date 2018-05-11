@@ -49,7 +49,7 @@ import alpha_pdf
 from file_chooser_thumb_view import FileChooserThumbView
 from file_browser import FileBrowser
 
-from pedal_config import default_channels, advanced_controls, standard_controls
+from pedal_config import default_channels, advanced_controls, standard_controls, update_standard_controls
 
 main_widget_kv = '''
 #:import Toolbar kivymd.toolbar.Toolbar
@@ -122,6 +122,7 @@ BoxLayout:
         id: scr_mngr
         Screen:
             name: 'home'
+            id: home_screen
             MDRaisedButton:
                 text: "My Boards"
                 opposite_colors: True
@@ -585,12 +586,12 @@ BoxLayout:
                         opposite_colors: True
                         size_hint: 0.3, 0.3
                         on_release: app.add_action_type(custom_pedal_action_name.text, t = "cc") # cc number / range
-                    MDRaisedButton:
-                        text: "Specific Value CC"
-                        opposite_colors: True
-                        size_hint: 0.3, 0.3
-                        # cc number then each key / val
-                        on_release: app.add_action_type(custom_pedal_action_name.text, t = "enum")
+                    # MDRaisedButton:
+                    #     text: "Specific Value CC"
+                    #     opposite_colors: True
+                    #     size_hint: 0.3, 0.3
+                    #     # cc number then each key / val
+                    #     on_release: app.add_action_type(custom_pedal_action_name.text, t = "enum")
                     MDRaisedButton
                         text: "Program Change"
                         opposite_colors: True
@@ -850,6 +851,7 @@ class PolyExpressiveSetup(App):
     current_add_enum = []
     global_outline_width = NumericProperty(1.1)
     global_transparency = NumericProperty(0.1)
+    return_button_added = False
 
     def reset_mat(self):
         self.global_outline_width = 1.1
@@ -1248,11 +1250,7 @@ class PolyExpressiveSetup(App):
     available_layouts = t_available_layouts
 
     selected_pedals = []
-    pedal_name_maker = [a.split(":") for a in default_channels.keys()]
-    available_pedals = [{"text":a, "secondary_text":b, "action": select_pedal, "channel_change": change_channel,
-        "channel":default_channels[b+":"+a], "id": b+":"+a} for b, a in pedal_name_maker]
-
-    available_pedals = sorted(available_pedals, key=lambda x: x["secondary_text"].lower()+x["text"].lower())
+    available_pedals = []
 
     selected_standard_controls = []
     available_standard_controls = []
@@ -1266,6 +1264,20 @@ class PolyExpressiveSetup(App):
                 my_mats = json.load(f)
         except IOError as e:
             print("saved mats don't exist")
+        try:
+            filepath = os.path.join(self.user_data_dir, "custom_pedals.json")
+            with open(filepath) as f:
+                self.custom_pedals = json.load(f)
+            self.update_known_pedals()
+        except IOError as e:
+            print("custom pedals don't exist")
+            self.custom_pedals = {"midi_channels": {}, "controls": {}}
+
+        pedal_name_maker = [a.split(":") for a in default_channels.keys()]
+        self.available_pedals = [{"text":a, "secondary_text":b, "action": PolyExpressiveSetup.select_pedal, "channel_change": PolyExpressiveSetup.change_channel,
+            "channel":default_channels[b+":"+a], "id": b+":"+a} for b, a in pedal_name_maker]
+
+        self.available_pedals = sorted(self.available_pedals, key=lambda x: x["secondary_text"].lower()+x["text"].lower())
 
         self.my_mats_names = [{"text":a, "secondary_text":"", "action": PolyExpressiveSetup.select_mat, "id": a} for a in my_mats.keys()]
         self.my_mats_names = sorted(self.my_mats_names, key=lambda x: x["text"].lower())
@@ -1370,7 +1382,7 @@ class PolyExpressiveSetup(App):
             mat_def["cells"][cell_id]["color"] = get_hex_from_color(c)
             self.cell_buttons[cell_id].md_bg_color = c
         else:
-            if mat_def["global_transparency"] == alpha:
+            if "global_transparency" in  mat_def and mat_def["global_transparency"] == alpha:
                 return
             mat_def["global_transparency"] = alpha
             for cell_id, cell_content in mat_def["cells"].items():
@@ -1580,8 +1592,35 @@ class PolyExpressiveSetup(App):
     def on_stop(self):
         pass
 
+    def update_known_pedals(self):
+        advanced_controls.update(self.custom_pedals["controls"])
+        update_standard_controls(self.custom_pedals["controls"]) # all pedals
+        # update midi channels
+        default_channels.update(self.custom_pedals["midi_channels"])
+        # update list of pedals
+
     def add_custom_pedal_final(self, maker, model, midi_channel):
         print(maker, model, midi_channel, "go add")
+        print(self.current_add_actions)
+        maker_model = maker + ":" + model
+        self.custom_pedals["controls"][maker_model] = copy.deepcopy(self.current_add_actions)
+        self.custom_pedals["midi_channels"][maker_model] = midi_channel
+        self.update_known_pedals()
+
+        # write custom_pedals to a file
+        pedal_name_maker = [a.split(":") for a in default_channels.keys()]
+        self.root.ids.available_pedals_dl.items = [{"text":a, "secondary_text":b, "action": PolyExpressiveSetup.select_pedal,
+            "channel_change": PolyExpressiveSetup.change_channel,
+            "channel":default_channels[b+":"+a], "id": b+":"+a} for b, a in pedal_name_maker]
+        self.root.ids.available_pedals_dl.items = sorted(self.root.ids.available_pedals_dl.items, key=lambda x: x["secondary_text"].lower()+x["text"].lower())
+
+        try:
+            filepath = os.path.join(self.user_data_dir, "custom_pedals.json")
+            with open(filepath, "w") as f:
+                json.dump(self.custom_pedals, f)
+        except IOError as e:
+            pass
+        self.go_to_page("edit_mat", "Edit Board")
 
     def add_action_type(self, action_name, t):
         if action_name not in self.current_add_action_list:
@@ -1667,6 +1706,18 @@ class PolyExpressiveSetup(App):
         self.dialog.open()
 
     def mat_to_pdf(self):
+        arrow_font_size = 26
+
+        def calculate_set_font_size(container_length, text):
+            font_size = arrow_font_size
+            pdf.set_font('esphimere', '', font_size)
+            string_px = pdf.get_string_width(text.upper())
+            while string_px > (container_length * 0.7):
+                font_size = font_size - 2
+                pdf.set_font('esphimere', '', font_size)
+                string_px = pdf.get_string_width(text.upper())
+
+
         # if we don't have a size, return
         if 'size' not in mat_def:
             self.set_mat_size_dialog(self.mat_to_pdf)
@@ -1674,7 +1725,6 @@ class PolyExpressiveSetup(App):
         size_x, size_y = mat_sizes[mat_def["size"]]
         arrow_length = 2.5
         arrow_margin = 10
-        arrow_font_size = 26
         line_width = 0.8
         fpdf.set_global("FPDF_CACHE_MODE", 1)
         pdf = alpha_pdf.AlphaPDF('L', 'mm', (size_y, size_x))
@@ -1800,7 +1850,9 @@ class PolyExpressiveSetup(App):
                             pdf.line(end_x, end_y, end_x+(arrow_length/2), end_y-arrow_length)
                         pdf.rotate(90, start_x, start_y)# - ((end_y-start_y)/2.0))
                         pdf.set_font('esphimere', '', arrow_font_size)
+                        calculate_set_font_size(end_y-start_y, standard_control.upper())
                         # print("pdf: standard_control", standard_control)
+                        print("start x, y", start_x, end_x, start_y, end_y)
                         string_px = pdf.get_string_width(standard_control.upper())/2.0
                         pdf.text((start_x-((end_y-start_y)/2.0)-string_px), start_y+(arrow_margin*y_i), standard_control.upper())
                         pdf.rotate(0)
@@ -1816,6 +1868,7 @@ class PolyExpressiveSetup(App):
                             pdf.line(end_x, end_y, end_x-arrow_length, end_y-(arrow_length/2))
                             pdf.line(end_x, end_y, end_x-arrow_length, end_y+(arrow_length/2))
                         pdf.set_font('esphimere', '', arrow_font_size)
+                        calculate_set_font_size(end_x-start_x, standard_control.upper())
                         # print("pdf: standard_control", standard_control)
                         string_px = pdf.get_string_width(standard_control.upper())/2.0
                         pdf.text((start_x+((end_x-start_x)/2.0)-string_px), start_y+(arrow_margin*x_i), standard_control.upper())
@@ -1897,6 +1950,16 @@ class PolyExpressiveSetup(App):
         if "global_outline_width" not in mat_def:
             mat_def["global_outline_width"] = 1.1 # default transparency
         self.global_outline_width = mat_def["global_outline_width"]
+        # enable return to current button in home screen
+        if not self.return_button_added:
+            self.return_button_added = True
+            return_button = MDRaisedButton(
+                            text= "Current Board",
+                            opposite_colors= True,
+                            size = (4 * dp(48), dp(48)),
+                            pos_hint= {'center_x': 0.5, 'center_y': 0.2},
+                            on_release= lambda *x: self.go_to_page("edit_mat", "Edit Board"))
+            self.root.ids.home_screen.add_widget(return_button)
 
         for row in self.layouts[layout_def_id]:
             r = BoxLayout(orientation="horizontal", size_hint=(1, row[0]))
@@ -1933,72 +1996,6 @@ class PolyExpressiveSetup(App):
             self.cell_rows.append(r)
 
 
-"""
-
-        Screen:
-            name: 'edit_mat'
-            BoardLayoutContainer:
-                orientation: 'vertical'
-                size_hint: 1, 1
-                id: edit_mat_box
-                BoxLayout:
-                    orientation: 'horizontal'
-                    size_hint: 1, 0.6
-                    MDFlatButton:
-                        id: 0
-                        text: 'MDFlatButton'
-                        size_hint: 0.4, 1
-                        md_bg_color: get_color_from_hex('')
-                        on_release: app.edit_menu(self, "0")
-                    MDFlatButton:
-                        id: 1
-                        text: 'MDFlatButton'
-                        size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex('')
-                        on_release: app.edit_menu(self, "1")
-                    MDFlatButton:
-                        id: 2
-                        text: 'MDFlatButton'
-                        size_hint: 0.4, 1
-                        md_bg_color: get_color_from_hex('')
-                        on_release: app.edit_menu(self, "2")
-                BoxLayout:
-                    orientation: 'horizontal'
-                    size_hint: 1, 0.4
-                    MDFlatButton:
-                        id: 3
-                        text: 'MDFlatButton'
-                        size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex('')
-                        on_release: app.edit_menu(self, "3")
-                    MDFlatButton:
-                        id: 4
-                        text: 'MDFlatButton'
-                        size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex('')
-                        on_release: app.edit_menu(self, "4")
-                    MDFlatButton:
-                        id: 5
-                        text: 'MDFlatButton'
-                        size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex('')
-                        on_release: app.edit_menu(self, "5")
-                    MDFlatButton:
-                        id: 6
-                        text: 'MDFlatButton'
-                        size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex('')
-                        on_release: app.edit_menu(self, "6")
-                    MDFlatButton:
-                        id: 7
-                        text: 'MDFlatButton'
-                        size_hint: 0.2, 1
-                        md_bg_color: get_color_from_hex('')
-                        on_release: app.edit_menu(self, "7")
-
-
-
-"""
 class TwoLineButton(MDOutlineButton):
     sub_text = StringProperty('')
 

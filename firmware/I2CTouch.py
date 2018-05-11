@@ -90,7 +90,7 @@ STMPE_GPIO_DIR=0x13
 STMPE_GPIO_ALT_FUNCT=0x17
 
 num_empty = 0
-trigger_num_empty = 20 # length of delay before up is triggered
+trigger_num_empty = 90 # length of delay before up is triggered
 
 def init_st():
 

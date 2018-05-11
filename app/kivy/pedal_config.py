@@ -276,7 +276,7 @@ advanced_controls = {
     },
 "Pigtronix:Echolution 2 Deluxe":{
     "Exp Pedal Input": {"type": "CC", "controller":4, "curve":"1"},
-    "Repeates": {"type": "CC", "controller":12, "curve":"1"},
+    "Repeats": {"type": "CC", "controller":12, "curve":"1"},
     "Time Knob": {"type": "CC", "controller":13, "curve":"1"},
     "Mix": {"type": "CC", "controller":14, "curve":"1"},
     "LFO Speed": {"type": "CC", "controller":15, "curve":"1"},
@@ -858,17 +858,20 @@ advanced_controls = {
 # add all that enum ones
 # add ones that specify default toggle
 standard_controls = {}
-for pedal_name, controls in advanced_controls.items():
-    if pedal_name not in standard_controls:
-        standard_controls[pedal_name] = {}
-    for control_name, control_conf in controls.items():
-        if "curve" in control_conf:
-            standard_controls[pedal_name][control_name] = [control_name, "on_foot_move", control_conf["curve"]]
-        if "enum" in control_conf:
-            standard_controls[pedal_name][control_name] = [control_name, "on_foot_down_enum", control_conf["enum"].keys()]
-        if "value" in control_conf:
-            standard_controls[pedal_name][control_name] = [control_name, "on_foot_down_value", control_conf["value"]]
+def update_standard_controls(in_controls):
+    global standard_controls
+    for pedal_name, controls in in_controls.items():
+        if pedal_name not in standard_controls:
+            standard_controls[pedal_name] = {}
+        for control_name, control_conf in controls.items():
+            if "curve" in control_conf:
+                standard_controls[pedal_name][control_name] = [control_name, "on_foot_move", control_conf["curve"]]
+            if "enum" in control_conf:
+                standard_controls[pedal_name][control_name] = [control_name, "on_foot_down_enum", control_conf["enum"].keys()]
+            if "value" in control_conf:
+                standard_controls[pedal_name][control_name] = [control_name, "on_foot_down_value", control_conf["value"]]
 
+update_standard_controls(advanced_controls)
 
 standard_controls_update = {
 "Chase Bliss:Condor": {
