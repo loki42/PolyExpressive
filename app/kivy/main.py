@@ -1095,6 +1095,8 @@ class PolyExpressiveSetup(App):
                 ctx.pop("direction")
             if "value" in ctx:
                 ctx.pop("value")
+            if "icon" in ctx:
+                ctx.pop("icon")
             if ":" in ctx["text"]:
                 ctx["text"] = ctx["text"].split(':')[0]
 

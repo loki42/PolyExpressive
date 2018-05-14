@@ -52,11 +52,15 @@ kv = """
     on_release: ctx.action(app, ctx) 
 
 <DataListItemCheckBox@TwoLineAvatarIconListItem>:
+    icon: "brightness-1"
     text: root.text
     secondary_text: root.secondary_text
     on_release: root.action(app, root) 
-    CheckBoxRight:
+    IconLeftSampleWidget:
+        icon: root.icon
+    # CheckBoxRight:
         #on_state: root.invert_curve(app, root, self)
+
 <DataListItemSubAction@TwoLineAvatarIconListItem>:
     text: root.text
     secondary_text: root.secondary_text
@@ -184,6 +188,17 @@ class DataListTextField(PolyList):
 class DataListCheckBox(PolyList):
     view_class = StringProperty('DataListItemCheckBox')
 
+    def on_items(self, *args):
+        icon = "brightness-1"
+        for item in self.items:
+            if item["direction"] == "horizontal":
+               icon = "swap-horizontal"
+            elif item["direction"] == "vertical":
+               icon = "swap-vertical"
+            elif item["direction"] == "pressure":
+               icon = "arrow-compress"
+            item["icon"] = icon
+        self.rv.data = self.items
 # XXX
 # class DataTileGrid(PolyListParent, GridLayout):
 #     view_class = StringProperty('DataTileGridItem')
