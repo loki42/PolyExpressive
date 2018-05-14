@@ -526,6 +526,7 @@ BoxLayout:
                         text: "Add Action"
                         opposite_colors: True
                         size_hint: 0.3, 0.3
+                        disabled: not (add_action_model.text and add_action_midi_channel.text and add_action_maker.text)
                         on_release: app.go_to_page("add_custom_pedal_action", "Add Action")
                     # MDRaisedButton:
                     #     text: "Add Toggle Action"
@@ -542,7 +543,7 @@ BoxLayout:
                     opposite_colors:    True
                     elevation_normal:    8
                     pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
-                    # disabled: app.next_pedals_disabled
+                    disabled: not add_action_list_dl.items
                     on_release: app.add_custom_pedal_final(add_action_maker.text, add_action_model.text, add_action_midi_channel.text)
                     # size_hint: 0.1, 0.2
         Screen:
@@ -574,6 +575,7 @@ BoxLayout:
                         opposite_colors: True
                         size_hint: 0.3, 0.3
                         on_release: app.add_action_type(custom_pedal_action_name.text, t = "cc") # cc number / range
+                        disabled: not custom_pedal_action_name.text
                     # MDRaisedButton:
                     #     text: "Specific Value CC"
                     #     opposite_colors: True
@@ -585,16 +587,19 @@ BoxLayout:
                         opposite_colors: True
                         size_hint: 0.3, 0.3
                         on_release: app.add_action_type(custom_pedal_action_name.text, t = "pc") # max / min
+                        disabled: not custom_pedal_action_name.text
                     MDRaisedButton
                         text: "Note On/Off"
                         opposite_colors: True
                         size_hint: 0.3, 0.3
                         on_release: app.add_action_type(custom_pedal_action_name.text, t = "note") # just add
+                        disabled: not custom_pedal_action_name.text
                     MDRaisedButton
                         text: "Channel Pressure / Aftertouch"
                         opposite_colors: True
                         size_hint: 0.3, 0.3
                         on_release: app.add_action_type(custom_pedal_action_name.text, t = "cp") # just add
+                        disabled: not custom_pedal_action_name.text
         Screen:
             name: 'add_full_range_cc'
             BoxLayout:
@@ -618,6 +623,7 @@ BoxLayout:
                     pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
                     # disabled: app.next_pedals_disabled
                     on_release: app.add_action_full_range_cc(full_range_cc_number.text)
+                    disabled: not fill_range_cc_number.text
                     # size_hint: 0.1, 0.2
         Screen:
             name: 'add_enum_cc'
@@ -695,6 +701,7 @@ BoxLayout:
                     pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
                     # disabled: app.next_pedals_disabled
                     on_release: app.add_action_pc(pc_range_max.text)
+                    disabled: not pc_range_max.text
                     # size_hint: 0.1, 0.2
 '''
 # action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
