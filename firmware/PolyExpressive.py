@@ -45,6 +45,7 @@ prev_sent = {"b1":0, "b2":0, "b3":0}
 
 current_macro = None
 macro_start_time = 0
+macro_cur_length = 0
 playing_macros = {}
 
 MIDI_COMMANDS = {
@@ -226,6 +227,8 @@ def start_record_macro(macro_id):
     # delete existing file, create new
     global current_macro
     global macro_start_time
+    global macro_cur_length
+    macro_cur_length = 0
     stop_macro(macro_id)
     macro_start_time = utime.ticks_us()
     # FIXME auto close macro when it gets to a set size
@@ -233,16 +236,22 @@ def start_record_macro(macro_id):
 
 def record_macro(midi):
     #append bytes to file
+    global macro_cur_length
     if current_macro is not None:
-        current_macro.write(str(utime.ticks_diff(utime.ticks_us(), macro_start_time))+','+ str(midi) + '\n')
+        if macro_cur_length > 5000: # choose sensible max length
+            stop_record_macro()
+        else:
+            current_macro.write(str(utime.ticks_diff(utime.ticks_us(), macro_start_time))+','+ str(midi) + '\n')
+            macro_cur_length = macro_cur_length + 1
 
-def stop_record_macro(macro_id):
+def stop_record_macro(macro_id=1):
     global current_macro
     if current_macro is not None:
         current_macro.close()
         current_macro = None
 
 def start_play_macro(macro_id):
+    stop_record_macro(macro_id)
     if macro_id in playing_macros:
         playing_macros[macro_id][0] = utime.ticks_us()
         playing_macros[macro_id][1].seek(0)
@@ -365,7 +374,7 @@ def http_get_action_list(httpClient, httpResponse) :
     httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(action_list))
 
 def http_get_version(httpClient, httpResponse) :
-    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(5))
+    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(6))
 
 def http_update_action_list(httpClient, httpResponse) :
     # print("update action list")

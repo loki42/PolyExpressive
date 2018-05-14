@@ -191,12 +191,13 @@ class DataListCheckBox(PolyList):
     def on_items(self, *args):
         icon = "brightness-1"
         for item in self.items:
-            if item["direction"] == "horizontal":
-               icon = "swap-horizontal"
-            elif item["direction"] == "vertical":
-               icon = "swap-vertical"
-            elif item["direction"] == "pressure":
-               icon = "arrow-compress"
+            if "direction" in item:
+                if item["direction"] == "horizontal":
+                   icon = "swap-horizontal"
+                elif item["direction"] == "vertical":
+                   icon = "swap-vertical"
+                elif item["direction"] == "pressure":
+                   icon = "arrow-compress"
             item["icon"] = icon
         self.rv.data = self.items
 # XXX

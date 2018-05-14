@@ -148,7 +148,7 @@ BoxLayout:
         Screen:
             name: 'list_my_mats'
             DataList:
-                id: my_mat_dl
+                id: my_mats_dl
                 items: app.my_mats_names
         Screen:
             name: 'select_layout'
@@ -623,7 +623,7 @@ BoxLayout:
                     pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
                     # disabled: app.next_pedals_disabled
                     on_release: app.add_action_full_range_cc(full_range_cc_number.text)
-                    disabled: not fill_range_cc_number.text
+                    disabled: not full_range_cc_number.text
                     # size_hint: 0.1, 0.2
         Screen:
             name: 'add_enum_cc'
@@ -705,6 +705,9 @@ BoxLayout:
                     # size_hint: 0.1, 0.2
 '''
 # action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
+
+from kivy.config import Config
+Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 
 my_mats = {}
 
@@ -1414,7 +1417,7 @@ class PolyExpressiveSetup(App):
         content.helper_text="This can be a description or what ever helps"
         content.helper_text_mode="on_focus"
         content.text = mat_def["name"] if mat_def["name"] != "unnamed" else ""
-        self.dialog = MDDialog(title="Save mat",
+        self.dialog = MDDialog(title="Save Board",
                                content=content,
                                size_hint=(.95, None),
                                height=dp(300),
@@ -1427,6 +1430,9 @@ class PolyExpressiveSetup(App):
             filepath = os.path.join(self.user_data_dir, "my_mats.json")
             with open(filepath, "w") as f:
                 json.dump(my_mats, f)
+            self.my_mats_names = [{"text":a, "secondary_text":"", "action": PolyExpressiveSetup.select_mat, "id": a} for a in my_mats.keys()]
+            self.my_mats_names = sorted(self.my_mats_names, key=lambda x: x["text"].lower())
+            self.root.ids.my_mats_dl.items = self.my_mats_names
             self.dialog.dismiss()
 
         self.dialog.add_action_button("Set",
