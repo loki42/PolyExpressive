@@ -4,6 +4,10 @@ from __future__ import division
 
 import json, os, sys
 import copy
+import SocketServer
+from SimpleHTTPServer import SimpleHTTPRequestHandler
+from BaseHTTPServer import HTTPServer as BaseHTTPServer
+import threading
 
 from kivy.app import App
 from kivy.lang import Builder
@@ -50,6 +54,7 @@ from file_chooser_thumb_view import FileChooserThumbView
 from file_browser import FileBrowser
 
 from pedal_config import default_channels, advanced_controls, standard_controls, update_standard_controls
+
 
 main_widget_kv = '''
 #:import Toolbar kivymd.toolbar.Toolbar
@@ -144,6 +149,14 @@ BoxLayout:
                 size: 4 * dp(48), dp(48)
                 pos_hint: {'center_x': 0.5, 'center_y': 0.4}
                 on_release: app.go_to_page("select_layout", "Select Layout")
+
+            MDRaisedButton:
+                text: "Update Firmware"
+                opposite_colors: False
+                size_hint: None, None
+                size: 4 * dp(48), dp(48)
+                pos_hint: {'center_x': 0.5, 'center_y': 0.2}
+                on_release: app.go_to_page("pre_update_firmware", "Update Firmware")
 
         Screen:
             name: 'list_my_mats'
@@ -266,7 +279,7 @@ BoxLayout:
                         opposite_colors:    True
                         elevation_normal:    8
                         pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
-                        # disabled: app.next_pedals_disabled
+                        disabled: app.next_pedals_disabled
                         on_release: app.go_to_page("edit_mat", "Edit Board")
                         # size_hint: 0.1, 0.2
 
@@ -314,7 +327,7 @@ BoxLayout:
                                 opposite_colors:    True
                                 elevation_normal:    8
                                 pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
-                                # disabled: app.next_standard_controls_disabled
+                                disabled: app.next_standard_controls_disabled
                                 on_release: app.set_standard_controls()
                 MDTab:
                     name: 'Advanced'
@@ -368,7 +381,6 @@ BoxLayout:
                     opposite_colors:    True
                     elevation_normal:    8
                     pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
-                    # disabled: app.next_pedals_disabled
                     on_release: app.go_to_page("edit_mat", "Edit Board")
                     # size_hint: 0.1, 0.2
         Screen:
@@ -451,7 +463,6 @@ BoxLayout:
                     opposite_colors:    True
                     elevation_normal:    8
                     pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
-                    # disabled: app.next_pedals_disabled
                     on_release: app.go_to_page("edit_mat", "edit board")
                     # size_hint: 0.1, 0.2
         Screen:
@@ -621,7 +632,6 @@ BoxLayout:
                     opposite_colors:    True
                     elevation_normal:    8
                     pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
-                    # disabled: app.next_pedals_disabled
                     on_release: app.add_action_full_range_cc(full_range_cc_number.text)
                     disabled: not full_range_cc_number.text
                     # size_hint: 0.1, 0.2
@@ -675,7 +685,6 @@ BoxLayout:
                     opposite_colors:    True
                     elevation_normal:    8
                     pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
-                    # disabled: app.next_pedals_disabled
                     on_release: app.add_action_full_range_cc("edit_mat", "edit board")
                     # size_hint: 0.1, 0.2
         Screen:
@@ -699,10 +708,30 @@ BoxLayout:
                     opposite_colors:    True
                     elevation_normal:    8
                     pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
-                    # disabled: app.next_pedals_disabled
                     on_release: app.add_action_pc(pc_range_max.text)
                     disabled: not pc_range_max.text
                     # size_hint: 0.1, 0.2
+        Screen:
+            name: 'pre_update_firmware'
+            BoxLayout:
+                padding: dp(20), dp(4), dp(4), dp(20)
+                orientation: 'vertical'
+                spacing: dp(20)
+                MDLabel:
+                    font_style: 'Body1'
+                    theme_text_color: 'Primary'
+                    text: "This will update your Poly Expressive to the latest firmware. \\nPlease connect to the Poly Expressive WiFi first. \\nCurrent available version is "+str(app.current_firmware_version)
+                    halign: 'left'
+                MDRaisedButton
+                    text: "Check Version"
+                    opposite_colors: True
+                    size_hint: 0.3, 0.3
+                    on_release: app.get_version() # just add
+                MDRaisedButton
+                    text: "Update Firmware"
+                    opposite_colors: True
+                    size_hint: 0.3, 0.3
+                    on_release: app.update_firmware() # just add
 '''
 # action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
 
@@ -808,6 +837,8 @@ def split_pedal_id(pedal_id):
         return (pedal_id, 1)
 
 class PolyExpressiveSetup(App):
+    current_firmware_version = 7
+
     theme_cls = ThemeManager()
     title = "Poly Expressive"
     next_pedals_disabled = BooleanProperty(True)
@@ -1896,13 +1927,6 @@ class PolyExpressiveSetup(App):
 
 
 
-# class BoardLayoutContainer(BoxLayout):
-
-    # def __init__(self, **kwargs):
-    #     # self.size_hint = (1,1)
-    #     super(BoxLayout, self).__init__(**kwargs)
-    #     self.orientation = "vertical"
-    #     self.show_layout(1)
 
 
     def show_layout(self, target, layout_def_id):
@@ -2007,6 +2031,52 @@ class PolyExpressiveSetup(App):
             target.add_widget(r)
             self.cell_rows.append(r)
 
+    def update_firmware(self):
+        def firmware_response(req, result):
+            print('updated firmware succesfully', result)
+            Snackbar(text="Updated Poly Expressive firmware successfully. Please power cycle your Poly.").show()
+            self.go_to_page("home", "Poly Expressive")
+
+        def firmware_fail(req, result):
+            print('firmware update Request failed')
+            Snackbar(text="Updating Poly Expressive failed. Are you connected to the right WiFi network?").show()
+            print(result)
+            self.go_to_page("home", "Poly Expressive")
+
+        def version_response(req, result):
+            print('version is', result)
+            cur_ver = 0
+            try:
+                cur_ver = int(result)
+            except:
+                Snackbar(text="Invalid result from Poly. Please contact us.").show()
+                return
+            if cur_ver < self.current_firmware_version:
+                Snackbar(text="Updating firmware. Please wait!").show()
+                req2 = UrlRequest('http://192.168.4.1/update_firmware', on_success=firmware_response, on_failure=firmware_fail, on_error=firmware_fail)
+            else:
+                Snackbar(text="Firmware is already the latest").show()
+
+        def fail(req, result):
+            print('Request failed')
+            Snackbar(text="Contacting Poly Expressive failed. Are you connected to the right WiFi network?").show()
+            print(result)
+
+        req = UrlRequest('http://192.168.4.1/get_version', on_success=version_response, on_failure=fail, on_error=fail)
+
+    def get_version(self):
+
+        def version_response(req, result):
+            print('version is', result)
+            Snackbar(text="Current firmware version is "+str(result) + " latest available is "+
+                    str(self.current_firmware_version)).show()
+
+        def fail(req, result):
+            print('Request failed')
+            Snackbar(text="Contacting Poly Expressive failed. Are you connected to the right WiFi network?").show()
+            print(result)
+
+        req = UrlRequest('http://192.168.4.1/get_version', on_success=version_response, on_failure=fail, on_error=fail)
 
 class TwoLineButton(MDOutlineButton):
     sub_text = StringProperty('')
@@ -2025,6 +2095,42 @@ class LoadDialog(FloatLayout):
 #         super(AutonomousColorWheel, self).on__hsv(instance, value)
 #         print(self.rgba)     #Or any method you want to trigger
 
+class HTTPHandler(SimpleHTTPRequestHandler):
+    """This handler uses server.base_path instead of always using os.getcwd()"""
+    def translate_path(self, path):
+        path = SimpleHTTPRequestHandler.translate_path(self, path)
+        relpath = os.path.relpath(path, os.getcwd())
+        fullpath = os.path.join(self.server.base_path, relpath)
+        return fullpath
+
+
+class HTTPServer(BaseHTTPServer):
+    """The main server, you pass in base_path which is the path you want to serve requests from"""
+    def __init__(self, base_path, server_address, RequestHandlerClass=HTTPHandler):
+        self.base_path = base_path
+        BaseHTTPServer.__init__(self, server_address, RequestHandlerClass)
+
+def run_httpd():
+
+    bundle_dir = ''
+    if getattr(sys, 'frozen', False):
+            # we are running in a bundle
+            frozen = 'ever so'
+            bundle_dir = sys._MEIPASS
+    else:
+            # we are running in a normal Python environment
+            bundle_dir = os.path.dirname(os.path.abspath(__file__))
+    try:
+        PORT = 9080
+        httpd = HTTPServer(bundle_dir, ("0.0.0.0", PORT))
+        httpd.serve_forever()
+        # print "serving at port", PORT
+    finally:
+        httpd.server_close()
+
 
 if __name__ == '__main__':
+    thread = threading.Thread(target = run_httpd)
+    thread.daemon = True
+    thread.start()
     PolyExpressiveSetup().run()

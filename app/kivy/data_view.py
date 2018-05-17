@@ -107,6 +107,12 @@ kv = """
     #         size: self.size
     #         pos: self.pos
     rv: rv
+    MDTextField:
+        helper_text:"Enter part of the name"
+        hint_text:"Search"
+        helper_text_mode:"on_focus"
+        id: filter_input
+        on_text: root.update_filter(self.text)
     RecycleView:
         id: rv
         scroll_type: ['bars', 'content']
@@ -129,6 +135,7 @@ Builder.load_string(kv)
 class PolyListParent(RecycleDataViewBehavior):
     view_class = StringProperty("DataListItem")
     items = ListProperty([])
+    filter_val = ""
 
     def populate(self):
         self.rv.data = [{'id': x['ml_uid'], 'text': str(x['ml_position'])} for x in data]
@@ -173,7 +180,12 @@ class PolyListParent(RecycleDataViewBehavior):
             self.items.pop(j)
 
     def on_items(self, *args):
-        self.rv.data = self.items
+        # self.rv.data = self.items
+        self.update_filter(self.filter_val)
+
+    def update_filter(self, value):
+        self.rv.data = [b for b in self.items if value.lower() in b['text'].lower()+ " " + b["secondary_text"].lower()]
+        self.filter_val = value
 
 class PolyList(PolyListParent, BoxLayout):
     orientation = 'vertical'

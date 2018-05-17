@@ -4,6 +4,7 @@ block_cipher = None
 
 added_files = [
          ( 'assets', 'assets' ),
+         ( 'ESP32', 'ESP32' ),
          ( 'kivymd/fonts', 'kivymd/fonts' ),
          ( 'kivymd/images', 'kivymd/images' ),
          ( '*.json', '.' ),

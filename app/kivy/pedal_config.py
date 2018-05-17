@@ -805,7 +805,8 @@ advanced_controls = {
     "Pitch 2 X/Y": {"type": "CC", "controller":115, "enum":{"On": 127, "Off":0}},
     "Reverb 1 X/Y": {"type": "CC", "controller":116, "enum":{"On": 127, "Off":0}},
     "Reverb 2 X/Y": {"type": "CC", "controller":117, "enum":{"On": 127, "Off":0}},
-    "Wahwah 1 X/Y": {"type": "CC", "controller":118, "enum":{"On": 127, "Off":0}}
+    "Wahwah 1 X/Y": {"type": "CC", "controller":118, "enum":{"On": 127, "Off":0}},
+    "Preset": {"type": "PC", "value":{"min":0, "max":127}}
     }
 }
 # Recall Preset - Bypass | 103  0-127  Recalls any preset in Bypass #TODO
