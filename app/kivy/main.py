@@ -8,6 +8,9 @@ import SocketServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 from BaseHTTPServer import HTTPServer as BaseHTTPServer
 import threading
+import types
+os.environ['KIVY_IMAGE'] = 'pil,sdl2'
+import PIL
 
 from kivy.app import App
 from kivy.lang import Builder
@@ -122,7 +125,7 @@ BoxLayout:
         background_palette: 'Primary'
         background_hue: '500'
         left_action_items: [['menu', lambda x: app.previous_page()]]
-        right_action_items: []
+        right_action_items: [['settings', lambda x: app.go_to_page("global_settings", "Global Settings")]]
     ScreenManager:
         id: scr_mngr
         Screen:
@@ -593,6 +596,7 @@ BoxLayout:
                     #     size_hint: 0.3, 0.3
                     #     # cc number then each key / val
                     #     on_release: app.add_action_type(custom_pedal_action_name.text, t = "enum")
+                    #     disabled: not custom_pedal_action_name.text
                     MDRaisedButton
                         text: "Program Change"
                         opposite_colors: True
@@ -639,11 +643,11 @@ BoxLayout:
             name: 'add_enum_cc'
             BoxLayout:
                 padding: dp(20), dp(4), dp(4), dp(20)
-                orientation: 'horizontal'
+                orientation: 'vertical'
                 spacing: dp(20)
                 DataList:
                     id: add_enum_dl
-                    items: app.current_add_enum
+                    items: app.current_add_enum_in
                 MDLabel:
                     font_style: 'Body1'
                     theme_text_color: 'Primary'
@@ -662,10 +666,15 @@ BoxLayout:
                         theme_text_color: 'Primary'
                         text: "Name:"
                         halign: 'left'
+                        id: enum_name
                     MDTextField:
                         hint_text:"Name of value"
                         helper_text:"Name of value"
                         helper_text_mode:"on_focus"
+                BoxLayout:
+                    padding: dp(20), dp(4), dp(4), dp(20)
+                    orientation: 'horizontal'
+                    spacing: dp(20)
                     MDLabel:
                         font_style: 'Body1'
                         theme_text_color: 'Primary'
@@ -675,11 +684,14 @@ BoxLayout:
                         hint_text:"Value to send"
                         helper_text:"0-128"
                         helper_text_mode:"on_focus"
-                    MDRaisedButton
-                        text: "Add"
-                        opposite_colors: True
-                        size_hint: 0.3, 0.3
-                        on_release: app.add_enum_val() # just add
+                        id: enum_val
+                MDRaisedButton
+                    text: "Add"
+                    opposite_colors: True
+                    size_hint: 0.3, 0.3
+                    on_release: app.add_enum_val(enum_name.text, enum_val.text) # just add
+                    disabled: not (enum_name.text and enum_val.text and enum_val.text.isdigit())
+
                 MDFloatingActionButton:
                     icon:                'check'
                     opposite_colors:    True
@@ -732,10 +744,38 @@ BoxLayout:
                     opposite_colors: True
                     size_hint: 0.3, 0.3
                     on_release: app.update_firmware() # just add
+        Screen:
+            name: 'global_settings'
+            BoxLayout:
+                padding: dp(20), dp(4), dp(4), dp(20)
+                orientation: 'vertical'
+                spacing: dp(20)
+                MDLabel:
+                    font_style: 'Body1'
+                    theme_text_color: 'Primary'
+                    text: "Here you can change settings on Poly Expressive that influence all boards. \\nPlease connect to the Poly Expressive WiFi first."
+                    halign: 'left'
+                MDRaisedButton
+                    text: "Enable MIDI Clock on Startup"
+                    opposite_colors: True
+                    size_hint: 0.3, 0.3
+                    on_release: app.set_midi_clock(True)
+                MDRaisedButton
+                    text: "Disable MIDI Clock on Startup"
+                    opposite_colors: True
+                    size_hint: 0.3, 0.3
+                    on_release: app.set_midi_clock(False)
+                MDFloatingActionButton:
+                    icon:                'check'
+                    opposite_colors:    True
+                    elevation_normal:    8
+                    pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
+                    on_release: app.go_to_page("home", "Poly Expressive")
 '''
 # action_list = [{"x1": 0, "e": [{"b3": 0, "t": "m", "b1": 144, "b2": 62}], "s": [{"b3": 113, "t": "m", "b1": 144, "b2": 62}], "y1": 0, "x2": 60, "y2": 60}, {"y2": 60, "c": {"x": [{"b2": 5, "c": [[0, 0], [127, 127]], "b1": 176}]}, "y1": 0, "x2": 120, "x1": 60}, {"y2": 60, "s": [{"t": "t", "on": {"b3": 113, "t": "m", "b1": 144, "b2": 61}, "off": {"b3": 0, "t": "m", "b1": 144, "b2": 61}}], "y1": 0, "x2": 180, "x1": 120}, {"y2": 60, "s": [{"t": "t", "on": {"t":"start"}, "off": {"t": "stop"}}], "y1": 0, "x2": 240, "x1": 180}, {"y2": 60, "s": [{"t": "tap"}], "y1": 0, "x2": 300, "x1": 240}]
 
 from kivy.config import Config
+Config.set('kivy', 'exit_on_escape', 0)
 Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 
 my_mats = {}
@@ -837,7 +877,7 @@ def split_pedal_id(pedal_id):
         return (pedal_id, 1)
 
 class PolyExpressiveSetup(App):
-    current_firmware_version = 7
+    current_firmware_version = 9
 
     theme_cls = ThemeManager()
     title = "Poly Expressive"
@@ -869,13 +909,15 @@ class PolyExpressiveSetup(App):
             # we are running in a normal Python environment
             bundle_dir = os.path.dirname(os.path.abspath(__file__))
     background_path = StringProperty(os.path.join(bundle_dir, "assets", "print_background.jpg"))
+    # background_path = StringProperty()
 
 
     my_mats_names = []
     current_add_action_list = []
     current_add_actions = {}
     current_add_action_name = ''
-    current_add_enum = []
+    cur_add_enum = {}
+    current_add_enum_in = []
     global_outline_width = NumericProperty(1.1)
     global_transparency = NumericProperty(0.1)
     return_button_added = False
@@ -904,6 +946,8 @@ class PolyExpressiveSetup(App):
         # set toolbar active, only edit has the right tool bar
         if page == "edit_mat":
             self.root.ids.toolbar.right_action_items = [['dots-vertical', lambda x: self.show_global_edit_menu(self.root.ids.toolbar)]]
+        elif page == "home":
+            self.root.ids.toolbar.right_action_items = [['settings', lambda x: self.go_to_page("global_settings", "Global Settings")]]
         else:
             self.root.ids.toolbar.right_action_items = []
 
@@ -1092,34 +1136,92 @@ class PolyExpressiveSetup(App):
                     print("adding to list", val)
                 scroll.add_widget(par_list)
                 content.add_widget(scroll)
+                sub_box = BoxLayout(spacing=10, orientation="horizontal", size_hint=(0.5, 0.8),
+                                    padding= 48)
+                maker_model, pedal_id, standard_control = split_standard_controls_key(ctx["key"])
+                min_val = min([v for v in advanced_controls[maker_model][standard_control]["enum"].values()])
+                max_val = max([v for v in advanced_controls[maker_model][standard_control]["enum"].values()])
+                if control[2]:
+                    inc_button = MDRaisedButton(
+                            text= "Increment Value",
+                            opposite_colors= True,
+                            size_hint= (None, None),
+                            # pos_hint= {'center_x': 0.5, 'center_y': 0.9},
+                            on_release= lambda *x: self.set_control_value(ctx, ("+", min_val, max_val, control[2][0])))
+                    dec_button = MDRaisedButton(
+                            text= "Decrement Value",
+                            opposite_colors= True,
+                            size_hint= (None, None),
+                            # pos_hint= {'center_x': 0.5, 'center_y': 0.9},
+                            on_release= lambda *x: self.set_control_value(ctx, ("-", min_val, max_val, control[2][0])))
+                sub_box.add_widget(inc_button)
+                sub_box.add_widget(dec_button)
+                content.add_widget(sub_box)
                 self.dialog = MDDialog(title="What value should this send",
                                        content=content,
                                        size_hint=(.80, None),
                                        height=dp(400),
                                        auto_dismiss=False)
                 self.dialog.open()
-            elif get_standard_controls_from_key(ctx["key"])[1] == "on_foot_down_value" and not set_value:
-                content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None, size=(200, 200),
+            elif (get_standard_controls_from_key(ctx["key"])[1] == "on_foot_down_value" or \
+                get_standard_controls_from_key(ctx["key"])[1] == "on_foot_up_down_value") \
+                    and not set_value:
+                content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None, size=(300, 240),
                                     padding= 48)
 
                 control = get_standard_controls_from_key(ctx["key"])
 
                 text_field = MDTextField(
-                        hint_text= "Minimum is " + str(control[2]["min"]) + " maximum " + str(control[2]["max"]),
-                        size_hint= (None, None))
+                        hint_text="Value to send",
+                        helper_text_mode="on_focus",
+                        helper_text= "Minimum is " + str(control[2]["min"]) + " maximum " + str(control[2]["max"]),
+                        size_hint= (0.3, 1))
                 content.add_widget(text_field)
+                sub_box = BoxLayout(spacing=10, orientation="horizontal", size_hint=(0.5, 0.8),
+                                    padding= 48)
                 pres_button = MDRaisedButton(
                         text= "Set Value",
                         opposite_colors= True,
                         size_hint= (None, None),
-                        pos_hint= {'center_x': 0.5, 'center_y': 0.9},
+                        # pos_hint= {'center_x': 0.5, 'center_y': 0.9},
                         on_release= lambda *x: self.set_control_value(ctx, text_field.text))
-                content.add_widget(pres_button)
+
+                inc_button = MDRaisedButton(
+                        text= "Increment Value",
+                        opposite_colors= True,
+                        size_hint= (None, None),
+                        # pos_hint= {'center_x': 0.5, 'center_y': 0.9},
+                        on_release= lambda *x: self.set_control_value(ctx, ("+", 0, 127, text_field.text)))
+                dec_button = MDRaisedButton(
+                        text= "Decrement Value",
+                        opposite_colors= True,
+                        size_hint= (None, None),
+                        # pos_hint= {'center_x': 0.5, 'center_y': 0.9},
+                        on_release= lambda *x: self.set_control_value(ctx, ("-", 0, 127, text_field.text)))
+                sub_box.add_widget(pres_button)
+                sub_box.add_widget(inc_button)
+                sub_box.add_widget(dec_button)
+                content.add_widget(sub_box)
+
+                def is_disabled(ins, text):
+                    if (text_field.text and text_field.text.isdigit()):
+                        pres_button.disabled = False
+                        inc_button.disabled = False
+                        dec_button.disabled = False
+                    else:
+                        pres_button.disabled = True
+                        inc_button.disabled = True
+                        dec_button.disabled = True
+
+                text_field.bind(text=is_disabled)
+
                 self.dialog = MDDialog(title="What value should this send",
                                        content=content,
                                        size_hint=(.80, None),
                                        height=dp(300),
                                        auto_dismiss=False)
+
+
                 self.dialog.open()
             else:
                 self.root.ids.available_standard_controls_dl.items.remove(ctx)
@@ -1481,7 +1583,7 @@ class PolyExpressiveSetup(App):
             return
 
         def bug_posted(req, result):
-            print('Our bug is posted!')
+            print('Sent to Poly')
             Snackbar(text="Successfully sent to Poly").show()
             print(result)
 
@@ -1507,7 +1609,7 @@ class PolyExpressiveSetup(App):
         # y_x_fac = size_y / float(display_size_x)
 
         MIDI_messages = { "note_off":0x80, "note_on":0x90, "PP":0xA0, "CC": 0xB0, "PC":0xC0, "CP":0xD0, "PB":0xE0}
-        def standard_controls_to_json(control, selected_val):
+        def standard_controls_to_json(control, _selected_val, override_type=None):
             # "Tone B": ["Tone B", "on_foot_move", "1"],
             # "Channel A Boost": ["Channel A Effect Select", "on_foot_down", "Boost"],
             # "Tone B": {"type": "CC", "controller":19, "curve":"1"},
@@ -1518,19 +1620,38 @@ class PolyExpressiveSetup(App):
             action = s_c[1]
             out_block = {}
 
-            def control_to_block(a_c, value):
+            def control_to_block(a_c, value, override_ac_type=None):
                 block = {}
+                selected_val = _selected_val
+                ac_type = a_c["type"]
+                if override_ac_type:
+                    ac_type = override_ac_type
+                if ac_type == "note_on_off":
+                    ac_type = "note_on"
 
-                if a_c["type"] in MIDI_messages:
+                if ac_type in MIDI_messages:
                     block["t"] = "m"
-                    block["b1"] = MIDI_messages[a_c["type"]] | (int(channel)-1) # channel from 1-16 mapped to 0-15 here
-                    if a_c["type"] in ["CP", "PC"]: # 2 byte messages
+                    if isinstance(selected_val, types.TupleType):
+                        # the value is a inc, min, max
+                        if selected_val[0] == "+":
+                            block["t"] = "e+"
+                        elif selected_val[0] == "-":
+                            block["t"] = "e-"
+                        block["s"] = selected_val[1]
+                        block["e"] = selected_val[2]
+                        selected_val = selected_val[3]
+                    block["b1"] = MIDI_messages[ac_type] | (int(channel)-1) # channel from 1-16 mapped to 0-15 here
+                    if ac_type in ["CP", "PC"]: # 2 byte messages
                         print("cp/pc is", value, "b selected_v", selected_val)
                         if selected_val is not None:
-                            block["b2"] = selected_val
-                        block["b2"] = value
-                    elif a_c["type"] in ["note_on", "note_off"]:
-                        block["b2"] = value
+                            block["b2"] = int(selected_val)
+                        else:
+                            block["b2"] = int(value)
+                    elif ac_type in ["note_on", "note_off"]:
+                        if selected_val is not None:
+                            block["b2"] = int(selected_val)
+                        else:
+                            block["b2"] = int(value)
                         block["b3"] = 120 # XXX temp
                     else:
                         if "controller" in a_c:
@@ -1549,18 +1670,29 @@ class PolyExpressiveSetup(App):
                             if selected_val is not None:
                                 block["b3"] = selected_val
                             block["b3"] = value
-                elif a_c["type"] == "start_recording_macro":
+                elif ac_type == "start_recording_macro":
                     block["t"] = "m_r"
                     block["b1"] = value
-                elif a_c["type"] == "stop_recording_macro":
+                elif ac_type == "stop_recording_macro":
                     block["t"] = "m_s"
                     block["b1"] = value
-                elif a_c["type"] == "start_macro":
+                elif ac_type == "start_macro":
                     block["t"] = "m_p"
                     block["b1"] = value
-                elif a_c["type"] == "stop_macro":
+                elif ac_type == "stop_macro":
                     block["t"] = "m_ps"
                     block["b1"] = value
+                elif ac_type == "start_clock":
+                    block["t"] = "start"
+                elif ac_type == "continue_clock":
+                    block["t"] = "continue"
+                elif ac_type == "stop_clock":
+                    block["t"] = "stop"
+                elif ac_type == "tap_clock":
+                    block["t"] = "tap"
+                elif ac_type == "clock_bpm":
+                    block["t"] = "bpm"
+                    block["b1"] = int(selected_val)
                 return block
 
             if "toggle" in action:
@@ -1570,7 +1702,7 @@ class PolyExpressiveSetup(App):
                 out_block["off"] = control_to_block(advanced_controls[maker_model][s_c[3]], s_c[4])
             else:
                 # just one action
-                out_block = control_to_block(advanced_controls[maker_model][s_c[0]], s_c[2])
+                out_block = control_to_block(advanced_controls[maker_model][s_c[0]], s_c[2], override_type)
 
             return (action, out_block)
 
@@ -1605,6 +1737,14 @@ class PolyExpressiveSetup(App):
                     if "s" not in out_cell:
                         out_cell["s"] = []
                     out_cell["s"].append(block)
+                elif action == "on_foot_up_down_value":
+                    if "s" not in out_cell:
+                        out_cell["s"] = []
+                    out_cell["s"].append(block)
+                    action, block = standard_controls_to_json(control, val, "note_off")
+                    if "e" not in out_cell:
+                        out_cell["e"] = []
+                    out_cell["e"].append(block)
                 else:
                     if "e" not in out_cell:
                         out_cell["e"] = []
@@ -1672,13 +1812,14 @@ class PolyExpressiveSetup(App):
         if t == "cc":
             self.go_to_page("add_full_range_cc", "Add Full Range CC")
         elif t  == "enum":
-            self.go_to_page("add_enum", "Add Specific Value CC")
+            self.go_to_page("add_enum_cc", "Add Specific Value CC")
         elif t  == "pc":
             self.go_to_page("add_pc_range", "Add Program Change")
         elif t  == "note":
             # no redirect, just add
-            self.current_add_actions["Note On"] = {"type": "note_on", "curve":"1"}
-            self.current_add_actions["Note Off"] = {"type": "note_off", "curve":"1"}
+            self.current_add_actions["Note On"] = {"type": "note_on", "value":{"min":0, "max":127}}
+            self.current_add_actions["Note On Off"] = {"type": "note_on_off", "value":{"min":0, "max":127}}
+            self.current_add_actions["Note Off"] = {"type": "note_off", "value":{"min":0, "max":127}}
             self.go_to_page("add_custom_pedal", "Add Custom Pedal / MIDI")
         elif t  == "cp":
             # no redirect, just add
@@ -1693,6 +1834,25 @@ class PolyExpressiveSetup(App):
         self.current_add_actions[self.current_add_action_name] = {"type": "CC", "controller": cc_number, "curve": "1"}
         self.go_to_page("add_custom_pedal", "Add Custom Pedal / MIDI")
 
+    def add_action_enum_cc(self, cc_number):
+        self.current_add_actions[self.current_add_action_name] = {"type": "CC", "controller": cc_number, "curve": "1"}
+        self.go_to_page("add_custom_pedal", "Add Custom Pedal / MIDI")
+
+    def add_enum_val(self, key, val):
+        self.cur_add_enum[key] = val
+        self.root.ids.enum_val_dl.items = [{"text":k, "secondary_text":v, "action": PolyExpressiveSetup.remove_enum_val,
+            "id": k} for k,v in self.cur_add_enum.items()]
+        # self.go_to_page("add_custom_pedal", "Add Custom Pedal / MIDI")
+
+    def remove_enum_val(self, in_ctx):
+        if in_ctx:
+            ctx = self.root.ids.enum_val_dl.find(in_ctx.id)
+            self.cur_add_enum.pop(tx["id"])
+            if ctx in self.root.ids.selected_pedals_dl.items:
+                self.root.ids.selected_pedals_dl.items.remove(ctx)
+            self.cur_add_enum.pop(key)
+        # self.root.ids.enum_val_dl.items = [{"text":k, "secondary_text":v, "action": PolyExpressiveSetup.remove_enum_val,
+        #     "id": k} for k,v in self.current_add_enum.items()]
 
     def set_mat_size_dialog(self, next_action=None):
         content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None, size=(200, 300),
@@ -2077,6 +2237,22 @@ class PolyExpressiveSetup(App):
             print(result)
 
         req = UrlRequest('http://192.168.4.1/get_version', on_success=version_response, on_failure=fail, on_error=fail)
+
+    def set_midi_clock(self, enabled):
+
+        def bug_posted(req, result):
+            print('set clock to', enabled)
+            Snackbar(text="Successfully sent to Poly").show()
+            print(result)
+
+        def fail(req, result):
+            print('Request failed')
+            Snackbar(text="Sending to Poly failed. Are you connected to the right WiFi network?").show()
+            print(result)
+
+
+        out_json = json.dumps({"clock": enabled})
+        req = UrlRequest('http://192.168.4.1/set_settings', on_success=bug_posted, on_failure=fail, on_error=fail, req_body=out_json)
 
 class TwoLineButton(MDOutlineButton):
     sub_text = StringProperty('')

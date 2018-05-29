@@ -42,6 +42,14 @@ with open('action_list.json', 'r') as f:
 hold_cell_mode = True
 toggle_states = {}
 prev_sent = {"b1":0, "b2":0, "b3":0}
+enum_cur = {}
+
+global_settings = {"clock":False}
+try: 
+    with open('global_settings.json', 'r') as f:
+        global_settings = json.load(f)
+except:
+    pass
 
 current_macro = None
 macro_start_time = 0
@@ -175,6 +183,8 @@ def inner_execute_action(ap, z):
         clock_playing = False
     elif ap["t"] == "tap":
         tap_tempo()
+    elif ap["t"] == "bpm":
+        update_bpm(ap["b1"])
     elif ap["t"] == "m_r":
         start_record_macro(ap["b1"])
     elif ap["t"] == "m_s":
@@ -192,6 +202,35 @@ def inner_execute_action(ap, z):
                 send_midi_message(ap["b1"], ap["b2"], ap["b3"])
             else:
                 send_midi_message(ap["b1"], ap["b2"])
+    elif (ap["t"] == "e+" or ap["t"] == "e-"):
+            if "b3" in ap:
+                if (ap["b1"], ap["b2"]) in enum_cur:
+                    c = enum_cur[(ap["b1"], ap["b2"])]
+                    if ap["t"] == "e+":
+                        enum_cur[(ap["b1"], ap["b2"])] = (c + 1)
+                    else:
+                        enum_cur[(ap["b1"], ap["b2"])] = (c - 1)
+                    if enum_cur[(ap["b1"], ap["b2"])] > ap["e"]:
+                        enum_cur[(ap["b1"], ap["b2"])] = ap["s"]
+                    if enum_cur[(ap["b1"], ap["b2"])] < ap["s"]:
+                        enum_cur[(ap["b1"], ap["b2"])] = ap["e"]
+                else:
+                    enum_cur[(ap["b1"], ap["b2"])] = ap["b3"]
+                send_midi_message(ap["b1"], ap["b2"], enum_cur[(ap["b1"], ap["b2"])])
+            else:
+                if ap["b1"] in enum_cur:
+                    c = enum_cur[ap["b1"]]
+                    if ap["t"] == "e+":
+                        enum_cur[ap["b1"]] = (c + 1)
+                    else:
+                        enum_cur[ap["b1"]] = (c - 1)
+                    if enum_cur[ap["b1"]] > ap["e"]:
+                        enum_cur[ap["b1"]] = ap["s"]
+                    elif enum_cur[ap["b1"]] < ap["s"]:
+                        enum_cur[ap["b1"]] = ap["e"]
+                else:
+                    enum_cur[ap["b1"]] = ap["b2"]
+                send_midi_message(ap["b1"], enum_cur[ap["b1"]])
 
 def execute_continous_action(actions, x1, y1, x2, y2, x, y, z):
     if 'x' in actions:
@@ -359,22 +398,38 @@ def core_loop():
 
 
 def run():
+    # auto start MIDI clock if needed
+    if global_settings["clock"]:
+        global clock_playing
+        global clock_start
+        send_clock_message(MIDI_COMMANDS["start"])
+        clock_start = utime.ticks_us()
+        clock_playing = True
     while True:
         core_loop()
         utime.sleep_us(100)
 
     # Serve web pages / config update
-    # anything else in the core loop?
-
-#
-# bluetooth / wifi chaining
-# send MIDI to bluetooth BLE
 
 def http_get_action_list(httpClient, httpResponse) :
     httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(action_list))
 
 def http_get_version(httpClient, httpResponse) :
-    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(7))
+    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(8))
+
+def http_set_settings(httpClient, httpResponse) :
+    # print("update action list")
+    jdata  = httpClient.ReadRequestContent()
+    content = False
+    try:
+        global_settings.update(json.loads(jdata))
+        content = True
+        with open('global_settings.json', 'w') as f:
+            f.write(json.dumps(global_settings))
+    except Exception as e:
+        print("error in update action list:", e)
+        content = str(e)
+    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(content))
 
 def http_update_action_list(httpClient, httpResponse) :
     # print("update action list")
@@ -412,6 +467,7 @@ route_handlers = [
         ( "/get_action_list",      "GET",  http_get_action_list ),
         ( "/get_version",      "GET",  http_get_version ),
         ( "/update_action_list",      "POST", http_update_action_list ),
+        ( "/set_settings",      "POST", http_set_settings ),
         ( "/update_firmware",      "GET", http_update_firmware )
 ]
 

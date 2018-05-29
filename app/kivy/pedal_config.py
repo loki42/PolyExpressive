@@ -24,6 +24,7 @@ default_channels = {
     "Kemper:Profiler":3,
     "Eventide:H9":3,
     "Macro:Macro":1,
+    "Poly:Expressive":1,
     "Strymon:Timeline":1,
     "Source Audio:Ventris":1,
     "Fractal Audio:Axe FX 2":1
@@ -245,8 +246,9 @@ advanced_controls = {
     "Macro 6": {"type": "CC", "controller":25, "curve":"1"},
     "Macro 7": {"type": "CC", "controller":26, "curve":"1"},
     "Macro 8": {"type": "CC", "controller":27, "curve":"1"},
-    "Note On": {"type": "note_on", "curve":"1"},
-    "Note Off": {"type": "note_off", "curve":"1"},
+    "Note On": {"type": "note_on", "value":{"min":0, "max":127}},
+    "Note On Off": {"type": "note_on_off", "value":{"min":0, "max":127}},
+    "Note Off": {"type": "note_off", "value":{"min":0, "max":127}},
     "Preset": {"type": "PC", "value":{"min":0, "max":127}}
     },
 "Line 6:Helix":{
@@ -298,25 +300,27 @@ advanced_controls = {
 "Empress:Echosystem":{
     "Modes A": {"type": "CC", "controller":100, "enum":{"Digital":0, "Tape":8, "Analog":16,
         "Multi":24, "Mod":32}},
-    "Delay Source A": {"type": "CC", "controller":101, "enum":{"Knob":0, "Local":1, "Global":2}},
-    "Delay Time A": {"type": "CC", "controller":102, "curve":"1"},
-    "Mix A": {"type": "CC", "controller":103, "curve":"1"},
-    "Volume A": {"type": "CC", "controller":104, "curve":"1"},
-    "Feedback A": {"type": "CC", "controller":105, "curve":"1"},
-    "Tone A": {"type": "CC", "controller":106, "curve":"1"},
-    "Thing 1 A": {"type": "CC", "controller":107, "curve":"1"},
-    "Thing 2 A": {"type": "CC", "controller":108, "curve":"1"},
+    "Delay Time A": {"type": "CC", "controller":101, "curve":"1"},
+    "Mix A": {"type": "CC", "controller":102, "curve":"1"},
+    "Volume A": {"type": "CC", "controller":103, "curve":"1"},
+    "Feedback A": {"type": "CC", "controller":104, "curve":"1"},
+    "Tone A": {"type": "CC", "controller":105, "curve":"1"},
+    "Thing 1 A": {"type": "CC", "controller":106, "curve":"1"},
+    "Thing 2 A": {"type": "CC", "controller":107, "curve":"1"},
+    "Delay Source A": {"type": "CC", "controller":108, "enum":{"Knob":0, "Local":1, "Global":2}},
     "Modes B": {"type": "CC", "controller":109, "enum":{"Digital":0, "Tape":8, "Analog":16,
         "Multi":24, "Mod":32}},
-    "Delay Source B": {"type": "CC", "controller":110, "enum":{"Knob":0, "Local":1, "Global":2}},
-    "Delay Time B": {"type": "CC", "controller":111, "curve":"1"},
-    "Mix B": {"type": "CC", "controller":112, "curve":"1"},
-    "Volume B": {"type": "CC", "controller":113, "curve":"1"},
-    "Feedback B": {"type": "CC", "controller":114, "curve":"1"},
-    "Tone B": {"type": "CC", "controller":115, "curve":"1"},
-    "Thing 1 B": {"type": "CC", "controller":116, "curve":"1"},
-    "Thing 2 B": {"type": "CC", "controller":117, "curve":"1"},
+    "Delay Time B": {"type": "CC", "controller":110, "curve":"1"},
+    "Mix B": {"type": "CC", "controller":111, "curve":"1"},
+    "Volume B": {"type": "CC", "controller":112, "curve":"1"},
+    "Feedback B": {"type": "CC", "controller":113, "curve":"1"},
+    "Tone B": {"type": "CC", "controller":114, "curve":"1"},
+    "Thing 1 B": {"type": "CC", "controller":115, "curve":"1"},
+    "Thing 2 B": {"type": "CC", "controller":116, "curve":"1"},
+    "Delay Source B": {"type": "CC", "controller":117, "enum":{"Knob":0, "Local":1, "Global":2}},
     "Engage": {"type": "CC", "controller":60, "enum":{"Bypass":0, "On":127}}, # TODO few more to add
+    "Solo Engine A": {"type": "CC", "controller":41, "enum":{"Unsolo":0, "Solo":127}}, 
+    "Solo Engine B": {"type": "CC", "controller":42, "enum":{"Unsolo":0, "Solo":127}}, 
     "Preset": {"type": "PC", "value":{"min":0, "max":127}}
     },
 "Empress:Tremolo2":{
@@ -517,6 +521,13 @@ advanced_controls = {
     "Stop Recording Macro": {"type": "stop_recording_macro"},
     "Start Macro": {"type": "start_macro"},
     "Stop Macro": {"type": "stop_macro"}
+    },
+"Poly:Expressive":{
+    "Start Clock": {"type": "start_clock"},
+    "Stop Clock": {"type": "stop_clock"},
+    "Continue Clock": {"type": "continue_clock"},
+    "Tap": {"type": "tap_clock"},
+    "Set Tempo/BPM": {"type": "clock_bpm", "value":{"min":30, "max":300}}
     },
 "Strymon:Timeline":{
     "Type encoder": {"type": "CC", "controller":19, "enum":{"dTape": 0, "dBucket":1, "Digital":2, "Dual":3,
@@ -867,9 +878,11 @@ def update_standard_controls(in_controls):
         for control_name, control_conf in controls.items():
             if "curve" in control_conf:
                 standard_controls[pedal_name][control_name] = [control_name, "on_foot_move", control_conf["curve"]]
-            if "enum" in control_conf:
+            elif "enum" in control_conf:
                 standard_controls[pedal_name][control_name] = [control_name, "on_foot_down_enum", control_conf["enum"].keys()]
-            if "value" in control_conf:
+            elif control_conf["type"] == "note_on_off":
+                standard_controls[pedal_name][control_name] = [control_name, "on_foot_up_down_value", control_conf["value"]]
+            elif "value" in control_conf:
                 standard_controls[pedal_name][control_name] = [control_name, "on_foot_down_value", control_conf["value"]]
 
 update_standard_controls(advanced_controls)
@@ -991,6 +1004,7 @@ standard_controls_update = {
     },
 "Empress:Phaser":{
     "Toggle Bypass": ["Engage", "on_foot_down_toggle", "On", "Engage", "Bypass"],
+    "Exit Direct On Up": ["Exit Direct", "on_foot_up", "Exit"]
     },
 "Meris:Mercury 7":{
     "Toggle Bypass": ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"],
@@ -1017,6 +1031,12 @@ standard_controls_update = {
     "Start Macro 2": ["Start Macro", "on_foot_down", 2],
     "Stop Macro 2": ["Stop Macro", "on_foot_down", 2],
     "Toggle Macro 2": ["Start Macro", "on_foot_down_toggle", 2, "Stop Macro", 2],
+    },
+"Poly:Expressive":{
+    "Start MIDI Clock": ["Start Clock", "on_foot_down", 1],
+    "Stop MIDI Clock": ["Stop Clock", "on_foot_down", 1],
+    "Tap Tempo": ["Tap", "on_foot_down", 1],
+    "Continue MIDI Clock": ["Continue Clock", "on_foot_down", 1],
     }
 }
 
