@@ -415,7 +415,7 @@ def http_get_action_list(httpClient, httpResponse) :
     httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(action_list))
 
 def http_get_version(httpClient, httpResponse) :
-    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(8))
+    httpResponse.WriteResponseOk(None, "application/json", "UTF-8", json.dumps(10))
 
 def http_set_settings(httpClient, httpResponse) :
     # print("update action list")

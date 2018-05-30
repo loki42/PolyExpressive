@@ -53,8 +53,7 @@ import fpdf
 
 import data_view
 import alpha_pdf
-from file_chooser_thumb_view import FileChooserThumbView
-from file_browser import FileBrowser
+# from file_chooser_thumb_view import FileChooserThumbView
 
 from pedal_config import default_channels, advanced_controls, standard_controls, update_standard_controls
 
@@ -131,35 +130,72 @@ BoxLayout:
         Screen:
             name: 'home'
             id: home_screen
-            MDRaisedButton:
-                text: "My Boards"
-                opposite_colors: True
-                size_hint: None, None
-                size: 4 * dp(48), dp(48)
-                pos_hint: {'center_x': 0.5, 'center_y': 0.6}
-                on_release: app.go_to_page("list_my_mats", "My Boards")
-            # MDRaisedButton:
-            #     text: "Search Boards"
-            #     opposite_colors: True
-            #     size_hint: None, None
-            #     size: 4 * dp(48), dp(48)
-            #     pos_hint: {'center_x': 0.5, 'center_y': 0.4}
-            #     on_release: app.go_to_page("select_layout", "Select Layout")
-            MDRaisedButton:
-                text: "New Board"
-                opposite_colors: True
-                size_hint: None, None
-                size: 4 * dp(48), dp(48)
-                pos_hint: {'center_x': 0.5, 'center_y': 0.4}
-                on_release: app.go_to_page("select_layout", "Select Layout")
+            AnchorLayout:
+                anchor_x: "center"
+                anchor_y: "center"
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint: 0.5, 0.5
+                    padding: dp(4), dp(4)
+                    spacing: dp(4)
+                    BoxLayout:
+                        padding: dp(4), dp(4)
+                        spacing: dp(4)
+                        orientation: 'horizontal'
+                        size_hint: 1, 0.3
+                        AnchorLayout:
+                            anchor_x: "center"
+                            anchor_y: "center"
+                            MDRaisedButton:
+                                text: "My Boards"
+                                opposite_colors: True
+                                size_hint: None, None
+                                size: 4 * dp(48), dp(48)
+                                # pos_hint: {'center_x': 0.5, 'center_y': 0.6}
+                                on_release: app.go_to_page("list_my_mats", "My Boards")
+                        # MDRaisedButton:
+                        #     text: "Search Boards"
+                        #     opposite_colors: True
+                        #     size_hint: None, None
+                        #     size: 4 * dp(48), dp(48)
+                            # pos_hint: {'center_x': 0.5, 'center_y': 0.4}
+                        #     on_release: app.go_to_page("select_layout", "Select Layout")
 
-            MDRaisedButton:
-                text: "Update Firmware"
-                opposite_colors: False
-                size_hint: None, None
-                size: 4 * dp(48), dp(48)
-                pos_hint: {'center_x': 0.5, 'center_y': 0.2}
-                on_release: app.go_to_page("pre_update_firmware", "Update Firmware")
+                        AnchorLayout:
+                            anchor_x: "center"
+                            anchor_y: "center"
+                            MDRaisedButton:
+                                text: "New Board"
+                                opposite_colors: True
+                                size_hint: None, None
+                                size: 4 * dp(48), dp(48)
+                                # pos_hint: {'center_x': 0.3, 'center_y': 0.4}
+                                on_release: app.go_to_page("select_layout", "Select Layout")
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        size_hint: 1, 0.3
+                        padding: dp(4), dp(4)
+                        spacing: dp(4)
+                        AnchorLayout:
+                            anchor_x: "center"
+                            anchor_y: "center"
+                            MDRaisedButton:
+                                text: "Load Board From File"
+                                opposite_colors: True
+                                size_hint: None, None
+                                size: 4 * dp(48), dp(48)
+                                # pos_hint: {'center_x': 0.6, 'center_y': 0.4}
+                                on_release: app.load_board_from_file()
+                        AnchorLayout:
+                            anchor_x: "center"
+                            anchor_y: "center"
+                            MDRaisedButton:
+                                text: "Update Firmware"
+                                opposite_colors: False
+                                size_hint: None, None
+                                size: 4 * dp(48), dp(48)
+                                # pos_hint: {'center_x': 0.5, 'center_y': 0.2}
+                                on_release: app.go_to_page("pre_update_firmware", "Update Firmware")
 
         Screen:
             name: 'list_my_mats'
@@ -468,13 +504,6 @@ BoxLayout:
                     pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
                     on_release: app.go_to_page("edit_mat", "edit board")
                     # size_hint: 0.1, 0.2
-        Screen:
-            name: 'set_background_image_page'
-            FileBrowser:
-                filters: ["*.jpg", "*.png", "*.JPG", "*.PNG"]
-                on_success: app.set_background_image_redir(self.selection[0])
-                on_submit: app.set_background_image_redir(self.selection[0])
-                on_canceled: app.set_up_global_appearance_page()
         Screen:
             name: 'add_custom_pedal'
             BoxLayout:
@@ -877,7 +906,7 @@ def split_pedal_id(pedal_id):
         return (pedal_id, 1)
 
 class PolyExpressiveSetup(App):
-    current_firmware_version = 9
+    current_firmware_version = 10
 
     theme_cls = ThemeManager()
     title = "Poly Expressive"
@@ -1020,9 +1049,12 @@ class PolyExpressiveSetup(App):
         self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
         mat_def["included_pedals"] = [a["id"] for a in self.root.ids.selected_pedals_dl.items]
 
-    def select_mat(self, ctx):
+    def select_mat(self, ctx, override_board=None):
         global mat_def
-        mat_def = my_mats[ctx.id]
+        if override_board:
+            mat_def = override_board
+        else:
+            mat_def = my_mats[ctx.id]
         self.show_layout(self.root.ids["edit_mat_box"], mat_def["layout"])
         for cell_id, cell_content in mat_def["cells"].items():
             self.cell_buttons[cell_id].text = cell_content["text"]
@@ -1380,6 +1412,10 @@ class PolyExpressiveSetup(App):
              'on_release' : lambda *x: self.set_up_global_appearance_page()
              },
             {'viewclass': 'MDMenuItem',
+             'text': 'Share layout',
+             'on_release' : lambda *x: self.export_board_to_file()
+             },
+            {'viewclass': 'MDMenuItem',
              'text': 'Add Custom Pedal / MIDI',
              'on_release' : lambda *x: self.go_to_page("add_custom_pedal", "Add Custom Pedal / MIDI")
              },
@@ -1537,12 +1573,58 @@ class PolyExpressiveSetup(App):
         mat_def["background_image"] = path
         self.background_path = mat_def["background_image"]
 
-    def set_background_image_redir(self, path):
-        self.set_background_image(path)
-        self.go_to_page("set_global_appearance", "Set Layout Appearance")
-
     def show_set_background_image(self):
-        self.go_to_page("set_background_image_page", "Set Background Image")
+        from desktop_file_dialogs import Desktop_FileDialog, FileGroup
+        Desktop_FileDialog(
+          title             = "Select File",
+          initial_directory = "",
+          on_accept         = lambda file_path: self.set_background_image(file_path),
+          on_cancel         = lambda:           print(">>> NO FILE SELECTED"),
+          file_groups = [
+            FileGroup(name="Image Files", extensions=["jpg", "jpeg", "png"]),
+            # FileGroup.All_FileTypes,
+          ],
+        ).show()
+        # self.go_to_page("set_background_image_page", "Set Background Image")
+
+    def export_board_to_file(self):
+        def int_export_board(path):
+            l_mat = copy.deepcopy(mat_def)
+            if "background_image" in l_mat:
+                l_mat.pop("background_image")
+            with open(path, "w") as f:
+                json.dump(l_mat, f)
+            Snackbar(text="Board exported for sharing").show()
+
+        from desktop_file_dialogs import Desktop_SaveFile_Dialog, FileGroup
+        Desktop_SaveFile_Dialog(
+          title             = "Save As",
+          initial_directory = "",
+          on_accept         = lambda file_path: int_export_board(file_path),
+          on_cancel         = lambda:           print(">>> FILE SAVE CANCELLED"),
+          file_groups = [
+            FileGroup(name="json", extensions=["json"]),
+          ],
+        ).show()
+
+    def load_board_from_file(self):
+        def in_load_board(path):
+            with open(path, "r") as f:
+                loaded_mat = json.load(f)
+            self.select_mat(True, override_board=loaded_mat)
+
+        from desktop_file_dialogs import Desktop_FileDialog, FileGroup
+        Desktop_FileDialog(
+          title             = "Select Board File",
+          initial_directory = "",
+          on_accept         = lambda file_path: in_load_board(file_path),
+          on_cancel         = lambda:           print(">>> NO FILE SELECTED"),
+          file_groups = [
+            FileGroup(name="Image Files", extensions=["json"]),
+            # FileGroup.All_FileTypes,
+          ],
+        ).show()
+
 
     def show_save_mat_dialog(self):
         content = MDTextField()
