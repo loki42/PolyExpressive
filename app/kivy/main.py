@@ -9,8 +9,10 @@ from SimpleHTTPServer import SimpleHTTPRequestHandler
 from BaseHTTPServer import HTTPServer as BaseHTTPServer
 import threading
 import types
-os.environ['KIVY_IMAGE'] = 'pil,sdl2'
-import PIL
+import platform
+if platform.system() == "Windows":
+    os.environ['KIVY_IMAGE'] = 'pil,sdl2'
+    import PIL
 
 from kivy.app import App
 from kivy.lang import Builder
@@ -50,10 +52,10 @@ from kivy.utils import get_hex_from_color
 
 import webbrowser
 import fpdf
+from plyer import filechooser
 
 import data_view
 import alpha_pdf
-# from file_chooser_thumb_view import FileChooserThumbView
 
 from pedal_config import default_channels, advanced_controls, standard_controls, update_standard_controls
 
@@ -95,25 +97,6 @@ main_widget_kv = '''
             size_hint_x: None
             width: 100
             text: root.sub_text
-
-<LoadDialog>:
-    # BoxLayout:
-    #     size: (450, 350)
-    #     pos: root.pos
-    #     orientation: "vertical"
-    #     # FileChooserListView:
-    #     #     id: filechooser
-    #     #     size: (450, 350)
-    #     #     size_hint_y: 1
-    BoxLayout:
-        size_hint_y: None
-        height: 30
-        MDRaisedButton:
-            text: "Cancel"
-            on_release: root.cancel()
-        MDRaisedButton:
-            text: "Load"
-            on_release: root.load(filechooser.path, filechooser.selection)
 
 BoxLayout:
     orientation: 'vertical'
@@ -1574,18 +1557,14 @@ class PolyExpressiveSetup(App):
         self.background_path = mat_def["background_image"]
 
     def show_set_background_image(self):
-        from desktop_file_dialogs import Desktop_FileDialog, FileGroup
-        Desktop_FileDialog(
-          title             = "Select File",
-          initial_directory = "",
-          on_accept         = lambda file_path: self.set_background_image(file_path),
-          on_cancel         = lambda:           print(">>> NO FILE SELECTED"),
-          file_groups = [
-            FileGroup(name="Image Files", extensions=["jpg", "jpeg", "png"]),
-            # FileGroup.All_FileTypes,
-          ],
-        ).show()
-        # self.go_to_page("set_background_image_page", "Set Background Image")
+        if platform.system() == "Windows":
+            file_chosen = filechooser.open_file(filters=['*.jpg', "*.png"])
+        else:
+            file_chosen = filechooser.open_file()
+        if file_chosen != None and len(file_chosen) > 0:
+            path = copy.copy(file_chosen[0])
+            print(path)
+            self.set_background_image(path)
 
     def export_board_to_file(self):
         def int_export_board(path):
@@ -1595,17 +1574,15 @@ class PolyExpressiveSetup(App):
             with open(path, "w") as f:
                 json.dump(l_mat, f)
             Snackbar(text="Board exported for sharing").show()
-
-        from desktop_file_dialogs import Desktop_SaveFile_Dialog, FileGroup
-        Desktop_SaveFile_Dialog(
-          title             = "Save As",
-          initial_directory = "",
-          on_accept         = lambda file_path: int_export_board(file_path),
-          on_cancel         = lambda:           print(">>> FILE SAVE CANCELLED"),
-          file_groups = [
-            FileGroup(name="json", extensions=["json"]),
-          ],
-        ).show()
+        if platform.system() == "Windows":
+            file_chosen = filechooser.save_file(filters=['*.json'])
+        else:
+            file_chosen = filechooser.save_file()
+        if file_chosen != None and len(file_chosen) > 0:
+            if not file_chosen[0].endswith('.json'):
+                int_export_board(file_chosen[0] + '.json')
+            else:
+                int_export_board(file_chosen[0])
 
     def load_board_from_file(self):
         def in_load_board(path):
@@ -1613,17 +1590,20 @@ class PolyExpressiveSetup(App):
                 loaded_mat = json.load(f)
             self.select_mat(True, override_board=loaded_mat)
 
-        from desktop_file_dialogs import Desktop_FileDialog, FileGroup
-        Desktop_FileDialog(
-          title             = "Select Board File",
-          initial_directory = "",
-          on_accept         = lambda file_path: in_load_board(file_path),
-          on_cancel         = lambda:           print(">>> NO FILE SELECTED"),
-          file_groups = [
-            FileGroup(name="Image Files", extensions=["json"]),
-            # FileGroup.All_FileTypes,
-          ],
-        ).show()
+        def print_test():
+            import time
+            while True:
+                print ("test thread")
+                time.sleep(1)
+
+        if platform.system() == "Windows":
+            file_chosen = filechooser.open_file(filters=['*.json'])
+        else:
+            file_chosen = filechooser.open_file()
+        if file_chosen != None and len(file_chosen) > 0:
+            path = copy.copy(file_chosen[0])
+            print(path)
+            in_load_board(path)
 
 
     def show_save_mat_dialog(self):
