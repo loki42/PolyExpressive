@@ -277,7 +277,13 @@ BoxLayout:
                         theme_text_color: 'Primary'
                         text: "Selected"
                         halign: 'left'
-                        size_hint: 1, 0.1
+                        size_hint: 1, 0.05
+                    MDLabel:
+                        font_style: 'Caption'
+                        theme_text_color: 'Primary'
+                        text: "Click channel to change"
+                        halign: 'left'
+                        size_hint: 1, 0.05
                     DataListTextField:
                         size_hint: 1, 0.9
                         id: selected_pedals_dl
@@ -290,7 +296,14 @@ BoxLayout:
                         theme_text_color: 'Primary'
                         text: "Available Pedals"
                         halign: 'left'
-                        size_hint: 1, 0.1
+                        size_hint: 1, 0.05
+                    MDLabel:
+                        font_style: 'Caption'
+                        theme_text_color: 'Primary'
+                        text: "Choose DAW if you want to control a synth"
+                        halign: 'left'
+                        size_hint: 1, 0.05
+
                     DataList:
                         size_hint: 1, 0.9
                         id: available_pedals_dl
@@ -1731,7 +1744,8 @@ class PolyExpressiveSetup(App):
                             print("v is", value, "b selected_v", selected_val)
                             if selected_val is not None:
                                 block["b3"] = selected_val
-                            block["b3"] = value
+                            else:
+                                block["b3"] = value
                 elif ac_type == "start_recording_macro":
                     block["t"] = "m_r"
                     block["b1"] = value
