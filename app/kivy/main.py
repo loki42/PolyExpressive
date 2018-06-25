@@ -2,7 +2,7 @@
 from __future__ import print_function
 from __future__ import division
 
-import json, os, sys
+import json, os, sys, uuid
 import copy
 import SocketServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
@@ -367,11 +367,69 @@ BoxLayout:
                 MDTab:
                     name: 'Advanced'
                     text: 'Advanced'
-                    MDLabel:
-                        font_style: 'Body1'
-                        theme_text_color: 'Primary'
-                        text: "Coming soon!"
-                        halign: 'center'
+                    BoxLayout:
+                        padding: dp(20), dp(4), dp(4), dp(20)
+                        orientation: 'horizontal'
+                        BoxLayout:
+                            padding: dp(20), dp(4), dp(4), dp(20)
+                            orientation: 'vertical'
+                            size_hint: 0.5, 1
+                            MDRaisedButton
+                                text: "Horizontal Change"
+                                opposite_colors: True
+                                size_hint: 0.8, 0.05
+                                on_release: app.add_advanced_control("horizontal")
+                            DataList:
+                                size_hint: 1, 0.2
+                                id: on_horizontal_change_dl
+                                items: app.cur_advanced_controls["horizontal"]
+                            MDRaisedButton
+                                text: "Vertical Change"
+                                opposite_colors: True
+                                size_hint: 0.8, 0.05
+                                on_release: app.add_advanced_control("vertical")
+                            DataList:
+                                size_hint: 1, 0.2
+                                id: on_vertical_change_dl
+                                items: app.cur_advanced_controls["vertical"]
+                            MDRaisedButton
+                                text: "Pressure Change"
+                                opposite_colors: True
+                                size_hint: 0.8, 0.05
+                                on_release: app.add_advanced_control("pressure")
+                            DataList:
+                                size_hint: 1, 0.2
+                                id: on_pressure_change_dl
+                                items: app.cur_advanced_controls["pressure"]
+                        BoxLayout:
+                            padding: dp(20), dp(4), dp(4), dp(20)
+                            orientation: 'vertical'
+                            size_hint: 0.5, 1
+                            MDRaisedButton
+                                text: "On Foot Down"
+                                opposite_colors: True
+                                size_hint: 0.8, 0.05
+                                on_release: app.add_advanced_control("down")
+                            DataList:
+                                size_hint: 1, 0.45
+                                id: on_foot_down_dl
+                                items: app.cur_advanced_controls["down"]
+                            MDRaisedButton
+                                text: "On Foot Up"
+                                opposite_colors: True
+                                size_hint: 0.8, 0.05
+                                on_release: app.add_advanced_control("up")
+                            DataList:
+                                size_hint: 1, 0.45
+                                id: on_foot_up_dl
+                                items: app.cur_advanced_controls["up"]
+                            MDFloatingActionButton:
+                                icon:                'check'
+                                opposite_colors:    True
+                                elevation_normal:    8
+                                pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
+                                # disabled: app.next_standard_controls_disabled
+                                on_release: app.confirm_advanced_controls()
         Screen:
             name: 'set_appearance'
             BoxLayout:
@@ -749,6 +807,180 @@ BoxLayout:
                     disabled: not pc_range_max.text
                     # size_hint: 0.1, 0.2
         Screen:
+            name: 'set_advanced_control_midi_type'
+            # BoxLayout:
+            #     padding: dp(20), dp(4), dp(4), dp(20)
+            #     orientation: 'vertical'
+            #     spacing: dp(20)
+            BoxLayout:
+                padding: dp(20), dp(4), dp(4), dp(20)
+                orientation: 'horizontal'
+                spacing: dp(20)
+                MDRaisedButton:
+                    text: "Control Change (CC)"
+                    opposite_colors: True
+                    size_hint: 0.3, 0.3
+                    on_release: app.go_to_page("add_advanced_cc", "Add Control Change")
+                MDRaisedButton
+                    text: "Program Change"
+                    opposite_colors: True
+                    size_hint: 0.3, 0.3
+                    on_release: app.go_to_page("add_advanced_pc", "Add Program Change")
+                # MDRaisedButton
+                #     text: "Note On/Off"
+                #     opposite_colors: True
+                #     size_hint: 0.3, 0.3
+                #     on_release: app.add_action_type(custom_pedal_action_name.text, t = "note") # just add
+                #     disabled: not custom_pedal_action_name.text
+                # MDRaisedButton
+                #     text: "Channel Pressure / Aftertouch"
+                #     opposite_colors: True
+                #     size_hint: 0.3, 0.3
+                #     on_release: app.add_action_type(custom_pedal_action_name.text, t = "cp") # just add
+                #     disabled: not custom_pedal_action_name.text
+        Screen:
+            name: 'add_advanced_pc'
+            BoxLayout:
+                padding: dp(20), dp(4), dp(4), dp(20)
+                orientation: 'vertical'
+                spacing: dp(20)
+                BoxLayout:
+                    padding: dp(20), dp(4), dp(4), dp(20)
+                    orientation: 'horizontal'
+                    spacing: dp(20)
+                    MDLabel:
+                        font_style: 'Body1'
+                        theme_text_color: 'Primary'
+                        text: "Channel"
+                        halign: 'left'
+                    MDTextField:
+                        hint_text:"1-16"
+                        helper_text:"1"
+                        helper_text_mode:"on_focus"
+                        id: pc_channel
+                BoxLayout:
+                    padding: dp(20), dp(4), dp(4), dp(20)
+                    orientation: 'horizontal'
+                    spacing: dp(20)
+                    MDLabel:
+                        font_style: 'Body1'
+                        theme_text_color: 'Primary'
+                        text: "Program Change #"
+                        halign: 'left'
+                    MDTextField:
+                        hint_text:"1-128"
+                        helper_text:"128"
+                        helper_text_mode:"on_focus"
+                        id: add_pc_num
+                MDFloatingActionButton:
+                    icon:                'check'
+                    opposite_colors:    True
+                    elevation_normal:    8
+                    pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
+                    on_release: app.add_advanced_action_pc(pc_channel.text, add_pc_num.text)
+                    disabled: not add_pc_num.text and not pc_channel.text
+                    # size_hint: 0.1, 0.2
+        Screen:
+            name: 'add_advanced_cc'
+            BoxLayout:
+                padding: dp(20), dp(4), dp(4), dp(20)
+                orientation: 'vertical'
+                spacing: dp(20)
+                BoxLayout:
+                    padding: dp(20), dp(4), dp(4), dp(20)
+                    orientation: 'horizontal'
+                    spacing: dp(20)
+                    MDLabel:
+                        font_style: 'Body1'
+                        theme_text_color: 'Primary'
+                        text: "Channel"
+                        halign: 'left'
+                    MDTextField:
+                        hint_text:"1-16"
+                        helper_text:"1"
+                        helper_text_mode:"on_focus"
+                        id: cc_channel
+                BoxLayout:
+                    padding: dp(20), dp(4), dp(4), dp(20)
+                    orientation: 'horizontal'
+                    spacing: dp(20)
+                    MDLabel:
+                        font_style: 'Body1'
+                        theme_text_color: 'Primary'
+                        text: "CC #"
+                        halign: 'left'
+                    MDTextField:
+                        hint_text:"1-128"
+                        helper_text:"128"
+                        helper_text_mode:"on_focus"
+                        id: add_cc_num
+                BoxLayout:
+                    padding: dp(20), dp(4), dp(4), dp(20)
+                    orientation: 'horizontal'
+                    spacing: dp(20)
+                    MDLabel:
+                        font_style: 'Body1'
+                        theme_text_color: 'Primary'
+                        text: "Value"
+                        halign: 'left'
+                    MDTextField:
+                        hint_text:"1-128"
+                        helper_text:"128"
+                        helper_text_mode:"on_focus"
+                        id: add_cc_val
+                MDFloatingActionButton:
+                    icon:                'check'
+                    opposite_colors:    True
+                    elevation_normal:    8
+                    pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
+                    on_release: app.add_advanced_action_cc(cc_channel.text, add_cc_num.text, add_cc_val.text)
+                    disabled: not add_cc_num.text and not add_cc_val.text and not cc_channel.text
+                    # size_hint: 0.1, 0.2
+        Screen:
+            name: 'set_advanced_full_range'
+            BoxLayout:
+                padding: dp(20), dp(4), dp(4), dp(20)
+                orientation: 'horizontal'
+                spacing: dp(20)
+                MDLabel:
+                    font_style: 'Body1'
+                    theme_text_color: 'Primary'
+                    text: "Name"
+                    halign: 'left'
+                MDTextField:
+                    hint_text:"Shown in print"
+                    helper_text:"Gain"
+                    helper_text_mode:"on_focus"
+                    id: advanced_cc_name
+                MDLabel:
+                    font_style: 'Body1'
+                    theme_text_color: 'Primary'
+                    text: "Channel"
+                    halign: 'left'
+                MDTextField:
+                    hint_text:"1-16"
+                    helper_text:"1"
+                    helper_text_mode:"on_focus"
+                    id: advanced_cc_channel
+                MDLabel:
+                    font_style: 'Body1'
+                    theme_text_color: 'Primary'
+                    text: "MIDI CC Number"
+                    halign: 'left'
+                MDTextField:
+                    hint_text:"1-128"
+                    helper_text:"1"
+                    helper_text_mode:"on_focus"
+                    id: advanced_cc_number
+                MDFloatingActionButton:
+                    icon:                'check'
+                    opposite_colors:    True
+                    elevation_normal:    8
+                    pos_hint:            {'center_x': 0.9, 'center_y': 0.0}
+                    on_release: app.add_advanced_full_range_cc(advanced_cc_name.text, advanced_cc_channel.text, advanced_cc_number.text)
+                    disabled: not advanced_cc_channel.text and advanced_cc_number.text and advanced_cc_channel.text.isdigit()
+                    # size_hint: 0.1, 0.2
+        Screen:
             name: 'pre_update_firmware'
             BoxLayout:
                 padding: dp(20), dp(4), dp(4), dp(20)
@@ -946,6 +1178,9 @@ class PolyExpressiveSetup(App):
     global_outline_width = NumericProperty(1.1)
     global_transparency = NumericProperty(0.1)
     return_button_added = False
+
+    cur_advanced_controls = {"up": [], "down": [], "horizontal": [], "vertical": [], "pressure": []}
+    current_advanced_target = ''
 
     def reset_mat(self):
         self.global_outline_width = 1.1
@@ -1291,6 +1526,106 @@ class PolyExpressiveSetup(App):
         # print("mat is", mat_def)
         self.go_to_page("edit_mat", "Edit Board")
 
+    def add_advanced_control(self, target_action):
+        self.current_advanced_target = target_action
+        if target_action in ["horizontal", "vertical", "pressure"]:
+            self.go_to_page("set_advanced_full_range", "Add CC")
+        else:
+            self.go_to_page("set_advanced_control_midi_type", "Add Control")
+
+    def confirm_advanced_controls(self):
+        # global for current cell as can't work out a neat way
+        # included_standard_controls is the UI items, need to transfer it to the actual items
+        mat_def["cells"][current_selected_cell]["advanced_controls"] = copy.copy(self.cur_advanced_controls)
+        for k,v in mat_def["cells"][current_selected_cell]["advanced_controls"].items():
+            for b in v:
+                b.pop("text", False)
+                b.pop("secondary_text", False)
+                b.pop("action", False)
+                b.pop("id", False)
+
+        self.go_to_page("edit_mat", "Edit Board")
+
+    def add_advanced_full_range_cc(self, name, channel, cc_number):
+        cur_id = str(uuid.uuid4())
+        t_obj = {"text":name,
+            "secondary_text":cc_number, "action":
+            PolyExpressiveSetup.remove_advanced_action, "id": cur_id, "name":name, "channel":channel, "cc":cc_number}
+        if self.current_advanced_target == "pressure":
+            self.root.ids.on_pressure_change_dl.items.append(t_obj)
+        elif self.current_advanced_target == "horizontal":
+            self.root.ids.on_horizontal_change_dl.items.append(t_obj)
+        elif self.current_advanced_target == "vertical":
+            self.root.ids.on_vertical_change_dl.items.append(t_obj)
+
+        self.cur_advanced_controls[self.current_advanced_target].append(t_obj)
+        self.go_to_page("set_actions", "Set Action")
+        # focus advanced tab
+
+    def remove_advanced_action(self, in_ctx):
+        # seach each display list
+
+        ctx = self.root.ids.on_foot_up_dl.find(in_ctx.id)
+        if ctx in self.root.ids.on_foot_up_dl.items:
+            self.root.ids.on_foot_up_dl.items.remove(ctx)
+        if not ctx:
+            ctx = self.root.ids.on_foot_down_dl.find(in_ctx.id)
+            if ctx in self.root.ids.on_foot_down_dl.items:
+                self.root.ids.on_foot_down_dl.items.remove(ctx)
+        if not ctx:
+            ctx = self.root.ids.on_pressure_change_dl.find(in_ctx.id)
+            if ctx in self.root.ids.on_pressure_change_dl.items:
+                self.root.ids.on_pressure_change_dl.items.remove(ctx)
+        if not ctx:
+            ctx = self.root.ids.on_vertical_change_dl.find(in_ctx.id)
+            if ctx in self.root.ids.on_vertical_change_dl.items:
+                self.root.ids.on_vertical_change_dl.items.remove(ctx)
+        if not ctx:
+            ctx = self.root.ids.on_horizontal_change_dl.find(in_ctx.id)
+            if ctx in self.root.ids.on_horizontal_change_dl.items:
+                self.root.ids.on_horizontal_change_dl.items.remove(ctx)
+
+        # for obj in self.root.ids.on_foot_up_dl.items:
+        #     if obj["id"] == ctx["id"]:
+        #         self.root.ids.on_foot_up_dl.items.remove(obj)
+        #search the main list
+        for k, v in self.cur_advanced_controls.items():
+            for obj in v:
+                if obj["id"] == ctx["id"]:
+                    v.remove(obj)
+                    break
+                    # self.cur_advanced_controls.remove(obj)
+
+    def add_advanced_action_cc(self, channel, cc, val):
+        cur_id = str(uuid.uuid4())
+
+# PolyExpressiveSetup.remove_advanced_action(self, self.current_advanced_target, cur_id)
+        t_obj = {"text":"cc:"+cc,
+            "secondary_text":val, "action":
+            PolyExpressiveSetup.remove_advanced_action, "id": cur_id, "cc":cc, "channel":channel, "val":val}
+        if self.current_advanced_target == "up":
+            self.root.ids.on_foot_up_dl.items.append(t_obj)
+        elif self.current_advanced_target == "down":
+            self.root.ids.on_foot_down_dl.items.append(t_obj)
+
+        self.cur_advanced_controls[self.current_advanced_target].append(t_obj)
+        self.go_to_page("set_actions", "Set Action")
+        # focus advanced tab
+
+    def add_advanced_action_pc(self, channel, pc):
+        cur_id = str(uuid.uuid4())
+        t_obj = {"text":"pc:"+pc,
+            "secondary_text":channel, "action":
+            PolyExpressiveSetup.remove_advanced_action, "id": cur_id, "pc":pc, "channel":channel}
+        if self.current_advanced_target == "up":
+            self.root.ids.on_foot_up_dl.items.append(t_obj)
+        elif self.current_advanced_target == "down":
+            self.root.ids.on_foot_down_dl.items.append(t_obj)
+
+        self.cur_advanced_controls[self.current_advanced_target].append(t_obj)
+        self.go_to_page("set_actions", "Set Action")
+        # focus advanced tab
+
     def click_set_layout(self, ctx):
         # print("set layout")
         # reset mat, in case an existing layout is loaded.
@@ -1311,6 +1646,10 @@ class PolyExpressiveSetup(App):
         self.available_standard_controls = []
         selected_standard_controls = []
         current_controls = mat_def["cells"][cell_id]["standard_controls"]
+        if "advanced_controls" in mat_def["cells"][cell_id]:
+            advanced_controls = mat_def["cells"][cell_id]["advanced_controls"]
+        else:
+            advanced_controls = {}
         current_keys = [a[0] for a in current_controls]
         if mat_def["included_pedals"]:
             for pedal in mat_def["included_pedals"]:
@@ -1343,6 +1682,45 @@ class PolyExpressiveSetup(App):
                 if val:
                     c["direction"] = val
                 selected_standard_controls.append(c)
+
+            self.cur_advanced_controls = {"up": [], "down": [], "horizontal": [], "vertical": [], "pressure": []}
+            self.current_advanced_target = ''
+            self.root.ids.on_foot_up_dl.items = []
+            self.root.ids.on_foot_down_dl.items = []
+            self.root.ids.on_foot_down_dl.items = []
+            self.root.ids.on_pressure_change_dl.items = []
+            self.root.ids.on_horizontal_change_dl.items = []
+            self.root.ids.on_vertical_change_dl.items = []
+
+            for action, controls in advanced_controls.items():
+                for control in controls:
+                    cur_id = str(uuid.uuid4())
+                    if action == "up" or action == "down":
+                        if "pc" in control:
+                            t_obj = {"text":"pc:"+control["pc"],
+                                "secondary_text":control["channel"], "action":
+                                PolyExpressiveSetup.remove_advanced_action, "id": cur_id, "pc":control["pc"], "channel":control["channel"]}
+                        else:
+                            t_obj = {"text":"cc:"+control["cc"],
+                                "secondary_text":control["val"], "action":
+                                PolyExpressiveSetup.remove_advanced_action, "id": cur_id, "cc":control["cc"], "channel":control["channel"], "val":control["val"]}
+                        if action == "up":
+                            self.root.ids.on_foot_up_dl.items.append(t_obj)
+                        elif action == "down":
+                            self.root.ids.on_foot_down_dl.items.append(t_obj)
+                    else:
+                        t_obj = {"text":control["name"],
+                            "secondary_text":control["cc"], "action":
+                            PolyExpressiveSetup.remove_advanced_action, "id": cur_id, "name":control["name"], "channel":control["channel"], "cc":control["cc"]}
+                        if action == "pressure":
+                            self.root.ids.on_pressure_change_dl.items.append(t_obj)
+                        elif action == "horizontal":
+                            self.root.ids.on_horizontal_change_dl.items.append(t_obj)
+                        elif action == "vertical":
+                            self.root.ids.on_vertical_change_dl.items.append(t_obj)
+
+                    self.cur_advanced_controls[action].append(t_obj)
+
 
             self.root.ids.selected_standard_controls_dl.items = selected_standard_controls
             self.root.ids.selected_standard_controls_dl.items = sorted(self.root.ids.selected_standard_controls_dl.items, key=lambda x: x["text"].lower())
@@ -1782,6 +2160,45 @@ class PolyExpressiveSetup(App):
 
             return (action, out_block)
 
+        def advanced_controls_to_json(action, val):
+            # "Tone B": ["Tone B", "on_foot_move", "1"],
+            # "Channel A Boost": ["Channel A Effect Select", "on_foot_down", "Boost"],
+            # "Tone B": {"type": "CC", "controller":19, "curve":"1"},
+            # "Channel A Effect Select": {"type": "CC", "controller":21, "enum":{"Boost":1, "Drive":2, "Fuzz":3}},
+            block = {}
+            ac_type = "CC"
+            if action in ["horizontal", "vertical", "pressure"]:
+                ac_type = "CC"
+            else:
+                if "cc" in val:
+                    ac_type = "CC"
+                elif "pc" in val:
+                    ac_type = "PC"
+
+            if ac_type in MIDI_messages:
+                block["t"] = "m"
+                # if isinstance(selected_val, types.TupleType):
+                #     # the value is a inc, min, max
+                #     if selected_val[0] == "+":
+                #         block["t"] = "e+"
+                #     elif selected_val[0] == "-":
+                #         block["t"] = "e-"
+                #     block["s"] = selected_val[1]
+                #     block["e"] = selected_val[2]
+                #     selected_val = selected_val[3]
+                print("action is", action, "val", val)
+                block["b1"] = MIDI_messages[ac_type] | (int(val["channel"])-1) # channel from 1-16 mapped to 0-15 here
+                if ac_type in ["CP", "PC"]: # 2 byte messages
+                    block["b2"] = int(val["pc"])
+                elif ac_type == "CC":
+                    block["b2"] = val["cc"]
+                    if "val" in val: #non curve
+                        block["b3"] = val["val"]
+                    else:
+                        block["c"] = default_curves["1"][1]
+
+            return block
+
         out_mat = []
         for cell_id, cell_content in mat_def["cells"].items():
             out_cell = {}
@@ -1825,6 +2242,48 @@ class PolyExpressiveSetup(App):
                     if "e" not in out_cell:
                         out_cell["e"] = []
                     out_cell["e"].append(block)
+
+            if "advanced_controls" in cell_content:
+                for action, controls in cell_content["advanced_controls"].items():
+                    for control in controls:
+                        block = advanced_controls_to_json(action, control)
+                        has_controls = True
+                        if action in ["horizontal", "vertical", "pressure"]:
+                            # sort by direction
+                            if "c" not in out_cell:
+                                out_cell["c"] = {}
+                            if action == "vertical": # this is switched because the axis in the firmware is different
+                                if "x" not in out_cell["c"]:
+                                    out_cell["c"]["x"] = []
+                                out_cell["c"]["x"].append(block)
+                            elif action == "horizontal":
+                                if "y" not in out_cell["c"]:
+                                    out_cell["c"]["y"] = []
+                                out_cell["c"]["y"].append(block)
+                            else:
+                                if "z" not in out_cell["c"]:
+                                    out_cell["c"]["z"] = []
+                                out_cell["c"]["z"].append(block)
+                        elif action == "down":
+                            if "s" not in out_cell:
+                                out_cell["s"] = []
+                            out_cell["s"].append(block)
+                        # elif action == "on_foot_down_toggle":
+                        #     if "s" not in out_cell:
+                        #         out_cell["s"] = []
+                        #     out_cell["s"].append(block)
+                        # elif action == "on_foot_up_down_value":
+                        #     if "s" not in out_cell:
+                        #         out_cell["s"] = []
+                        #     out_cell["s"].append(block)
+                        #     action, block = standard_controls_to_json(control, val, "note_off")
+                        #     if "e" not in out_cell:
+                        #         out_cell["e"] = []
+                        #     out_cell["e"].append(block)
+                        elif action == "up":
+                            if "e" not in out_cell:
+                                out_cell["e"] = []
+                            out_cell["e"].append(block)
 
             x1 = self.cell_buttons[cell_id].pos[0]
             y1 = self.cell_buttons[cell_id].pos[1]
@@ -1929,6 +2388,17 @@ class PolyExpressiveSetup(App):
             self.cur_add_enum.pop(key)
         # self.root.ids.enum_val_dl.items = [{"text":k, "secondary_text":v, "action": PolyExpressiveSetup.remove_enum_val,
         #     "id": k} for k,v in self.current_add_enum.items()]
+
+
+    def remove_pedal(self, in_ctx):
+        if in_ctx:
+            ctx = self.root.ids.selected_pedals_dl.find(in_ctx.id)
+            if ctx in self.root.ids.selected_pedals_dl.items:
+                self.root.ids.selected_pedals_dl.items.remove(ctx)
+
+        self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
+        mat_def["included_pedals"] = [a["id"] for a in self.root.ids.selected_pedals_dl.items]
+
 
     def set_mat_size_dialog(self, next_action=None):
         content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None, size=(200, 300),
