@@ -32,6 +32,7 @@ default_channels = {
     "GFI System:Specular Tempus":15,
     "GFI System:Cabzeus":16,
     "Fractal Audio:Axe FX 2":1,
+    "OTO:BIM":1,
     }
 
 advanced_controls = {
@@ -1006,6 +1007,31 @@ advanced_controls = {
     },
     "GFI System:Cabzeus":{
     "Preset": {"type": "PC", "value":{"min":0, "max":8}}
+    },
+    "OTO:BIM":{
+    "Decay/Time": {"type": "CC", "controller":15, "curve":"1"},
+    "Delay":{"type": "CC", "controller":12, "curve":"1"},
+    "Feedback":{"type": "CC", "controller":13, "curve":"1"},
+    "Mix":{"type": "CC", "controller":14, "curve":"1"},
+    "LFO Rate":{"type": "CC", "controller":15, "curve":"1"},
+    "LFO Depth":{"type": "CC", "controller":16, "curve":"1"},
+    "Active":{"type": "CC", "controller":17, "curve":"1"},
+    "Bypass": {"type": "CC", "controller":17, "enum":{"Bypass":0, "Enabled": 127}},
+    "Division":{"type": "CC", "controller":18, "curve":"1"},
+    "Range":{"type": "CC", "controller":19, "curve":"1"},
+    "FX Type":{"type": "CC", "controller":20, "curve":"1"},
+    "In Gain":{"type": "CC", "controller":21, "curve":"1"},
+    "HPF":{"type": "CC", "controller":22, "curve":"1"},
+    "LPF":{"type": "CC", "controller":23, "curve":"1"},
+    "Feedback Filters":{"type": "CC", "controller":24, "curve":"1"},
+    "Offset":{"type": "CC", "controller":25, "curve":"1"},
+    "LFO Wave":{"type": "CC", "controller":26, "curve":"1"},
+    "LFO Range":{"type": "CC", "controller":27, "curve":"1"},
+    "Freeze":{"type": "CC", "controller":28, "curve":"1"},
+    "Freeze Reverse":{"type": "CC", "controller":29, "curve":"1"},
+    "LFO Division":{"type": "CC", "controller":30, "curve":"1"},
+    "LFO Phase Reset":{"type": "CC", "controller":31, "curve":"1"},
+    "Preset": {"type": "PC", "value":{"min":0, "max":128}}
     }
 }
 # Recall Preset - Bypass | 103  0-127  Recalls any preset in Bypass #TODO
@@ -1072,6 +1098,8 @@ def update_standard_controls(in_controls):
                 standard_controls[pedal_name][control_name] = [control_name, "on_foot_up_down_value", control_conf["value"]]
             elif "value" in control_conf:
                 standard_controls[pedal_name][control_name] = [control_name, "on_foot_down_value", control_conf["value"]]
+                if control_name.lower() == "preset":
+                    standard_controls[pedal_name][control_name+" Foot Up"] = [control_name, "on_foot_up_value", control_conf["value"]]
 
 update_standard_controls(advanced_controls)
 
@@ -1215,6 +1243,9 @@ standard_controls_update = {
     "Toggle Bypass": ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"],
 },
 "GFI System:Specular Tempus":{
+    "Toggle Bypass": ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"],
+},
+"OTO:BIM":{
     "Toggle Bypass": ["Bypass", "on_foot_down_toggle", "Enabled", "Bypass", "Bypass"],
 },
 "Macro:Macro":{

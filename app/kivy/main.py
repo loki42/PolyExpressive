@@ -1427,7 +1427,8 @@ class PolyExpressiveSetup(App):
                                        auto_dismiss=False)
                 self.dialog.open()
             elif (get_standard_controls_from_key(ctx["key"])[1] == "on_foot_down_value" or \
-                get_standard_controls_from_key(ctx["key"])[1] == "on_foot_up_down_value") \
+                get_standard_controls_from_key(ctx["key"])[1] == "on_foot_up_down_value" or \
+                get_standard_controls_from_key(ctx["key"])[1] == "on_foot_up_value") \
                     and not set_value:
                 content = BoxLayout(spacing=10, orientation="vertical", size_hint_y=None, size=(300, 240),
                                     padding= 48)
@@ -1789,10 +1790,10 @@ class PolyExpressiveSetup(App):
              'text': 'Share layout',
              'on_release' : lambda *x: self.export_board_to_file()
              },
-            {'viewclass': 'MDMenuItem',
-             'text': 'Add Custom Pedal / MIDI',
-             'on_release' : lambda *x: self.go_to_page("add_custom_pedal", "Add Custom Pedal / MIDI")
-             },
+            # {'viewclass': 'MDMenuItem',
+            #  'text': 'Add Custom Pedal / MIDI',
+            #  'on_release' : lambda *x: self.go_to_page("add_custom_pedal", "Add Custom Pedal / MIDI")
+            #  },
         ]
         Snackbar(text="Connect to the Poly WiFi to send to Poly").show()
         MDDropdownMenu(items=menu_items, width_mult=4).open(parent)
@@ -2084,7 +2085,7 @@ class PolyExpressiveSetup(App):
 
                 if ac_type in MIDI_messages:
                     block["t"] = "m"
-                    if isinstance(selected_val, types.TupleType):
+                    if isinstance(selected_val, types.TupleType) or isinstance(selected_val, types.ListType):
                         # the value is a inc, min, max
                         if selected_val[0] == "+":
                             block["t"] = "e+"
@@ -2222,7 +2223,7 @@ class PolyExpressiveSetup(App):
                         if "z" not in out_cell["c"]:
                             out_cell["c"]["z"] = []
                         out_cell["c"]["z"].append(block)
-                elif action == "on_foot_down":
+                elif action == "on_foot_down" or action == "on_foot_down_value":
                     if "s" not in out_cell:
                         out_cell["s"] = []
                     out_cell["s"].append(block)
