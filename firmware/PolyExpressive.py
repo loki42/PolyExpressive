@@ -133,6 +133,11 @@ def map_and_send_midi(action, param, remove_dup=True):
     send_midi_message(action["b1"], action["b2"], mapped_param)
     # print("sending midi", action["b1"], action["b2"], mapped_param)
 
+# def note_hold():
+#     if b1 == note_on:
+#         if b2 is in currently_playing:
+#             stop
+
 def update_bpm(bpm):
     global clock_interval_us
     clock_interval_us = calculate_interval_us(bpm)

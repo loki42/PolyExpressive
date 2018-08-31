@@ -1,42 +1,6 @@
-EESchema Schematic File Version 2
-LIBS:power
-LIBS:device
-LIBS:switches
-LIBS:relays
-LIBS:motors
-LIBS:transistors
-LIBS:conn
-LIBS:linear
-LIBS:regul
-LIBS:74xx
-LIBS:cmos4000
-LIBS:adc-dac
-LIBS:memory
-LIBS:xilinx
-LIBS:microcontrollers
-LIBS:dsp
-LIBS:microchip
-LIBS:analog_switches
-LIBS:motorola
-LIBS:texas
-LIBS:intel
-LIBS:audio
-LIBS:interface
-LIBS:digital-audio
-LIBS:philips
-LIBS:display
-LIBS:cypress
-LIBS:siliconi
-LIBS:opto
-LIBS:atmel
-LIBS:contrib
-LIBS:valves
-LIBS:LMZ21700SILT
-LIBS:Common-Parts-Library
-LIBS:ESP32-footprints-Shem-Lib
-LIBS:Poly1
+EESchema Schematic File Version 4
 LIBS:kicad-cache
-EELAYER 25 0
+EELAYER 26 0
 EELAYER END
 $Descr A3 16535 11693
 encoding utf-8
@@ -51,7 +15,7 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L LMZ21700 U1
+L Poly1:LMZ21700 U1
 U 1 1 59A62599
 P 3500 1250
 F 0 "U1" H 3300 1550 60  0000 C CNN
@@ -65,7 +29,7 @@ F 6 " Texas Instruments" H 3500 1250 60  0001 C CNN "MFG"
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C1
+L Device:C C1
 U 1 1 59A6281C
 P 2150 1600
 F 0 "C1" H 2175 1700 50  0000 L CNN
@@ -79,7 +43,7 @@ F 6 " Taiyo Yuden" H 2150 1600 60  0001 C CNN "MFG"
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C2
+L Device:C C2
 U 1 1 59A62909
 P 2700 1950
 F 0 "C2" H 2725 2050 50  0000 L CNN
@@ -93,7 +57,7 @@ F 6 " Samsung" H 2700 1950 60  0001 C CNN "MFG"
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C4
+L Device:C C4
 U 1 1 59A62948
 P 5200 1750
 F 0 "C4" H 5225 1850 50  0000 L CNN
@@ -107,7 +71,7 @@ F 6 " Samsung" H 5200 1750 60  0001 C CNN "MFG"
 	1    0    0    -1  
 $EndComp
 $Comp
-L R R1
+L Device:R R1
 U 1 1 59A62A21
 P 4600 1300
 F 0 "R1" V 4680 1300 50  0000 C CNN
@@ -121,7 +85,7 @@ F 6 " Vishay Dale" H 4600 1300 60  0001 C CNN "MFG"
 	1    0    0    -1  
 $EndComp
 $Comp
-L R R2
+L Device:R R2
 U 1 1 59A62AC0
 P 4600 1750
 F 0 "R2" V 4680 1750 50  0000 C CNN
@@ -135,7 +99,7 @@ F 6 " Yageo" H 4600 1750 60  0001 C CNN "MFG"
 	1    0    0    -1  
 $EndComp
 $Comp
-L RAPC722X J1
+L Poly1:RAPC722X J1
 U 1 1 59A62B33
 P 1100 1000
 F 0 "J1" H 1050 1200 50  0000 C CNN
@@ -154,7 +118,7 @@ Text Label 5750 1600 0    60   ~ 0
 3V3
 NoConn ~ 3950 1200
 $Comp
-L GND #PWR01
+L power:GND #PWR01
 U 1 1 59A65A62
 P 3650 2450
 F 0 "#PWR01" H 3650 2200 50  0001 C CNN
@@ -165,7 +129,7 @@ F 3 "" H 3650 2450 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L ESP32-WROOM U2
+L ESP32-footprints-Shem-Lib:ESP32-WROOM U2
 U 1 1 59A6600A
 P 6450 7900
 F 0 "U2" H 5750 9150 60  0000 C CNN
@@ -179,7 +143,7 @@ F 6 "Espressif" H 6450 7900 60  0001 C CNN "MFG"
 	1    0    0    -1  
 $EndComp
 $Comp
-L 640455-4 J4
+L Poly1:640455-4 J4
 U 1 1 59A67607
 P 14050 2100
 F 0 "J4" H 14050 2300 50  0000 C CNN
@@ -193,7 +157,7 @@ F 6 " TE Connectivity" H 14050 2100 60  0001 C CNN "MFG"
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C8
+L Device:C C8
 U 1 1 59A6B127
 P 11350 2850
 F 0 "C8" H 11375 2950 50  0000 L CNN
@@ -207,7 +171,7 @@ F 6 " Murata" H 11350 2850 60  0001 C CNN "MFG"
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C7
+L Device:C C7
 U 1 1 59A6B170
 P 11000 2850
 F 0 "C7" H 11025 2950 50  0000 L CNN
@@ -221,7 +185,7 @@ F 6 " Murata" H 11000 2850 60  0001 C CNN "MFG"
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C9
+L Device:C C9
 U 1 1 59A6B1C9
 P 13300 1700
 F 0 "C9" H 13325 1800 50  0000 L CNN
@@ -235,7 +199,7 @@ F 6 " Murata" H 13300 1700 60  0001 C CNN "MFG"
 	1    0    0    -1  
 $EndComp
 $Comp
-L STMPE811 U3
+L Poly1:STMPE811 U3
 U 1 1 59A6BF19
 P 12450 2300
 F 0 "U3" H 12200 2850 60  0000 C CNN
@@ -267,7 +231,7 @@ Y+
 Text Label 10650 2700 0    60   ~ 0
 3V3
 $Comp
-L GND #PWR02
+L power:GND #PWR02
 U 1 1 59A6CEBD
 P 10650 3000
 F 0 "#PWR02" H 10650 2750 50  0001 C CNN
@@ -280,7 +244,7 @@ $EndComp
 Text Label 10650 1400 0    60   ~ 0
 3V3
 $Comp
-L GND #PWR03
+L power:GND #PWR03
 U 1 1 59A6E960
 P 11650 2150
 F 0 "#PWR03" H 11650 1900 50  0001 C CNN
@@ -301,7 +265,7 @@ NoConn ~ 12950 2450
 Text Label 11700 2550 0    60   ~ 0
 INT
 $Comp
-L GND #PWR04
+L power:GND #PWR04
 U 1 1 59A72034
 P 6000 8950
 F 0 "#PWR04" H 6000 8700 50  0001 C CNN
@@ -312,7 +276,7 @@ F 3 "" H 6000 8950 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR05
+L power:GND #PWR05
 U 1 1 59A720FC
 P 5500 8600
 F 0 "#PWR05" H 5500 8350 50  0001 C CNN
@@ -323,7 +287,7 @@ F 3 "" H 5500 8600 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR06
+L power:GND #PWR06
 U 1 1 59A7227C
 P 7350 8550
 F 0 "#PWR06" H 7350 8300 50  0001 C CNN
@@ -334,7 +298,7 @@ F 3 "" H 7350 8550 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR07
+L power:GND #PWR07
 U 1 1 59A722E2
 P 7450 8450
 F 0 "#PWR07" H 7450 8200 50  0001 C CNN
@@ -345,7 +309,7 @@ F 3 "" H 7450 8450 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C3
+L Device:C C3
 U 1 1 59A7237F
 P 4400 7400
 F 0 "C3" H 4425 7500 50  0000 L CNN
@@ -359,7 +323,7 @@ F 6 "Murata" H 4400 7400 60  0001 C CNN "MFG"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L C C5
+L Device:C C5
 U 1 1 59A723FA
 P 5450 6000
 F 0 "C5" H 5475 6100 50  0000 L CNN
@@ -373,7 +337,7 @@ F 6 " Taiyo Yuden" H 5450 6000 60  0001 C CNN "MFG"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L C C6
+L Device:C C6
 U 1 1 59A72481
 P 5450 6250
 F 0 "C6" H 5475 6350 50  0000 L CNN
@@ -384,7 +348,7 @@ F 3 "" H 5450 6250 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L R R3
+L Device:R R3
 U 1 1 59A72D02
 P 4900 7100
 F 0 "R3" V 4980 7100 50  0000 C CNN
@@ -398,7 +362,7 @@ F 6 " Yageo" H 4900 7100 60  0001 C CNN "MFG"
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR08
+L power:GND #PWR08
 U 1 1 59A72EF9
 P 4000 7400
 F 0 "#PWR08" H 4000 7150 50  0001 C CNN
@@ -411,7 +375,7 @@ $EndComp
 Text Label 4900 5800 0    60   ~ 0
 3V3
 $Comp
-L GND #PWR09
+L power:GND #PWR09
 U 1 1 59A731D8
 P 6000 6100
 F 0 "#PWR09" H 6000 5850 50  0001 C CNN
@@ -422,7 +386,7 @@ F 3 "" H 6000 6100 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L 35RAPC4BVN4 J3
+L Poly1:35RAPC4BVN4 J3
 U 1 1 59A74B5A
 P 10250 8400
 F 0 "J3" H 9800 8750 60  0000 C CNN
@@ -436,7 +400,7 @@ F 6 "Switchcraft" H 10250 8400 60  0001 C CNN "MFG"
 	-1   0    0    1   
 $EndComp
 $Comp
-L R R4
+L Device:R R4
 U 1 1 59A75436
 P 8550 8250
 F 0 "R4" V 8630 8250 50  0000 C CNN
@@ -450,7 +414,7 @@ F 6 " Yageo" H 8550 8250 60  0001 C CNN "MFG"
 	0    1    1    0   
 $EndComp
 $Comp
-L R R5
+L Device:R R5
 U 1 1 59A75531
 P 9600 8200
 F 0 "R5" V 9680 8200 50  0000 C CNN
@@ -464,7 +428,7 @@ F 6 "Yageo" H 9600 8200 60  0001 C CNN "MFG"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L Conn_02x05_Odd_Even J2
+L kicad-rescue:Conn_02x05_Odd_Even J2
 U 1 1 59A7FCF2
 P 8750 7100
 F 0 "J2" H 8800 7400 50  0000 C CNN
@@ -475,7 +439,7 @@ F 3 "" H 8750 7100 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR010
+L power:GND #PWR010
 U 1 1 59A81C1F
 P 9750 8600
 F 0 "#PWR010" H 9750 8350 50  0001 C CNN
@@ -490,7 +454,7 @@ Text Label 9300 8200 0    60   ~ 0
 Text Label 8400 6900 0    60   ~ 0
 3V3
 $Comp
-L GND #PWR011
+L power:GND #PWR011
 U 1 1 59A9084C
 P 8150 6900
 F 0 "#PWR011" H 8150 6650 50  0001 C CNN
@@ -501,7 +465,7 @@ F 3 "" H 8150 6900 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	1400 1100 3050 1100
+	1400 1100 2150 1100
 Wire Wire Line
 	3050 1200 2850 1200
 Wire Wire Line
@@ -512,7 +476,7 @@ Wire Wire Line
 Wire Wire Line
 	1700 900  1700 2400
 Wire Wire Line
-	1700 2400 5600 2400
+	1700 2400 2150 2400
 Wire Wire Line
 	2700 2400 2700 2100
 Wire Wire Line
@@ -529,7 +493,7 @@ Wire Wire Line
 	3500 2400 3500 1700
 Connection ~ 2700 2400
 Wire Wire Line
-	3950 1100 5750 1100
+	3950 1100 4200 1100
 Wire Wire Line
 	4200 1100 4200 1300
 Wire Wire Line
@@ -547,7 +511,7 @@ Wire Wire Line
 Wire Wire Line
 	4350 1500 4600 1500
 Wire Wire Line
-	4600 1450 4600 1600
+	4600 1450 4600 1500
 Connection ~ 4600 1500
 Wire Wire Line
 	4600 2400 4600 1900
@@ -563,9 +527,9 @@ Wire Wire Line
 Connection ~ 5200 1100
 Connection ~ 5200 2400
 Wire Wire Line
-	10650 2700 11950 2700
+	10650 2700 11000 2700
 Wire Wire Line
-	10650 3000 13300 3000
+	10650 3000 11000 3000
 Connection ~ 11350 2700
 Wire Wire Line
 	12450 3000 12450 2950
@@ -576,8 +540,6 @@ Connection ~ 12450 3000
 Wire Wire Line
 	13300 1400 13300 1550
 Wire Wire Line
-	10650 1400 13300 1400
-Wire Wire Line
 	12450 1400 12450 1650
 Connection ~ 11000 2700
 Connection ~ 11000 3000
@@ -587,23 +549,23 @@ Wire Wire Line
 Wire Wire Line
 	11800 2450 11800 2150
 Wire Wire Line
-	11650 2150 11950 2150
+	11650 2150 11800 2150
 Connection ~ 11800 2150
 Wire Wire Line
 	11950 2550 11700 2550
 Wire Wire Line
-	4550 7400 5500 7400
+	4550 7400 4900 7400
 Wire Wire Line
 	4900 7400 4900 7250
 Connection ~ 4900 7400
 Wire Wire Line
 	4250 7400 4000 7400
 Wire Wire Line
-	4900 5800 4900 6950
+	4900 5800 4900 5900
 Wire Wire Line
 	5600 6000 5750 6000
 Wire Wire Line
-	5750 6000 5750 6250
+	5750 6000 5750 6100
 Wire Wire Line
 	5750 6250 5600 6250
 Wire Wire Line
@@ -612,7 +574,7 @@ Connection ~ 5750 6100
 Wire Wire Line
 	4900 5900 5300 5900
 Wire Wire Line
-	5300 5900 5300 7300
+	5300 5900 5300 6000
 Connection ~ 4900 5900
 Connection ~ 5300 6000
 Wire Wire Line
@@ -718,7 +680,7 @@ NoConn ~ 10000 8300
 NoConn ~ 10000 8400
 NoConn ~ 1400 1000
 Wire Wire Line
-	3400 1700 3600 1700
+	3400 1700 3500 1700
 Connection ~ 3500 1700
 Wire Wire Line
 	12350 2950 12350 3000
@@ -730,11 +692,11 @@ Wire Wire Line
 NoConn ~ 5500 7700
 NoConn ~ 5500 7800
 Wire Wire Line
-	10900 2250 11950 2250
+	10900 2250 11450 2250
 Wire Wire Line
-	10900 2350 11950 2350
+	10900 2350 11200 2350
 $Comp
-L R R7
+L Device:R R7
 U 1 1 59AEBC06
 P 11450 1700
 F 0 "R7" V 11530 1700 50  0000 C CNN
@@ -748,7 +710,7 @@ F 6 " Yageo" H 11450 1700 60  0001 C CNN "MFG"
 	1    0    0    -1  
 $EndComp
 $Comp
-L R R6
+L Device:R R6
 U 1 1 59AEC33A
 P 11200 1700
 F 0 "R6" V 11280 1700 50  0000 C CNN
@@ -761,7 +723,6 @@ F 6 " Yageo" H 11200 1700 60  0001 C CNN "MFG"
 	1    11200 1700
 	1    0    0    -1  
 $EndComp
-Connection ~ 11000 1400
 Wire Wire Line
 	11450 1550 11450 1400
 Connection ~ 11450 1400
@@ -774,4 +735,66 @@ Connection ~ 11450 2250
 Wire Wire Line
 	11200 1850 11200 2350
 Connection ~ 11200 2350
+Wire Wire Line
+	2850 1100 3050 1100
+Wire Wire Line
+	2150 2400 2700 2400
+Wire Wire Line
+	2150 1100 2850 1100
+Wire Wire Line
+	2700 2400 3500 2400
+Wire Wire Line
+	4200 1100 4600 1100
+Wire Wire Line
+	4600 1100 5200 1100
+Wire Wire Line
+	4600 1500 4600 1600
+Wire Wire Line
+	3500 2400 3650 2400
+Wire Wire Line
+	4600 2400 5200 2400
+Wire Wire Line
+	3650 2400 4600 2400
+Wire Wire Line
+	5200 1100 5750 1100
+Wire Wire Line
+	5200 2400 5600 2400
+Wire Wire Line
+	11350 2700 11950 2700
+Wire Wire Line
+	11350 3000 12350 3000
+Wire Wire Line
+	12450 3000 13300 3000
+Wire Wire Line
+	11000 2700 11350 2700
+Wire Wire Line
+	11000 3000 11350 3000
+Wire Wire Line
+	12450 1400 13300 1400
+Wire Wire Line
+	11800 2150 11950 2150
+Wire Wire Line
+	4900 7400 5500 7400
+Wire Wire Line
+	5750 6100 5750 6250
+Wire Wire Line
+	4900 5900 4900 6950
+Wire Wire Line
+	5300 6000 5300 6250
+Wire Wire Line
+	5300 6250 5300 7300
+Wire Wire Line
+	3500 1700 3600 1700
+Wire Wire Line
+	12350 3000 12450 3000
+Wire Wire Line
+	11450 1400 12450 1400
+Wire Wire Line
+	11200 1400 11450 1400
+Wire Wire Line
+	11450 2250 11950 2250
+Wire Wire Line
+	11200 2350 11950 2350
+Wire Wire Line
+	10650 1400 11200 1400
 $EndSCHEMATC

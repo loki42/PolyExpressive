@@ -1,15 +1,61 @@
 EESchema-DOCLIB  Version 2.0
 #
+$CMP +18VA
+D power-flag symbol
+K Power Flag Symbol
+$ENDCMP
+#
+$CMP +4.5VA
+D power-flag symbol
+K Power Flag Symbol
+$ENDCMP
+#
 $CMP 640455-4
 D Generic connector, single row, 01x04
 K connector
 F ~
 $ENDCMP
 #
+$CMP EE2-3TNU
+D RELAY GEN PURPOSE DPDT 2A 5V
+K 399-11052-5-ND EC2
+F https://api.kemet.com/component-edge/download/datasheet/EC2-5NU.pdf
+$ENDCMP
+#
+$CMP H11AA1SM
+D OPTOISO 2.5KV TRANS W/BASE 6DIP
+K 160-1300-5-ND
+F http://optoelectronics.liteon.com/upload/download/DS-70-99-0010/4N2X%20series%20Datasheet%201115.pdf
+$ENDCMP
+#
 $CMP Jack-DC
 D DC Barrel Jack
 K DC power barrel jack connector
 F ~
+$ENDCMP
+#
+$CMP MCP41HV51-ST
+D 7/8-bit single +36V (+/-18V) digital pot, I2C serial interface, volatile memory, TSSOP-14
+K I2C Potentiometer pot digital
+F http://ww1.microchip.com/downloads/en/DeviceDoc/20005304A.pdf
+$ENDCMP
+#
+$CMP MCP45HV31-ST
+D 7/8-bit single +36V (+/-18V) digital pot, I2C serial interface, volatile memory, TSSOP-14
+K I2C Potentiometer pot digital
+F http://ww1.microchip.com/downloads/en/DeviceDoc/20005304A.pdf
+$ENDCMP
+#
+$CMP MCP6541U
+D Single 1.8V Low-Power Open-Drain Output Comparator, SOT-23-5
+K single comparator
+F http://ww1.microchip.com/downloads/en/DeviceDoc/DS20002143E.pdf
+$ENDCMP
+#
+$CMP PEC11R-4215F-N0024
+D ENCODER ROTARY
+K PEC11R-4215F-S0024-ND PEC11R
+F https://www.bourns.com/docs/Product-Datasheets/PEC11R.pdf
 $ENDCMP
 #
 $CMP RAPC722X
@@ -22,6 +68,24 @@ $CMP STMPE1600
 D IO expander 16 GPIO, I2C 400kHz, Interrupt, 1.65 - 3.6V, QFN24
 K IO expander 16 GPIO
 F http://www.st.com/resource/en/datasheet/stmpe1600.pdf
+$ENDCMP
+#
+$CMP TLV320AIC3105
+D Stero Audio CODEC, 8- to 96-kHz, With Integrated Headphone Amplifier, QFN-28
+K audio codec 2ch 96kHz headphone amplifier
+F http://www.ti.com/lit/ds/symlink/tlv320aic23b.pdf
+$ENDCMP
+#
+$CMP TPS561208DDCT
+D 2A Synchronous Step-Down Voltage Regulator, Adjustable Output Voltage, 4.5-17V Input Voltage, SOT-23-6
+K step-down dcdc voltage regulator
+F http://www.ti.com/lit/ds/symlink/tps563200.pdf
+$ENDCMP
+#
+$CMP TPS563200
+D 3A Synchronous Step-Down Voltage Regulator, Adjustable Output Voltage, 4.5-17V Input Voltage, SOT-23-6
+K step-down dcdc voltage regulator
+F http://www.ti.com/lit/ds/symlink/tps563200.pdf
 $ENDCMP
 #
 #End Doc Library

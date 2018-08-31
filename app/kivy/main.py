@@ -59,6 +59,14 @@ import alpha_pdf
 
 from pedal_config import default_channels, advanced_controls, standard_controls, update_standard_controls
 
+bundle_dir = ''
+if getattr(sys, 'frozen', False):
+        # we are running in a bundle
+        frozen = 'ever so'
+        bundle_dir = sys._MEIPASS
+else:
+        # we are running in a normal Python environment
+        bundle_dir = os.path.dirname(os.path.abspath(__file__))
 
 main_widget_kv = '''
 #:import Toolbar kivymd.toolbar.Toolbar
@@ -1135,6 +1143,7 @@ def split_pedal_id(pedal_id):
 
 class PolyExpressiveSetup(App):
     current_firmware_version = 10
+    setup_app_version = 1
 
     theme_cls = ThemeManager()
     title = "Poly Expressive"
@@ -1157,14 +1166,6 @@ class PolyExpressiveSetup(App):
             {"title":"10", "thumbnail" : './assets/layout10.png', "layout_id":10}
             ]
 
-    bundle_dir = ''
-    if getattr(sys, 'frozen', False):
-            # we are running in a bundle
-            frozen = 'ever so'
-            bundle_dir = sys._MEIPASS
-    else:
-            # we are running in a normal Python environment
-            bundle_dir = os.path.dirname(os.path.abspath(__file__))
     background_path = StringProperty(os.path.join(bundle_dir, "assets", "print_background.jpg"))
     # background_path = StringProperty()
 
@@ -1280,6 +1281,19 @@ class PolyExpressiveSetup(App):
         self.next_pedals_disabled = not self.root.ids.selected_pedals_dl.items
         mat_def["included_pedals"] = [a["id"] for a in self.root.ids.selected_pedals_dl.items]
 
+    def get_cell_sub_text(self, cell_content):
+        current_keys = [split_standard_controls_key(a[0])[2] for a in cell_content["standard_controls"]]
+        if "advanced_controls" in cell_content:
+            print("cell is ", cell_content["advanced_controls"])
+            ad = []
+            for k,vs in cell_content["advanced_controls"].items():
+                for v in vs:
+                    ad.append(k+":"+v["channel"]+":PC "+ v["pc"] if "pc" in v else k+":"+v["channel"]+":CC "+v["cc"] )
+            advanced_keys = '\n'.join(ad)
+            return '\n'.join(current_keys)+'\n'+advanced_keys
+        else:
+            return '\n'.join(current_keys)
+
     def select_mat(self, ctx, override_board=None):
         global mat_def
         if override_board:
@@ -1303,8 +1317,7 @@ class PolyExpressiveSetup(App):
                     self.cell_buttons[cell_id].outline_color = get_color_from_hex(cell_content["outline_color"])
             if "outline_width" in cell_content:
                     self.cell_buttons[cell_id].outline_width = cell_content["outline_width"]
-            current_keys = [split_standard_controls_key(a[0])[2] for a in cell_content["standard_controls"]]
-            self.cell_buttons[cell_id].sub_text = '\n'.join(current_keys)
+            self.cell_buttons[cell_id].sub_text = self.get_cell_sub_text(cell_content)
         # print("setting mat to", ctx["id"], "my_mats", my_mats)
         # setup all the controls
         self.root.ids.selected_pedals_dl.items = [{"text":a, "secondary_text":b, "action": PolyExpressiveSetup.remove_pedal, "channel_change": PolyExpressiveSetup.change_channel,
@@ -1523,7 +1536,7 @@ class PolyExpressiveSetup(App):
         mat_def["cells"][current_selected_cell]["standard_controls"] = [(a["key"], a["direction"] if "direction" in a else a.get("value"))  for a in included_standard_controls]
 
         current_keys = [split_standard_controls_key(a[0])[2] for a in mat_def["cells"][current_selected_cell]["standard_controls"]]
-        self.cell_buttons[current_selected_cell].sub_text = '\n'.join(current_keys)
+        self.cell_buttons[current_selected_cell].sub_text = self.get_cell_sub_text(mat_def["cells"][current_selected_cell])
         # print("mat is", mat_def)
         self.go_to_page("edit_mat", "Edit Board")
 
@@ -1545,6 +1558,7 @@ class PolyExpressiveSetup(App):
                 b.pop("action", False)
                 b.pop("id", False)
 
+        self.cell_buttons[current_selected_cell].sub_text = self.get_cell_sub_text(mat_def["cells"][current_selected_cell])
         self.go_to_page("edit_mat", "Edit Board")
 
     def add_advanced_full_range_cc(self, name, channel, cc_number):
@@ -1838,6 +1852,8 @@ class PolyExpressiveSetup(App):
         main_widget = Builder.load_string(main_widget_kv)
         # self.theme_cls.theme_style = 'Dark'
 
+        self.check_latest_app_version()
+
         return main_widget
 
     def show_set_text_dialog(self, cell_id):
@@ -2053,6 +2069,26 @@ class PolyExpressiveSetup(App):
         #     f.write(mat_json)
         print(mat_json)
         req = UrlRequest('http://192.168.4.1/update_action_list', on_success=bug_posted, on_failure=fail, on_error=fail, req_body=mat_json)
+
+    def check_latest_app_version(self):
+        # print("check app version")
+        def bug_posted(req, result):
+            cur_version = result
+            # except:
+            #     return
+            try:
+                if cur_version > self.setup_app_version:
+                    Snackbar(text="There is a new version of the setup app available. http://bit.ly/polysetup").show()
+            except:
+                pass
+            print(result)
+
+        def fail(req, result):
+            print("Can't check app version")
+            # Snackbar(text="").show()
+            # print(result)
+
+        req = UrlRequest('http://musicroomvr.com/poly_expressive_app_version.json', on_success=bug_posted, on_failure=fail, on_error=fail)
 
     def mat_to_poly_json(self):
         size_y, size_x = mat_sizes[mat_def["size"]] 
@@ -2480,14 +2516,6 @@ class PolyExpressiveSetup(App):
         pdf = alpha_pdf.AlphaPDF('L', 'mm', (size_y, size_x))
         pdf.add_page()
         frozen = 'not'
-        bundle_dir = ''
-        if getattr(sys, 'frozen', False):
-                # we are running in a bundle
-                frozen = 'ever so'
-                bundle_dir = sys._MEIPASS
-        else:
-                # we are running in a normal Python environment
-                bundle_dir = os.path.dirname(os.path.abspath(__file__))
         filepath = os.path.join(bundle_dir, "assets", "Esphimere Bold.otf")
         image_path = ''
         if "background_image" in mat_def:
@@ -2622,6 +2650,48 @@ class PolyExpressiveSetup(App):
                         # print("pdf: standard_control", standard_control)
                         string_px = pdf.get_string_width(standard_control.upper())/2.0
                         pdf.text((start_x+((end_x-start_x)/2.0)-string_px), start_y+(arrow_margin*x_i), standard_control.upper())
+
+            if "advanced_controls" in cell_content:
+                for control, val in cell_content["advanced_controls"].items():
+                    for v in val:
+                        if "name" in v:
+                            standard_control = v["name"]
+                            # TODO name or val?
+                            if control == "vertical":
+                                y_i = y_i + 1
+                                end_x = out_x1 + arrow_margin
+                                end_y = out_y2 - arrow_margin
+                                start_x = out_x1 + arrow_margin
+                                start_y = out_y1 + arrow_margin
+                                if y_i == 1:
+                                    pdf.line(start_x, start_y, end_x, end_y)
+                                    # arrow
+                                    pdf.line(end_x, end_y, end_x-(arrow_length/2), end_y-arrow_length)
+                                    pdf.line(end_x, end_y, end_x+(arrow_length/2), end_y-arrow_length)
+                                pdf.rotate(90, start_x, start_y)# - ((end_y-start_y)/2.0))
+                                pdf.set_font('esphimere', '', arrow_font_size)
+                                calculate_set_font_size(end_y-start_y, standard_control.upper())
+                                # print("pdf: standard_control", standard_control)
+                                print("start x, y", start_x, end_x, start_y, end_y)
+                                string_px = pdf.get_string_width(standard_control.upper())/2.0
+                                pdf.text((start_x-((end_y-start_y)/2.0)-string_px), start_y+(arrow_margin*y_i), standard_control.upper())
+                                pdf.rotate(0)
+                            if control == "horizontal":
+                                x_i = x_i + 1
+                                end_x = out_x2 - arrow_margin
+                                end_y = out_y1 + arrow_margin
+                                start_x = out_x1 + arrow_margin
+                                start_y = out_y1 + arrow_margin
+                                if x_i == 1:
+                                    pdf.line(start_x, start_y, end_x, end_y)
+                                    # arrow
+                                    pdf.line(end_x, end_y, end_x-arrow_length, end_y-(arrow_length/2))
+                                    pdf.line(end_x, end_y, end_x-arrow_length, end_y+(arrow_length/2))
+                                pdf.set_font('esphimere', '', arrow_font_size)
+                                calculate_set_font_size(end_x-start_x, standard_control.upper())
+                                # print("pdf: standard_control", standard_control)
+                                string_px = pdf.get_string_width(standard_control.upper())/2.0
+                                pdf.text((start_x+((end_x-start_x)/2.0)-string_px), start_y+(arrow_margin*x_i), standard_control.upper())
 
         print("\n\n#####\n\n", self.user_data_dir)
         filepath = os.path.join(self.user_data_dir, "temp_poly.pdf")
@@ -2835,14 +2905,6 @@ class HTTPServer(BaseHTTPServer):
 
 def run_httpd():
 
-    bundle_dir = ''
-    if getattr(sys, 'frozen', False):
-            # we are running in a bundle
-            frozen = 'ever so'
-            bundle_dir = sys._MEIPASS
-    else:
-            # we are running in a normal Python environment
-            bundle_dir = os.path.dirname(os.path.abspath(__file__))
     try:
         PORT = 9080
         httpd = HTTPServer(bundle_dir, ("0.0.0.0", PORT))
