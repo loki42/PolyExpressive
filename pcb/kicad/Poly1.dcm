@@ -16,6 +16,12 @@ K connector
 F ~
 $ENDCMP
 #
+$CMP ADAU1978
+D Stero Audio CODEC, 8- to 96-kHz, With Integrated Headphone Amplifier, QFN-28
+K audio codec 2ch 96kHz headphone amplifier
+F http://www.ti.com/lit/ds/symlink/tlv320aic23b.pdf
+$ENDCMP
+#
 $CMP EE2-3TNU
 D RELAY GEN PURPOSE DPDT 2A 5V
 K 399-11052-5-ND EC2
