@@ -1,4 +1,4 @@
-(module RAPC722X (layer F.Cu) (tedit 59A7C5F1)
+(module RAPC722X (layer F.Cu) (tedit 5B91F13C)
   (descr "<b>DC POWER JACK 2.5mm</b> Right Angle, Through Hole, Rated 5A at 16VDC, PC Terminals<p>Source: www.spctechnology.com .. 84N1162.pdf<br>Distributor: <b>Farnell (www.Farnell.de)</b><br>Created by Robert Siegler")
   (fp_text reference RAPC722X (at -7.63393 -5.72545) (layer F.SilkS)
     (effects (font (size 1.00183 1.00183) (thickness 0.05)))
@@ -46,4 +46,9 @@
   (pad 3 thru_hole oval (at 0 4.8) (size 3.61 1.31) (drill oval 3.05 0.75) (layers *.Cu *.Mask F.SilkS))
   (pad 2 thru_hole oval (at -3 0 90) (size 3.62 1.33) (drill oval 3.05 0.76) (layers *.Cu *.Mask F.SilkS))
   (pad 1 thru_hole oval (at 3 0 90) (size 4.33 1.79) (drill oval 3.56 1.02) (layers *.Cu *.Mask F.SilkS))
+  (model C:/git_repos/PolyMorph/pcb/kicad/libs/3d/RAPC722X.STEP
+    (offset (xyz -10.6 0 6.5))
+    (scale (xyz 1 1 1))
+    (rotate (xyz -90 0 90))
+  )
 )
