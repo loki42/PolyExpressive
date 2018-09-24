@@ -732,7 +732,7 @@ advanced_controls = {
     "Mix": {"type": "CC", "controller":15, "curve":"1"},
     "Tone": {"type": "CC", "controller":3, "curve":"1"},
     "Param 1": {"type": "CC", "controller":9, "curve":"1"},
-    "Param 1": {"type": "CC", "controller":16, "curve":"1"},
+    "Param 2": {"type": "CC", "controller":16, "curve":"1"},
     "Mod": {"type": "CC", "controller":14, "curve":"1"},
     "Boost": {"type": "CC", "controller":23, "value":{"min":0, "max":60}},
     "Persist Off/On": {"type": "CC", "controller":22, "enum":{"On": 1, "Off":0}},
