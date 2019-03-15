@@ -22,6 +22,17 @@ K audio codec 2ch 96kHz headphone amplifier
 F http://www.ti.com/lit/ds/symlink/tlv320aic23b.pdf
 $ENDCMP
 #
+$CMP AL3050FDC-7
+D LED Lighting Drivers LED Backlight Handheld
+F https://componentsearchengine.com/Datasheets/1/AL3050FDC-7.pdf
+$ENDCMP
+#
+$CMP AL5890-40P1-13
+D Temperature Compensated Constant Current LED IC, D-PAK
+K Constant Current LED Driver IC
+F http://ww1.microchip.com/downloads/en/DeviceDoc/20005413A.pdf
+$ENDCMP
+#
 $CMP EE2-3TNU
 D RELAY GEN PURPOSE DPDT 2A 5V
 K 399-11052-5-ND EC2
