@@ -51,6 +51,11 @@ K DC power barrel jack connector
 F ~
 $ENDCMP
 #
+$CMP MCP1802T
+D MCP1802T-5002I/OT
+K LDO
+$ENDCMP
+#
 $CMP MCP41HV51-ST
 D 7/8-bit single +36V (+/-18V) digital pot, I2C serial interface, volatile memory, TSSOP-14
 K I2C Potentiometer pot digital
