@@ -10,6 +10,10 @@ D power-flag symbol
 K Power Flag Symbol
 $ENDCMP
 #
+$CMP 1003P1T1B1M2QEH
+D E-SWITCH - 1003P1T1B1M2QEH - TOGGLE SWITCH, 3PDT, 5A, 120VAC, 28VDC
+$ENDCMP
+#
 $CMP 640455-4
 D Generic connector, single row, 01x04
 K connector
@@ -36,6 +40,12 @@ $ENDCMP
 $CMP AP3036BKTR
 D LED Lighting Drivers LED Backlight Handheld
 F https://componentsearchengine.com/Datasheets/1/AL3050FDC-7.pdf
+$ENDCMP
+#
+$CMP CD4053BE
+D IC MUX/DEMUX TRIPLE 2X1 16DIP
+K 296-2059-5-ND
+F http://www.ti.com/lit/ds/symlink/cd4051b.pdf
 $ENDCMP
 #
 $CMP EE2-3TNU
@@ -89,6 +99,11 @@ $CMP RAPC722X
 D DC Barrel Jack
 K DC power barrel jack connector
 F ~
+$ENDCMP
+#
+$CMP SRBV141404
+D Alps Electric, 4 Position SP4T Rotary Switch, 300 mA, Pc Pin
+F https://componentsearchengine.com/Datasheets/1/SRBV141404.pdf
 $ENDCMP
 #
 $CMP STMPE1600
